@@ -1,8 +1,8 @@
 '''
-Subset annual layers from a multilayer raster to create individual raster 
-Author: Devendra Dahal
-Date:	8/5/2015
-Last Updated: 2/1/2017 by Dan Zelenak to work on LCSRLNST01
+Subset annual layers from a multilayer raster to create individual rasters 
+Author: Dan Zelenak
+Based on script "Subset_Layers_v2.py written by Devendra Dahal on 8/5/2015
+Last Updated: 3/22/2017 by Dan Zelenak
 '''
 
 import os, sys, traceback, datetime, time, glob, subprocess, fnmatch, pprint
@@ -10,7 +10,7 @@ print sys.version
 t1 = datetime.datetime.now()
 print t1.strftime("%Y-%m-%d %H:%M:%S")
 
-GDALpath = '/usr/bin' # Path to GDAL on LCSRLNST01
+GDALpath = '/usr/bin'
 
 def add_color_table(in_file, clr_table, Format):
 
