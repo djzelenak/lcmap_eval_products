@@ -1,7 +1,7 @@
 '''
 Subset annual layers from a multilayer raster to create individual rasters 
 Author: Dan Zelenak
-Based on script "Subset_Layers_v2.py written by Devendra Dahal on 8/5/2015
+Based on script "Subset_Layers_v2.py" written by Devendra Dahal on 8/5/2015
 Last Updated: 3/22/2017 by Dan Zelenak
 '''
 
