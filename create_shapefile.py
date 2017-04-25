@@ -221,12 +221,10 @@ def usage():
         Arguments:\n\
         -i    = The full path to the input thematic raster file\n\
         -o    = The full path to the output location\n\
-        -x    = The target pixel class values separated by"\
-            + " commas and no spaces\n\
+        -x    = The target pixel class values separated by commas and no spaces\n\
         -help = Display this message\n\
         \n\
-        ***Note: Classes with large numbers of pixels may take" \
-            + " a long time to process***\n\
+        ***Note: Classes with large numbers of pixels may take a long time to process***\n\
         \n\
         Example: \n\
         create_shapefile.py -i C:\users\...\\file.tif"\
