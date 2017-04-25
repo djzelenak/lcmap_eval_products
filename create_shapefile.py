@@ -266,11 +266,6 @@ def main():
         i += 1
 
 
-    """#Testing values
-    infile = 'C:/users/dzelenak/workspace/testing/ard08/nlcd11_ccdc11cl.tif'
-    classes = ['505', '606', '808', '1111']
-    """
-    
     classvals = get_class_values(classes)
 
     for q in classvals:
