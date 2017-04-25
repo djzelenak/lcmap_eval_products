@@ -230,6 +230,12 @@ def write_raster(raster, srcarray, outfile):
     return None
 
 #%%
+def usage():
+    #TODO
+    
+    return None
+
+#%%
 def main():
 
     argv = sys.argv
