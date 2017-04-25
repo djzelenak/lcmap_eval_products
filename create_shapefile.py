@@ -20,7 +20,6 @@ import os, sys, datetime
 
 try:
     from osgeo import gdal, ogr, osr
-    #from osgeo.gdalconst import *
 except ImportError:
     import gdal
 
