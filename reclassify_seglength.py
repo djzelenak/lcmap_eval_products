@@ -222,7 +222,17 @@ def write_raster(raster, srcarray, outfile):
 
 #%%
 def usage():
-    #TODO
+    
+    print("\n\t[-i Input File Directory]\n" \
+    "\t[-from The start year]\n" \
+    "\t[-to The end year]\n" \
+    "\t[-help Display this message]\n\n")
+
+    print("\n\tExample: reclassify_seglength.py -i C:/.../CCDCMap -from " + \
+          "1984 -to 2015")
+
+    print ""
+
     
     return None
     
@@ -230,6 +240,8 @@ def usage():
 def main():
     
     argv = sys.argv
+
+    fromyear, toyear = None, None
 
     if len(argv) <= 1:
         print "\n***Missing required arguments***"
@@ -267,7 +279,7 @@ def main():
     lookfor = "SegLength"
 
     rasters = get_layers(infolder, lookfor, fromyear, toyear)
-
+    print rasters
     for r in rasters:
 
         array = get_array(r)
