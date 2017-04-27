@@ -6,7 +6,7 @@ Apply a color table using the GDAL method of converting the input raster
 to a VRT, inserting the color table into the VRT, and finally writing it
 back to a new .tif raster.  
 Author: Dan Zelenak
-Last Updated: 4/27/2017 by Dan Zelenak to work with the h5v2 grid ccdc data
+Last Updated: 4/27/2017 by Dan Zelenak
 """
 
 #%%
