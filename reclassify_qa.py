@@ -6,7 +6,7 @@ Created on Mon Apr 17 11:29:56 2017
 Last updated on Tue Apr 25, 2017
 @author: dzelenak
 
-1.  Iterate through QA rasters
+1.  Iterate through QA rasters (QAMap_YYYY.tif)
 2.  For each raster file, convert to a numpy array
 3.  Reassign values to be sequential
 4.  Write array to a new raster file
@@ -124,24 +124,25 @@ def array_calc(inarray):
     return inarray
 
 #%%
-def get_outname(infile, pat):
+def get_outname(infile, outfolder, pat):
 
     """Generate the output directory and filename
 
     Args:
         infile = the input directory
+        outfolder = the output directory
         pat = name of the product being reclassified (e.g. ChangeMagMap)
     Returns:
         outfile = the full path to the output file
     """
 
-    indir, infile = os.path.split(infile)
+    outfolder = outfolder.replace("\\", "/")
+    
+    outdir = "{a}/{b}_reclass".format( a=outfolder, b=pat )
 
-    outdir = "{a}/{b}_reclass".format( a=indir, b=pat )
-
-    outdir.replace("\\", "/")
-
-    outname, ext = os.path.splitext(infile)
+    indir, filex = os.path.split(infile)
+    
+    outname, ext = os.path.splitext(filex)
 
     outname = outname + "_reclass" + ext
 
@@ -213,7 +214,19 @@ def write_raster(raster, srcarray, outfile):
 
 #%%
 def usage():
-    #TODO
+    
+    print("\n\t[-i Full path to the input File Directory]\n" \
+    "\t[-o Full path to the output location]\n" \
+    "\t[-from The start year]\n" \
+    "\t[-to The end year]\n" \
+    "\t[-help Display this message]\n\n")
+
+    print("\n\tExample: reclassify_qa.py -i C:/.../CCDCMap -from " + \
+          "1984 -to 2015")
+
+    print ""
+
+    
     
     return None
 
@@ -235,6 +248,10 @@ def main():
         if arg == "-i":
             i = i + 1
             infolder = argv[i]
+        
+        elif arg == "-o":
+            i = i + 1
+            outfolder = argv[i]
 
         elif arg == "-from":
             i = i + 1
@@ -265,7 +282,7 @@ def main():
 
         array = array_calc(array)
 
-        output = get_outname(r, lookfor)
+        output = get_outname(r, outfolder, lookfor)
 
         if not os.path.exists(output):
             
