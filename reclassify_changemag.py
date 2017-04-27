@@ -93,7 +93,7 @@ def array_calc(inarray):
         inarray = the input numpy array
 
     Returns:
-        inarray = the input numpy array with modified values
+        xarray = the input numpy array with modified values in UInt8 type
     """
 
     inarray[ (inarray == 0) ] = 0
@@ -135,7 +135,7 @@ def array_calc(inarray):
     return xarray
 
 #%%
-def get_outname(infile, pat):
+def get_outname(infile, outfolder, pat):
 
     """Gerenate the output directory and filename
 
@@ -146,13 +146,13 @@ def get_outname(infile, pat):
         outfile = the full path to the output file
     """
 
-    indir, infile = os.path.split(infile)
+    outfolder.replace("\\", "/")
 
-    outdir = "{a}/{b}_reclass".format( a=indir, b=pat )
+    outdir = "{a}/{b}_reclass".format( a=outfolder, b=pat )
 
-    outdir.replace("\\", "/")
-
-    outname, ext = os.path.splitext(infile)
+    indir, filex = os.path.split(infile)
+    
+    outname, ext = os.path.splitext(filex)
 
     outname = outname + "_reclass" + ext
 
@@ -226,8 +226,18 @@ def write_raster(raster, srcarray, outfile):
 
 #%%
 def usage():
-    #TODO
     
+    print("\n\t[-i Full path to the input File Directory]\n" \
+    "\t[-o Full path to the output location]\n" \
+    "\t[-from The start year]\n" \
+    "\t[-to The end year]\n" \
+    "\t[-help Display this message]\n\n")
+
+    print("\n\tExample: reclassify_changemag.py -i C:/.../CCDCMap -from " + \
+          "1984 -to 2015")
+
+    print ""
+
     return None
 
 #%%
@@ -249,6 +259,10 @@ def main():
             i = i + 1
             infolder = argv[i]
 
+        elif arg == "-o":
+            i = i + 1
+            outfolder = argv[i]
+        
         elif arg == "-from":
             i = i + 1
             fromyear = argv[i]
@@ -280,10 +294,8 @@ def main():
 
         #pprint.pprint(array)
 
-        output = get_outname(r, lookfor)
+        output = get_outname(r, outfolder, lookfor)
 
-        print output
-        
         if not os.path.exists(output):
             
             print "Processing image ", r
