@@ -2,15 +2,18 @@
 # -*- coding: utf-8 -*-
 
 """
-Apply a color table using the GDAL method of converting the input raster
-to a VRT, inserting the color table into the VRT, and finally writing it
-to a new .tif raster file.
+Subset annual layers from a multilayer raster to create individual rasters
 Author: Dan Zelenak
 Last Updated: 4/27/2017 by Dan Zelenak to work with the h5v2 grid ccdc data
 """
 
 #%%
 import os, sys, datetime, glob, subprocess
+
+try:
+    from osgeo import gdal
+except ImportError:
+    import gdal
 
 print sys.version
 
@@ -19,6 +22,10 @@ print "\n", t1.strftime("%Y-%m-%d %H:%M:%S")
 
 GDALpath = "/usr/bin"
 #GDALpath = "C:/LCMAP_Tools/dist"
+
+
+gdal.UseExceptions()
+gdal.AllRegister()
 
 #%%
 def add_color_table(in_file, clr_table, dtype):
@@ -131,14 +138,18 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
                % (GDALpath, "GTiff", color_VRT, outfile)
     subprocess.call(runCom, shell=True)
 
-    
+    """
     #-----------------------------------------------------------------------
     #Add spatial reference system to output raster file
     runEdit = "%s/gdal_edit.py -a_srs EPSG:5070 %s"\
                %(GDALpath, outfile)
     subprocess.call(runEdit, shell=True)
+    """
     
-
+    get_srs(infile, outfile)
+        
+        
+    
     #Remove temporary files (1 each of a .csv, .vrt, and .tif)
     for v in glob.glob(outputdir + os.sep+ "zzz*"):
 
@@ -146,6 +157,30 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
 
     return None
 
+#%%
+def get_srs(inraster, outraster):
+    
+    """Apply a spatial reference system to the new raster file based on the
+    SRS of the original raster
+    
+    Args:
+        inraster = the original input raster file
+        outraster = the newly created raster file that contains a color map
+    Returns:
+        None
+    """
+    
+    in_src = gdal.Open(inraster, gdal.GA_ReadOnly)
+    out_src = gdal.Open(outraster, gdal.GA_Update)
+    
+    out_src.SetGeoTransform( in_src.GetGeoTransform() )
+    out_src.SetProjection( in_src.GetProjection() )
+    
+    in_src = None
+    out_src = None
+    
+    return None
+    
 #%%
 def usage():
 
@@ -207,7 +242,7 @@ def main():
 
     outdir = outdir.replace("\\", "/")
 
-    outputdir = outdir + "/" + name
+    outputdir = "%s/%s_color" % (outdir, name)
 
     filelist = sorted(glob.glob("{}/{}*.tif".format(indir, name)))
 
