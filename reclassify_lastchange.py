@@ -142,26 +142,26 @@ def array_calc(inarray):
     return outarray
 
 #%%
-def get_outname(infile, pat):
+def get_outname(infile, outfolder, pat):
 
     """Gerenate the output directory and filename
 
     Args:
         infile = the input directory
+        outfolder = the output directory
         pat = name of the product being reclassified (e.g. ChangeMagMap)
     Returns:
         outfile = the full path to the output file
     """
+    
+    outfolder = outfolder.replace("\\", "/")
+    
+    outdir = "{a}/{b}_reclass".format( a=outfolder, b=pat )
 
-    indir, infile = os.path.split(infile)
+    indir, filex = os.path.split(infile)
+    fname, ext = os.path.splitext(filex)
 
-    outdir = "{a}/{b}_reclass".format( a=indir, b=pat )
-
-    outdir.replace("\\", "/")
-
-    outname, ext = os.path.splitext(infile)
-
-    outname = outname + "_reclass" + ext
+    outname = fname + "_reclass" + ext
 
     if not os.path.exists( outdir ): os.mkdir( outdir )
 
@@ -231,10 +231,21 @@ def write_raster(raster, srcarray, outfile):
 
 #%%
 def usage():
-    #TODO
+    
+    print("\n\t[-i Full path to the input File Directory]\n" \
+    "\t[-o Full path to the output location]\n" \
+    "\t[-from The start year]\n" \
+    "\t[-to The end year]\n" \
+    "\t[-help Display this message]\n\n")
+
+    print("\n\tExample: reclassify_lastchange.py -i C:/.../CCDCMap -from " + \
+          "1984 -to 2015")
+
+    print ""
+
     
     return None
-
+    
 #%%
 def main():
 
@@ -253,6 +264,10 @@ def main():
         if arg == "-i":
             i = i + 1
             infolder = argv[i]
+            
+        elif arg == "-o":
+            i = i + 1
+            outfolder = argv[i]
 
         elif arg == "-from":
             i = i + 1
@@ -285,7 +300,7 @@ def main():
 
         #pprint.pprint(array)
 
-        output = get_outname(r, lookfor)
+        output = get_outname(r, outfolder, lookfor)
 
         if not os.path.exists(output):
             
