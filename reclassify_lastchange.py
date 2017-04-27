@@ -13,6 +13,7 @@ Last updated on Tue Apr 25, 2017
     that can have a color map applied.
 3.  Write the array back to a raster file 
 
+***TODO: Implement a thing that does leap year things
 """
 
 import os, sys, glob, datetime
