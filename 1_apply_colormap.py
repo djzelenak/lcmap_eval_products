@@ -193,7 +193,7 @@ def usage():
     "\tChangeMagMap, YOLC, NumChanges\n" \
     "\n\t[-o Output Folder with complete path]\n\n")
 
-    print("\n\tExample: 1_subset_layers.py -i C:/.../CCDCMap -name " + \
+    print("\n\tExample: 1_apply_colormap.py -i C:/.../CCDCMap -name " + \
           "ChangeMap -o C:/.../OutputFolder\n")
 
     print ""
