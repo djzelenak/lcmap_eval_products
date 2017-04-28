@@ -255,16 +255,14 @@ def main():
     print "\nFiles are saving in", outputdir, "\n"
 
     names = ["CoverMap", "CoverDistMap", "ChangeMap", "LastChange",\
-             "SegLength", "QAMap", "ChangeMagMap", "YOLC", "NumChanges"]
+             "SegLength", "QAMap", "ChangeMagMap"]
 
     colortables = ["color_covermap.txt", "color_covermap.txt",\
                    "color_changemap.txt", "color_lastchange.txt",\
                    "color_seglength.txt", "color_qa.txt",\
-                   "color_changemag.txt", "color_yolc.txt",\
-                   "color_numchanges.txt"]
+                   "color_changemag.txt"]
 
-    dtypes = ["Byte", "Byte", "UInt16", "Byte", "Byte", "Byte", "Byte",\
-              "UInt16", "Byte"]
+    dtypes = ["Byte", "Byte", "UInt16", "Byte", "Byte", "Byte", "Byte"]
 
     lookupcolor = dict(zip(names, colortables))
 
