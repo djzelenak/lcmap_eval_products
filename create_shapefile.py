@@ -214,21 +214,21 @@ def raster_to_shp(tempraster, newlayername):
 #%%
 def usage():
     print ""
-    print ("\tUsage: Take an input thematic raster layer and a list of\n\
-        pixel class values to create a polygon shapefile for each class.\n\
-        \n\
-        Arguments:\n\
-        -i    = The full path to the input thematic raster file\n\
-        -o    = The full path to the output location\n\
-        -x    = The target pixel class values separated by commas and no spaces\n\
-        -help = Display this message\n\
-        \n\
-        ***Note: Classes with large numbers of pixels may take a long time to process***\n\
-        \n\
-        Example: \n\
-        create_shapefile.py -i C:\users\...\\file.tif"\
-            + " -o C:\users\...\Output -x 202,608,1111\n\
-        \n")
+    print ("\tUsage: Take an input thematic raster layer and a list of\n"\
+        "pixel class values to create a polygon shapefile for each class.\n"\
+        "\n"\
+        "Arguments:\n"\
+        "-i    = The full path to the input thematic raster file\n"\
+        "-o    = The full path to the output location\n"\
+        "-x    = The target pixel class values separated by commas and no spaces\n"\
+        "-help = Display this message\n"\
+        "\n"\
+        "***Note: Classes with large numbers of pixels may take a long time to process***\n"\
+        "\n\"
+        "Example: \n"\
+        "create_shapefile.py -i C:\users\...\\file.tif""\
+            + " -o C:\users\...\Output -x 202,608,1111\n"\
+        "\n")
 
     return None
 
