@@ -86,7 +86,7 @@ def get_outlayers(inrasters, outfolder):
     return rlist
 
 #%%
-def do_calc(out_r, in_r1=None, in_r2=None):
+def do_calc(out_r, in_r1, in_r2):
     
     """Generate the output layers and add color ramps for the default
     from/to years (i.e. the min and max years present)
@@ -109,7 +109,7 @@ def do_calc(out_r, in_r1=None, in_r2=None):
         
         cols = src2.RasterXSize
         
-        srcdata2 = src2.GetRasterBand(1).WriteAsArray()
+        srcdata2 = src2.GetRasterBand(1).ReadAsArray()
     
         srcdata2[ srcdata2 > 0 ] = 1
         
@@ -133,6 +133,8 @@ def do_calc(out_r, in_r1=None, in_r2=None):
     
         src2, outfile = None, None
         
+        return None
+        
     else:
 
         src1 = gdal.Open(in_r1)
@@ -142,8 +144,8 @@ def do_calc(out_r, in_r1=None, in_r2=None):
         
         cols = src1.RasterXSize
         
-        srcdata1 = src1.GetRasterBand(1).WriteAsArray()
-        srcdata2 = src2.GetRasterBand(1).WriteAsArray()
+        srcdata1 = src1.GetRasterBand(1).ReadAsArray()
+        srcdata2 = src2.GetRasterBand(1).ReadAsArray()
         
         srcdata2[ srcdata2 > 0 ] = 1
         
@@ -169,7 +171,7 @@ def do_calc(out_r, in_r1=None, in_r2=None):
         
         src1, src2, outfile = None, None, None
     
-    return None
+        return None
     
 #%%
 def usage():
@@ -193,7 +195,9 @@ def main():
 
     if len(argv) < 3:
         
-        print "\n\tMissing arguments\n\tTry -help"
+        print "\n\tMissing one or more arguments:\n "
+        
+        usage()
         
         sys.exit(1)
 
@@ -257,7 +261,7 @@ def main():
         elif x > 0: 
             
             do_calc(outfiles[x], outfiles[x-1], infiles[x])
-        
+    
     return None
 
 #%%
