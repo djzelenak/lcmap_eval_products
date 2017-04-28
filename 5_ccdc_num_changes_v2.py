@@ -1,11 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-Created on Wed Apr 19 14:32:45 2017
-
-@author: dzelenak
+Author: Dan Zelenak
+Last Updated: 4/28/2017
+Usage: Calculate the number of changes per pixel across all available 
+ChangeMap layers.  Alternatively can specify a 'from' and 'to' and the script
+will calculate the number of changes for each year interval within 
+the given range.
 """
-import os, sys, datetime, glob
+import os, sys, datetime, glob, subprocess
 
 import numpy as np
 
@@ -25,6 +28,8 @@ print "\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n")
 
 gdal.AllRegister()
 gdal.UseExceptions()
+
+GDALPath = r"C:\LCMAP_Tools\dist"
 
 #%%
 def get_inlayers(infolder, y1, y2):
@@ -175,6 +180,120 @@ def do_calc(out_r, in_r1, in_r2):
         src1, src2, outfile = None, None, None
     
         return None
+
+#%%
+def add_color_table(in_vrt, clr_table, dtype):
+    
+    """Write color map info to a VRT file
+    
+    Args:
+        in_vrt = the input VRT file
+        clr_table = the input color table (.txt)
+        dtype = the bit depth of the original raster
+    Return:
+        out_vrt = the VRT with color map info written to it
+    """
+    
+    
+    color_table = open(clr_table, "r")
+
+    (dirName, fileName) = os.path.split(in_vrt)
+    (fileBase, fileExt) = os.path.splitext(fileName)
+
+    out_vrt = r"{0}{1}zzzzz{2}_temp.vrt".format(dirName, os.sep, fileBase)
+
+    in_txt = open(in_vrt, 'r+')
+    out_txt = open(out_vrt, 'w')
+
+    with open(in_vrt, 'r+') as in_txt, open(out_vrt, "w") as out_txt:
+        
+       # key is the line after which to insert the color table in the VRT
+        key = '<VRTRasterBand dataType="{0}" band="1">'.format(dtype)
+        
+       # subkey is a line that doesn't need to be in the new VRT text
+        subkey = "   <ColorInterp>Gray</ColorInterp>"
+        
+       # get lines in a list
+        txt_read = in_txt.readlines()
+
+        for line in txt_read:
+        
+            if subkey in line:
+                
+                  continue
+            
+            else:
+                
+                writetxt = r"{0}".format(line)
+                
+                out_txt.write(writetxt)
+
+                # insert color table following keywords
+                if key in line:
+                
+                    #print "\nFound the key!\n"
+                    color_read = color_table.readlines()
+                    
+                    #print 'writing color table to vrt'
+                    for ln in color_read:
+                    
+                        out_txt.write(ln)
+
+    return out_vrt
+
+#%%
+def add_color(outdir, raster):
+    
+    """Add a color map to the created raster files
+    
+    Args:
+        outdir = The full path to the output folder
+        raster = The current raster being worked on
+        
+    Return:
+        None
+    """
+    
+    namex = os.path.basename(raster)
+    name = os.path.splitext(namex)[0]
+    
+    if not os.path.exists(outdir + "/Color"):
+        
+        os.mkdir(outdir + "/Color")
+    
+    outfile = outdir + "/Color/" + namex
+    
+    clr_table = "color_numchanges.txt"
+    
+    outcsv_file = r'%s/zzzzzz_%s_list.csv' % (outdir, name)
+        
+    if os.path.isfile(outcsv_file):
+        
+        os.remove(outcsv_file)
+
+    with open(outcsv_file, 'wb') as outcsv2_file:
+            
+        outcsv2_file.write(str(raster) + "\r\n")
+
+    temp_vrt = '{0}/zzzz_{1}.vrt'.format(outdir, name)
+    com      = '%s/gdalbuildvrt -q -input_file_list %s %s' \
+                % (GDALPath, outcsv_file, temp_vrt)
+    subprocess.call(com, shell=True)
+
+    out_vrt = add_color_table(temp_vrt, clr_table, 'Byte')
+    
+    runCom  = "%s/gdal_translate -of %s -ot Byte -q" \
+               " -stats -a_srs EPSG:5070 %s %s"\
+               % (GDALPath, "GTiff", out_vrt, outfile)
+    subprocess.call(runCom, shell=True)
+
+    # remove the temp files used for adding the color tables
+    for v in glob.glob(outdir + "/zzz*"):
+    
+        os.remove(v)
+    
+    
+    return None
     
 #%%
 def usage():
@@ -185,7 +304,10 @@ def usage():
      "\t[-to The end year]\n" \
      "\t[-o Full path to the output folder]\n" \
      "\n\t*Output raster will be saved in the same format "\
-     "as input raster (GTiff).\n\n")
+     "as input raster (GTiff).\n\n"
+     
+     "\tExample: ccdc_num_changes.py -i C:/.../ChangeMaps -from 1984 -to 2015"\
+     " -o C:/.../OutputFolder\n")
 
     return None
 
@@ -245,14 +367,6 @@ def main():
 
     infiles = get_inlayers(inputdir, fromY, toY)
     
-    """
-    index = []
-    
-    for j in range(len(infiles)):
-        
-        index.append(str(j))
-    """    
-    
     outfiles = get_outlayers(infiles, outputdir)
     
     for x in range(len(outfiles)):
@@ -277,6 +391,8 @@ def main():
                 os.path.basename(infiles[x])
                 
                 do_calc(outfiles[x], outfiles[x-1], infiles[x])
+                
+        add_color(outputdir, outfiles[x])
     
     return None
 
