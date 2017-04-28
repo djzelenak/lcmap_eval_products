@@ -23,6 +23,9 @@ print "\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n")
 #driver = gdal.GetDriverByName("GTiff")
 #driver.Register()
 
+gdal.AllRegister()
+gdal.UseExceptions()
+
 #%%
 def get_inlayers(infolder, y1, y2):
     
@@ -140,9 +143,9 @@ def do_calc(out_r, in_r1, in_r2):
         src1 = gdal.Open(in_r1)
         src2 = gdal.Open(in_r2)
         
-        rows = src1.RasterYSize
+        rows = src2.RasterYSize
         
-        cols = src1.RasterXSize
+        cols = src2.RasterXSize
         
         srcdata1 = src1.GetRasterBand(1).ReadAsArray()
         srcdata2 = src2.GetRasterBand(1).ReadAsArray()
@@ -256,16 +259,30 @@ def main():
     
         if x == 0: 
             
-            do_calc(outfiles[x], None, infiles[x])
+            if not os.path.exists(outfiles[x]):
+            
+                print "\nGenerating raster file {a} from: ".format\
+                ( a = os.path.basename(outfiles[x]) )
+                print os.path.basename(infiles[x])
+                
+                do_calc(outfiles[x], None, infiles[x])
         
         elif x > 0: 
             
-            do_calc(outfiles[x], outfiles[x-1], infiles[x])
+            if not os.path.exists(outfiles[x]):
+            
+                print "\nGenerating raster file {a}".format\
+                ( a = os.path.basename(outfiles[x]) )
+                print os.path.basename(outfiles[x-1]), " and ", \
+                os.path.basename(infiles[x])
+                
+                do_calc(outfiles[x], outfiles[x-1], infiles[x])
     
     return None
 
 #%%
 if __name__ == '__main__':
+    
     main()
 
 #%%
