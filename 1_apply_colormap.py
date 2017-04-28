@@ -189,8 +189,8 @@ def usage():
     print("\n\t[-i Input File Directory]\n" \
     "\t[-name Input File Name (root only, e.g. ChangeMap)]\n" \
     "\n\tValid file names:\n" \
-    "\tChangeMap, CoverMap, CoverDistMap, LastChange, QAMap, SegLength\n" \
-    "\tChangeMagMap, YOLC, NumChanges\n" \
+    "\tChangeMap, CoverMap, CoverDistMap, LastChange, QAMap, SegLength, " \
+    "ChangeMagMap\n" \
     "\n\t[-o Output Folder with complete path]\n\n")
 
     print("\n\tExample: 1_apply_colormap.py -i C:/.../CCDCMap -name " + \
