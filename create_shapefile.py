@@ -224,9 +224,9 @@ def usage():
         "-help = Display this message\n"\
         "\n"\
         "***Note: Classes with large numbers of pixels may take a long time to process***\n"\
-        "\n\"
+        "\n"\
         "Example: \n"\
-        "create_shapefile.py -i C:\users\...\\file.tif""\
+        "create_shapefile.py -i C:\users\...\\file.tif"\
             + " -o C:\users\...\Output -x 202,608,1111\n"\
         "\n")
 
