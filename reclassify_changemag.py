@@ -43,7 +43,8 @@ def get_layers(infolder, pattern, y1, y2):
         rlist = the clipped list of change map raster files based on y1, y2
     """
 
-    templist = glob.glob("{a}/{b}*.tif".format( a=infolder , b=pattern))
+    templist = glob.glob("{a}{b}{c}*.tif".format
+                         ( a=infolder, b=os.sep, c=pattern))
 
     if y1==None or y2==None:
 
@@ -146,9 +147,9 @@ def get_outname(infile, outfolder, pat):
         outfile = the full path to the output file
     """
 
-    outfolder.replace("\\", "/")
+    # outfolder.replace("\\", "/")
 
-    outdir = "{a}/{b}_reclass".format( a=outfolder, b=pat )
+    outdir = "{a}{b}{c}_reclass".format( a=outfolder, b=os.sep, c=pat )
 
     indir, filex = os.path.split(infile)
     
@@ -158,7 +159,7 @@ def get_outname(infile, outfolder, pat):
 
     if not os.path.exists( outdir ): os.mkdir( outdir )
 
-    outfile = outdir + "/" + outname
+    outfile = outdir + os.sep + outname
 
     return outfile
 
@@ -243,6 +244,8 @@ def usage():
 #%%
 def main():
 
+    fromyear, toyear = None, None
+    
     argv = sys.argv
 
     if len(argv) <= 1:
@@ -276,11 +279,6 @@ def main():
             sys.exit(1)
 
         i += 1
-    
-    """# Test values
-    infolder = (r"C:/.../ChangeMaps")
-    fromyear, toyear = "1984", "2014"
-    """
     
     lookfor = "ChangeMagMap"
     

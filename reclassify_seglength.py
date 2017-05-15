@@ -44,7 +44,8 @@ def get_layers(infolder, pattern, y1, y2):
         rlist = the clipped list of change map raster files based on y1, y2
     """
 
-    templist = glob.glob("{a}/{b}*.tif".format( a=infolder , b=pattern))
+    templist = glob.glob("{a}{b}{c}*.tif".format
+                         ( a=infolder, b=os.sep, c=pattern))
 
     if y1==None or y2==None:
 
@@ -133,30 +134,32 @@ def array_calc(inarray):
     return outarray
 
 #%%
-def get_outname(infile, pat):
+def get_outname(infile, outfolder, pat):
 
     """Generate the output directory and filename
 
     Args:
         infile = the input directory
+        outfolder = the output directory
         pat = name of the product being reclassified (e.g. ChangeMagMap)
     Returns:
         outfile = the full path to the output file
     """
 
-    indir, infile = os.path.split(infile)
+    # outfolder = outfolder.replace("\\", "/")
 
-    outdir = "{a}/{b}_reclass".format( a=indir, b=pat )
+    outdir = "{a}{b}{c}_reclass".format( a=outfolder, b=os.sep, c=pat )
 
-    outdir.replace("\\", "/")
+    # outdir.replace("\\", "/")
 
-    outname, ext = os.path.splitext(infile)
+    indir, filex = os.path.split(infile)
+    fname, ext = os.path.splitext(filex)
 
-    outname = outname + "_reclass" + ext
+    outname = fname + "_reclass" + ext
 
     if not os.path.exists( outdir ): os.mkdir( outdir )
 
-    outfile = outdir + "/" + outname
+    outfile = outdir + os.sep + outname
 
     return outfile
 
@@ -223,7 +226,8 @@ def write_raster(raster, srcarray, outfile):
 #%%
 def usage():
     
-    print("\n\t[-i Input File Directory]\n" \
+    print("\n\t[-i Input file directory]\n" \
+    "\t[-o Full path to the output directory]\n" \
     "\t[-from The start year]\n" \
     "\t[-to The end year]\n" \
     "\t[-help Display this message]\n\n")
@@ -238,6 +242,8 @@ def usage():
     
 #%%
 def main():
+    
+    fromyear, toyear = None, None
     
     argv = sys.argv
 
@@ -257,6 +263,10 @@ def main():
             i = i + 1
             infolder = argv[i]
 
+        elif arg == "-o":
+            i = i + 1
+            outfolder = argv[i]
+        
         elif arg == "-from":
             i = i + 1
             fromyear = argv[i]
@@ -271,22 +281,17 @@ def main():
 
         i += 1
     
-    """# Test values
-    infolder = (r"C:/...ChangeMaps")
-    fromyear, toyear = "1984", "2014"
-    """
-    
     lookfor = "SegLength"
 
     rasters = get_layers(infolder, lookfor, fromyear, toyear)
-    print rasters
+    
     for r in rasters:
 
         array = get_array(r)
 
         array = array_calc(array)
 
-        output = get_outname(r, lookfor)
+        output = get_outname(r, outfolder, lookfor)
 
         if not os.path.exists(output):
             

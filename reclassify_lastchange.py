@@ -13,7 +13,6 @@ Last updated on Tue Apr 25, 2017
     that can have a color map applied.
 3.  Write the array back to a raster file 
 
-***TODO: Implement a thing that does leap year things
 """
 
 import os, sys, glob, datetime
@@ -47,7 +46,8 @@ def get_layers(infolder, pattern, y1, y2):
         rlist = the clipped list of change map raster files based on y1, y2
     """
 
-    templist = glob.glob("{a}/{b}*.tif".format( a=infolder , b=pattern))
+    templist = glob.glob("{a}{b}{c}*.tif".format
+                         ( a=infolder, b=os.sep, c=pattern ))
 
     if y1==None or y2==None:
 
@@ -100,17 +100,19 @@ def array_calc(inarray):
         outarray = the input numpy array with modified values
     """
 
-    inarray = (inarray / 365.0) * 100
+    inarray = inarray.astype( dtype=np.float32 )
     
-    inarray = inarray.astype( dtype=np.uint16 )
+    inarray = (inarray / 365.0) * 100.0
+    
+    # inarray = inarray.astype( dtype=np.uint16 )
 
-    inarray[ (inarray == 0) ] = 0
-    inarray[ (inarray > 0) & (inarray <= 100)] = 1
-    inarray[ (inarray > 100) & (inarray <= 200) ] = 2
-    inarray[ (inarray > 200) & (inarray <= 300) ] = 3
-    inarray[ (inarray > 300) & (inarray <= 400) ]= 4
-    inarray[ (inarray > 400) & (inarray <= 500) ] = 5
-    inarray[ (inarray > 500) & (inarray <= 600) ] = 6
+    inarray [ (inarray == 0) ] = 0
+    inarray [ (inarray > 0) & (inarray <= 100)] = 1
+    inarray [ (inarray > 100) & (inarray <= 200) ] = 2
+    inarray [ (inarray > 200) & (inarray <= 300) ] = 3
+    inarray [ (inarray > 300) & (inarray <= 400) ]= 4
+    inarray [ (inarray > 400) & (inarray <= 500) ] = 5
+    inarray [ (inarray > 500) & (inarray <= 600) ] = 6
     inarray [ (inarray > 600) & (inarray <= 700) ] = 7
     inarray [ (inarray > 700) & (inarray <= 800) ] = 8
     inarray [ (inarray > 800) & (inarray <= 900) ] = 9
@@ -125,18 +127,17 @@ def array_calc(inarray):
     inarray [ (inarray > 1700) & (inarray <= 1800) ] = 18
     inarray [ (inarray > 1800) & (inarray <= 1900) ] = 19
     inarray [ (inarray > 1900) & (inarray <= 2000) ] = 20
-    inarray [ (inarray > 2100) & (inarray <= 2200) ] = 21
-    inarray [ (inarray > 2200) & (inarray <= 2300) ] = 22
-    inarray [ (inarray > 2300) & (inarray <= 2400) ] = 23
-    inarray [ (inarray > 2400) & (inarray <= 2500) ] = 24
-    inarray [ (inarray > 2500) & (inarray <= 2600) ] = 25
-    inarray [ (inarray > 2600) & (inarray <= 2700) ] = 26
-    inarray [ (inarray > 2700) & (inarray <= 2800) ] = 27
-    inarray [ (inarray > 2800) & (inarray <= 2900) ] = 28
-    inarray [ (inarray > 3000) & (inarray <= 3100) ] = 29
-    inarray [ (inarray > 3100) & (inarray <= 3200) ] = 30
-    inarray [ (inarray > 3200) & (inarray <= 3300) ] = 31
-    inarray [ (inarray > 3300)] = 32
+    inarray [ (inarray > 2000) & (inarray <= 2100) ] = 21
+    inarray [ (inarray > 2100) & (inarray <= 2200) ] = 22
+    inarray [ (inarray > 2200) & (inarray <= 2300) ] = 23
+    inarray [ (inarray > 2300) & (inarray <= 2400) ] = 24
+    inarray [ (inarray > 2400) & (inarray <= 2500) ] = 25
+    inarray [ (inarray > 2500) & (inarray <= 2600) ] = 26
+    inarray [ (inarray > 2600) & (inarray <= 2700) ] = 27
+    inarray [ (inarray > 2700) & (inarray <= 2800) ] = 28
+    inarray [ (inarray > 2800) & (inarray <= 2900) ] = 29
+    inarray [ (inarray > 2900) & (inarray <= 3000) ] = 30
+    inarray [ (inarray > 3000) ] = 31
 
     outarray = inarray.astype( dtype=np.uint8 )
 
@@ -155,9 +156,9 @@ def get_outname(infile, outfolder, pat):
         outfile = the full path to the output file
     """
     
-    outfolder = outfolder.replace("\\", "/")
+    # outfolder = outfolder.replace("\\", "/")
     
-    outdir = "{a}/{b}_reclass".format( a=outfolder, b=pat )
+    outdir = "{a}{b}{c}_reclass".format( a=outfolder, b=os.sep, c=pat )
 
     indir, filex = os.path.split(infile)
     fname, ext = os.path.splitext(filex)
@@ -166,7 +167,7 @@ def get_outname(infile, outfolder, pat):
 
     if not os.path.exists( outdir ): os.mkdir( outdir )
 
-    outfile = outdir + "/" + outname
+    outfile = outdir + os.sep + outname
 
     return outfile
 
@@ -183,8 +184,8 @@ def write_raster(raster, srcarray, outfile):
     Returns:
         None
     """
-    #=======================================================================
-    #Do some initial gdal stuff=============================================
+    # =======================================================================
+    # Do some initial gdal stuff=============================================
 
     src = gdal.Open(raster)
 
@@ -200,8 +201,8 @@ def write_raster(raster, srcarray, outfile):
 
     driver = src.GetDriver()
 
-    #GDALDriver::Create() method requires image size,
-    #num. of bands, and band type
+    # GDALDriver::Create() method requires image size,
+    # num. of bands, and band type
     outraster = driver.Create( outfile, cols, rows, 1, gdal.GDT_Byte )
 
     if outraster is None:
@@ -249,7 +250,9 @@ def usage():
     
 #%%
 def main():
-
+    
+    fromyear, toyear = None, None
+    
     argv = sys.argv
 
     if len(argv) <= 1:
@@ -284,11 +287,6 @@ def main():
 
         i += 1
     
-    """# Test Values
-    infolder = (r"C:/.../ChangeMaps")
-    fromyear, toyear = "1984", "2014"
-    """
-    
     lookfor = "LastChange"
 
     rasters = get_layers(infolder, lookfor, fromyear, toyear)
@@ -299,7 +297,7 @@ def main():
 
         array = array_calc(array)
 
-        #pprint.pprint(array)
+        # pprint.pprint(array)
 
         output = get_outname(r, outfolder, lookfor)
 
