@@ -83,12 +83,12 @@ def ComputMask(inputD, ProjRaster,W,S,E,N, cSize, DestiProj):
 	subprocess.call(runwarp, shell=True)
 
 def usage():
-	print ''
-	print('Usage: python 2_clip_refdata.py\n\n \
-	[-i Input File Directory] \n \
-	[-ref Input reference file(used for clipping)]\n \
-	[-o Output Folder with complete path]\n\n')
-	print ''
+
+	print('Usage: python 2_clip_refdata.py\n\n'\
+	'[-i Input File Directory] \n' \
+	'[-ref Input reference file(used for clipping)]\n' \
+	'[-o Output Folder with complete path]\n\n')
+	
 
 def main():
 	#RefFolder = None
