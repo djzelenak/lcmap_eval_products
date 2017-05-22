@@ -22,11 +22,6 @@ from pprint import pprint
 from osgeo import gdal
 
 #%%
-# indir = r"C:\Users\dzelenak\Workspace\LCMAP_Eval\ARD_h05v02\ChangeMaps2\ChangeMagMap_color"
-
-# outdir = r"C:\Users\dzelenak\Workspace\LCMAP_Eval\ARD_h05v02\graphs"
-
-#%%
 def get_rasters(indir):
 
     infiles = glob.glob(indir + os.sep + "*.tif")
@@ -234,10 +229,6 @@ def main():
             sys.exit(1)
 
         i += 1
-    
-    # infolder = r"C:\Users\dzelenak\Workspace\LCMAP_Eval\ARD_h05v02\ChangeMaps2\ChangeMap_color"
-
-    # outfolder = r"C:\Users\dzelenak\Workspace\LCMAP_Eval\ARD_h05v02\graphs"
     
     if not os.path.exists(outfolder): os.mkdir(outfolder)
 
