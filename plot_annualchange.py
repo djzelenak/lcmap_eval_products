@@ -72,7 +72,7 @@ def get_plots(ind, b, outdir, labels):
     fig.subplots_adjust(top=0.85)
      
     ax.set_xlabel("Year")
-    ax.set_ylabel("% of Total Pixels Changed")
+    ax.set_ylabel("% of Tile Changed")
     
     ax.bar(ind-width/2., b)
     
