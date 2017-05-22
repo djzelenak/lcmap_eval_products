@@ -46,25 +46,13 @@ def get_data(r):
     
     srcdata = src.GetRasterBand(1).ReadAsArray()
     
-    # N = len(list(np.unique(srcdata)))
-    
     a = np.copy(srcdata)
     
     a = a.flatten()
-    
-    # np.reshape(a, len(a))
-    
-    # a=np.squeeze(a)
-    
+
     a[a > 0] = 1 # reclassify any change to value 1
     
     b = np.bincount(a) # retrieve count of unique values in a
-    
-    # b = np.delete(b, 0) # remove value 0
-    
-    # ind = np.nonzero(b)[0] # get index values (0...N-1)
-    
-    # ind = np.arange(len(b))
     
     src, srcdata, a = None, None, None # close these datasets
      
@@ -82,9 +70,7 @@ def get_plots(ind, b, outdir, labels):
     ax = fig.add_subplot(111)
     
     fig.subplots_adjust(top=0.85)
-    
-   # ax.set_title("Year {}".format(y))
-    
+     
     ax.set_xlabel("Year")
     ax.set_ylabel("% of Total Pixels Changed")
     
@@ -95,8 +81,6 @@ def get_plots(ind, b, outdir, labels):
     ax.set_xticklabels(labels)
     
     plt.xticks(rotation = 90)
-    
-    # plt.xticks(np.arange(min(labels), max(labels)+1, 1.0))
     
     plt.xlim(0,len(labels))
     
@@ -122,8 +106,6 @@ def usage():
 
 #%%
 def main():
-
-    # fromyear, toyear = None, None
     
     argv = sys.argv
 
