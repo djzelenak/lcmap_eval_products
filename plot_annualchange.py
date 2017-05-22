@@ -71,85 +71,6 @@ def get_data(r):
     return b
 
 #%%
-def get_rgba():
-
-    # change "colormap" path as necessary
-    # colormap = r"C:\....\color_changemag.txt"
-
-    # 'hard-coded' color map copied directly from color_changemag.txt
-    clr_list = ['<Entry c1="128" c2="25" c3="0" c4="255"/>',\
-    '<Entry c1="143" c2="43" c3="0" c4="255"/>',\
-    '<Entry c1="158" c2="58" c3="0" c4="255"/>',\
-    '<Entry c1="173" c2="73" c3="2" c4="255"/>',\
-    '<Entry c1="191" c2="94" c3="4" c4="255"/>',\
-    '<Entry c1="207" c2="110" c3="6" c4="255"/>',\
-    '<Entry c1="224" c2="131" c3="9" c4="255"/>',\
-    '<Entry c1="240" c2="149" c3="12" c4="255"/>',\
-    '<Entry c1="245" c2="161" c3="5" c4="255"/>',\
-    '<Entry c1="247" c2="173" c3="0" c4="255"/>',\
-    '<Entry c1="250" c2="183" c3="0" c4="255"/>',\
-    '<Entry c1="252" c2="198" c3="0" c4="255"/>',\
-    '<Entry c1="255" c2="213" c3="0" c4="255"/>',\
-    '<Entry c1="255" c2="225" c3="0" c4="255"/>',\
-    '<Entry c1="255" c2="242" c3="0" c4="255"/>',\
-    '<Entry c1="255" c2="255" c3="0" c4="255"/>',\
-    '<Entry c1="225" c2="255" c3="31" c4="255"/>',\
-    '<Entry c1="191" c2="255" c3="54" c4="255"/>',\
-    '<Entry c1="160" c2="255" c3="71" c4="255"/>',\
-    '<Entry c1="133" c2="252" c3="93" c4="255"/>',\
-    '<Entry c1="104" c2="247" c3="111" c4="255"/>',\
-    '<Entry c1="78" c2="242" c3="132" c4="255"/>',\
-    '<Entry c1="50" c2="237" c3="150" c4="255"/>',\
-    '<Entry c1="0" c2="230" c3="168" c4="255"/>',\
-    '<Entry c1="25" c2="212" c3="174" c4="255"/>',\
-    '<Entry c1="35" c2="194" c3="186" c4="255"/>',\
-    '<Entry c1="41" c2="176" c3="194" c4="255"/>',\
-    '<Entry c1="40" c2="158" c3="201" c4="255"/>',\
-    '<Entry c1="40" c2="141" c3="209" c4="255"/>',\
-    '<Entry c1="35" c2="126" c3="217" c4="255"/>',\
-    '<Entry c1="27" c2="108" c3="222" c4="255"/>',\
-    '<Entry c1="0" c2="92" c3="230" c4="255"/>']
-
-    # use the following code if reading colormap from a .txt file
-    """
-    clr_list = []
-
-    with open(colormap, "r") as clr_txt:
-
-        for line in clr_txt:
-
-            clr_list.append(line)
-
-    del clr_list[0]
-    del clr_list[0]
-    del clr_list[0]
-    del clr_list[-1]
-    """
-
-    # create empty list object to contain rgba tuples
-    rgba = []
-
-    for i in range(len(clr_list)):
-
-        r = re.split("[  .]", clr_list[i])[1][4:-1]
-        r = (round( float(r) / 255.0, 2) )
-
-        g = re.split("[  .]", clr_list[i])[2][4:-1]
-        g = (round(float(g) / 255.0, 2) )
-
-        b = re.split("[  .]", clr_list[i])[3][4:-1]
-        b = (round(float(b) / 255.0, 2) )
-
-        a = re.split("[  .]", clr_list[i])[4][4:-3]
-        a = (float(a) / 255.0)
-
-        rgba.append( (r, g, b, a) )
-
-    # pprint(rgba)
-
-    return rgba
-
-#%%
 def get_plots(ind, b, outdir, labels):
     
     width= 0.8
@@ -240,8 +161,6 @@ def main():
     
     ind = np.arange(len(years))
     
-    # colors = get_rgba()
-    
     bv = []
     
     p = 1
@@ -253,9 +172,7 @@ def main():
         b = get_data(image)
         
         bv.append(b[1])
-        
-        # get_plots(ind, b, image, years[p-1], outfolder)
-        
+               
         p += 1
         
     for z in range(len(bv)):
