@@ -17,25 +17,42 @@ from matplotlib.ticker import MaxNLocator
 
 import numpy as np
 
-from pprint import pprint
+# from pprint import pprint
 
 from osgeo import gdal
 
 #%%
-def get_rasters(indir):
+def get_rasters(indir, y1, y2):
 
-    infiles = glob.glob(indir + os.sep + "*.tif")
+    if y1 is None: y1 = '1984'
     
-    # r = infiles[-1] # test for now
+    if y2 is None: y2 = '2015'
+    
+    infiles = glob.glob(indir + os.sep + "*.tif")
     
     yearlist = []
     
-    for r_i in infiles:
+    for f in range(len(infiles)-1, -1, -1):
     
-        temp_r = os.path.basename(r_i)
-        yearlist.append( re.split("[_ .]", temp_r)[1] )
+        temp_r = os.path.basename(infiles[f])
+        
+        temp_year = ( re.split("[_ .]", temp_r)[1] )
+        
+        if int(y2) < int(temp_year):
+            
+            del infiles[f]
+            
+        elif int(y1) > int(temp_year):
+            
+            del infiles[f]
+            
+        else:
+            
+            yearlist.append(temp_year)
+            
+    infiles.sort()
     
-    # y = yearlist[-1] # test for now
+    yearlist.sort()
     
     return infiles, yearlist
 
@@ -45,34 +62,34 @@ def get_data(r):
     src = gdal.Open(r, gdal.GA_ReadOnly)
     
     srcdata = src.GetRasterBand(1).ReadAsArray()
-    
-    a = np.copy(srcdata)
-    
-    a = a.flatten()
+            
+    srcdata = srcdata.flatten()
 
-    a[a > 0] = 1 # reclassify any change to value 1
+    srcdata[srcdata > 0] = 1 # reclassify any change to value 1
     
-    b = np.bincount(a) # retrieve count of unique values in a
+    b = np.bincount(srcdata) # retrieve count of unique values in a
     
-    src, srcdata, a = None, None, None # close these datasets
+    src, srcdata = None, None # close these datasets
      
     return b
 
 #%%
-def get_plots(ind, b, outdir, labels):
+def get_plots(ind, b, outdir, tile, labels):
     
     width= 0.8
     
     fig = plt.figure(figsize=(12,6))
     
-    fig.suptitle("Annual Rates of Change", fontsize = 18, fontweight="bold")
+    fig.suptitle("{} Annual Rates of Change".format(tile), \
+                 fontsize = 18, fontweight="bold")
     
     ax = fig.add_subplot(111)
     
     fig.subplots_adjust(top=0.85)
-     
+    
     ax.set_xlabel("Year")
-    ax.set_ylabel("% of Tile Changed")
+
+    ax.set_ylabel("% of Tile")
     
     ax.bar(ind-width/2., b)
     
@@ -95,6 +112,9 @@ def usage():
     
     print("\n\t[-i Full path to the input File Directory]\n" \
     "\t[-o Full path to the output location]\n" \
+    "\t[-frm The from year (1984 is default)]\n" \
+    "\t[-to The to year (2015 is default)]\n" \
+    "\t[-tile The tile name used for graph title]\n" \
     "\t[-help Display this message]\n\n")
 
     print("\n\tExample: plot_annualchange.py -i C:/.../CCDCMap -from " + \
@@ -106,6 +126,8 @@ def usage():
 
 #%%
 def main():
+
+    fromyear, toyear = None, None
     
     argv = sys.argv
 
@@ -127,25 +149,36 @@ def main():
             i = i + 1
             outfolder = argv[i]
 
+        elif arg == "-tile":
+            i = i + 1
+            tile = argv[i]
+        
+        elif arg == "-frm":
+            i = i + 1
+            fromyear = argv[i]
+            
+        elif arg == "-to":
+            i = i + 1
+            toyear = argv[i]
+        
         elif arg == "-help":
             usage()
             sys.exit(1)
 
         i += 1
-    
+       
     if not os.path.exists(outfolder): os.mkdir(outfolder)
-
-    rasters, years = get_rasters(infolder)
     
-    years = [int(years[s]) for s in range(len(years))]
+    rasters, years = get_rasters(infolder, fromyear, toyear)
     
-    label_years = np.array(years)
+    label_years = np.array([int(years[s]) for s in range(len(years))])
     
     ind = np.arange(len(years))
     
     bv = []
     
     p = 1
+    
     for image in rasters:
         
         print "\nWorking on plot for image %s of %s"\
@@ -153,17 +186,25 @@ def main():
         
         b = get_data(image)
         
-        bv.append(b[1])
-               
-        p += 1
+        if len(b) == 2:
         
+            bv.append(b[1])
+              
+            p += 1
+            
+        else:
+            
+            ind = np.delete(ind, p-1)
+
+            p += 1
+                    
     for z in range(len(bv)):
         
         bv[z] = float(bv[z]) / 25000000.0 * 100.0
     
     b_vals = np.array(bv)
 
-    get_plots(ind, b_vals, outfolder, label_years)    
+    get_plots(ind, b_vals, outfolder, tile, label_years)    
     
     return None
 
