@@ -27,7 +27,7 @@ gdal.UseExceptions()
 gdal.AllRegister()
 
 t1 = datetime.datetime.now()
-print t1.strftime("\n%Y-%m-%d %H:%M:%S\n\n")
+print (t1.strftime("\n%Y-%m-%d %H:%M:%S\n\n"))
 
 #%%
 def get_class_values(x):
@@ -95,7 +95,7 @@ def get_array(ds):
 
     if src_ds == None:
 
-        print 'Unable to open {}'.format(ds)
+        print ('Unable to open {}'.format(ds))
 
     src_array = src_ds.GetRasterBand(1).ReadAsArray()
 
@@ -137,8 +137,9 @@ def get_xraster(xarray, ds):
 
     #path to the temporary raster file
     path, fn = os.path.split(ds)
-    path.replace("\\", "/")
-    temp_raster = "{}/zzzz_band.tif".format(path)
+    
+    # path.replace("\\", "/")
+    temp_raster = "{}{}zzzz_band.tif".format(path, os.sep)
 
     src_ds = gdal.Open(ds)
 
@@ -193,12 +194,15 @@ def raster_to_shp(tempraster, newlayername):
     """
 
     temp_ds = gdal.Open(tempraster)
+    
     temp_band = temp_ds.GetRasterBand(1)
 
     prj = temp_ds.GetProjection()
 
     driver = ogr.GetDriverByName( "ESRI Shapefile" )
+    
     outshpfile = driver.CreateDataSource( newlayername + ".shp" )
+    
     outlayer = outshpfile.CreateLayer( newlayername, \
                                       srs=osr.SpatialReference(wkt=prj) )
 
@@ -213,22 +217,18 @@ def raster_to_shp(tempraster, newlayername):
 
 #%%
 def usage():
-    print ""
-    print ("\tUsage: Take an input thematic raster layer and a list of\n"\
-        "pixel class values to create a polygon shapefile for each class.\n"\
-        "\n"\
-        "Arguments:\n"\
-        "-i    = The full path to the input thematic raster file\n"\
-        "-o    = The full path to the output location\n"\
-        "-x    = The target pixel class values separated by commas and no spaces\n"\
-        "-help = Display this message\n"\
-        "\n"\
-        "***Note: Classes with large numbers of pixels may take a long time to process***\n"\
-        "\n"\
-        "Example: \n"\
-        "create_shapefile.py -i C:\users\...\\file.tif"\
-            + " -o C:\users\...\Output -x 202,608,1111\n"\
-        "\n")
+
+    print("\n\tUsage: Take an input thematic raster layer and a list of\n"\
+    "\tpixel class values to create a polygon shapefile for each class.\n"\
+    "\n\t[-i the full path to the input raster file]\n"\
+    "\t[-o the full path to the output shapefile]\n"\
+    "\t[-x the target pixel classes separated by commas and no spaces]\n"\
+    "\t[-help display this message]\n"\
+    "\n\t***Note: Classes with larger quantities may take a long time to process***\n")
+
+
+    print("\tExample: python create_shapefile.py -i C:\... -o C:\... "\
+          "-x 202,608,1111\n")
 
     return None
 
@@ -238,8 +238,9 @@ def main():
     argv = sys.argv
 
     if len(argv) <= 1:
-        print "\n***Missing required arguments***"
-        print "Try -help\n"
+
+        print ("\n***Missing required arguments***\nTry -help\n")
+
         sys.exit(0)
 
     i = 1
@@ -280,14 +281,14 @@ def main():
 
             tempfile = get_xraster(srcarray, infile)
 
-            print "creating new shapefile for class ", str(q)
-            print "saving to ", os.path.split(outlayer)[0], "\n"
+            print ("creating new shapefile for class ", str(q))
+            print ("saving to ", os.path.split(outlayer)[0], "\n")
 
             raster_to_shp(tempfile, outlayer)
             
         else:
             
-            print outlayer + ".shp already exists"
+            print (outlayer + ".shp already exists")
 
     return None
 
@@ -298,6 +299,6 @@ if __name__ == '__main__':
 
 #%%
 t2 = datetime.datetime.now()
-print t2.strftime("\n\n%Y-%m-%d %H:%M:%S")
+print (t2.strftime("\n\n%Y-%m-%d %H:%M:%S"))
 tt = t2 - t1
-print "\nProcessing time: " + str(tt)
+print ("\nProcessing time: " + str(tt))
