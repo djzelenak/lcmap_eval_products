@@ -21,7 +21,7 @@ except ImportError:
 print sys.version
 
 t1 = datetime.datetime.now()
-print "\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n")
+print("\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
 #driver = gdal.GetDriverByName("GTiff")
 #driver.Register()
@@ -324,7 +324,7 @@ def main():
 
     if len(argv) < 3:
         
-        print "\n\tMissing one or more arguments:\n "
+        print("\n\tMissing one or more arguments:\n ")
         
         usage()
         
@@ -380,10 +380,9 @@ def main():
             
             if not os.path.exists(outfiles[x]):
             
-                print "\nGenerating raster file {a} from: ".format \
-                ( a = os.path.basename(outfiles[x]) )
+                print("\nGenerating raster file {a} from: ".format( a = os.path.basename(outfiles[x]) ) )
                 
-                print os.path.basename(infiles[x])
+                print(os.path.basename(infiles[x]))
                 
                 do_calc(outfiles[x], None, infiles[x])
         
@@ -391,11 +390,9 @@ def main():
             
             if not os.path.exists(outfiles[x]):
             
-                print "\nGenerating raster file {a} from:".format \
-                ( a = os.path.basename(outfiles[x]) )
+                print("\nGenerating raster file {a} from:".format( a = os.path.basename(outfiles[x]) ) )
                 
-                print os.path.basename(outfiles[x-1]), " and ", \
-                os.path.basename(infiles[x])
+                print(os.path.basename(outfiles[x-1]), " and ", os.path.basename(infiles[x]))
                 
                 do_calc(outfiles[x], outfiles[x-1], infiles[x])
                 
@@ -410,7 +407,7 @@ if __name__ == '__main__':
 
 #%%
 t2 = datetime.datetime.now()
-print "\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S")
+print ("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
 
 tt = t2 - t1
-print "Processing time: " + str(tt),"\n"
+print ("Processing time: " + str(tt),"\n")
