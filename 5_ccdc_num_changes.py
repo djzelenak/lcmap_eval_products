@@ -363,9 +363,13 @@ def main():
 
         i += 1
     
-
     if not os.path.exists(outputdir): os.mkdir(outputdir)
 
+    # create a new subdirectory based on the "from" and "to" years to keep accumulated sets organized
+    outputdir = outputdir + os.sep + "{a}_{b}".format(fromY, toY)
+    
+    if not os.path.exists(outputdir): os.mkdir(outputdir)
+    
     infiles = get_inlayers(inputdir, fromY, toY)
     
     outfiles = get_outlayers(infiles, outputdir)
