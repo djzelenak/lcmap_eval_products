@@ -12,13 +12,15 @@ import os, sys, datetime, glob, subprocess
 
 import numpy as np
 
+from shutil import copy2
+
 try:
     from osgeo import gdal
     #from osgeo.gdalconst import *
 except ImportError:
     import gdal
 
-print sys.version
+print(sys.version)
 
 t1 = datetime.datetime.now()
 print("\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
@@ -261,11 +263,11 @@ def add_color(outdir, raster):
     namex = os.path.basename(raster)
     name = os.path.splitext(namex)[0]
     
-    if not os.path.exists(outdir + os.sep + "Color"):
+    if not os.path.exists(outdir + os.sep + "color"):
         
-        os.mkdir(outdir + os.sep + "Color")
+        os.mkdir(outdir + os.sep + "color")
     
-    outfile = outdir + os.sep + "Color" + os.sep + namex
+    outfile = outdir + os.sep + "color" + os.sep + namex
     
     clr_table = "color_numchanges.txt"
     
@@ -275,7 +277,7 @@ def add_color(outdir, raster):
         
         os.remove(outcsv_file)
 
-    with open(outcsv_file, 'wb') as outcsv2_file:
+    with open(outcsv_file, 'w') as outcsv2_file:
             
         outcsv2_file.write(str(raster) + "\r\n")
 
@@ -296,6 +298,35 @@ def add_color(outdir, raster):
     
         os.remove(v)
     
+    
+    return None
+
+def clean_up(outdir):
+    
+    """Purpose: Remove duplicate files in the output directory, move the 
+    rasters with colortable added from /color to the main output directory.
+    
+    Args:
+        outdir = string, the full path to the output directory
+        
+    Return:
+        None
+    """
+    # remove the original uncolored rasters first
+    rlist = glob.glob(outdir + os.sep + "*.tif")
+    
+    for r in rlist: os.remove(r)
+    
+    # copy the colored rasters to the main output directory
+    nlist = glob.glob(outdir + os.sep + "color" + os.sep + "*.tif")
+    
+    for n in nlist: copy2(n, outdir)
+    
+    # remove the old copies of the colored rasters
+    for n in nlist: os.remove(n)
+    
+    # remove the /color directory
+    os.removedirs(outdir + os.sep + "color")
     
     return None
     
@@ -366,7 +397,7 @@ def main():
     if not os.path.exists(outputdir): os.mkdir(outputdir)
 
     # create a new subdirectory based on the "from" and "to" years to keep accumulated sets organized
-    outputdir = outputdir + os.sep + "{a}_{b}".format(fromY, toY)
+    outputdir = outputdir + os.sep + "{a}_{b}".format(a=fromY, b=toY)
     
     if not os.path.exists(outputdir): os.mkdir(outputdir)
     
@@ -390,13 +421,15 @@ def main():
             
             if not os.path.exists(outfiles[x]):
             
-                print("\nGenerating raster file {a} from:".format( a = os.path.basename(outfiles[x]) ) )
+                print("\nGenerating raster file {a} from:".format( a = os.path.basename(outfiles[x]) ))
                 
                 print(os.path.basename(outfiles[x-1]), " and ", os.path.basename(infiles[x]))
                 
                 do_calc(outfiles[x], outfiles[x-1], infiles[x])
                 
         add_color(outputdir, outfiles[x])
+        
+    clean_up( outputdir )
     
     return None
 
@@ -407,7 +440,7 @@ if __name__ == '__main__':
 
 #%%
 t2 = datetime.datetime.now()
-print ("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
+print("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
 
 tt = t2 - t1
-print ("Processing time: " + str(tt),"\n")
+print("Processing time: " + str(tt),"\n")
