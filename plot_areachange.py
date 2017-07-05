@@ -40,7 +40,7 @@ def get_data(r):
 
     a_unique = np.arange(np.amax(srcdata) + 1)
 
-    b = np.bincount(srcdata) # retrieve count of unique values in a
+    b = np.bincount(srcdata) # retrieve count of unique values in srcdata array
 
     src, srcdata = None, None # close these datasets
 
@@ -49,8 +49,22 @@ def get_data(r):
 #%%
 def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
 
-    width= 0.8
-
+    """Purpose: Generate the Matplotlib bar plots.
+    
+    Args:
+        ind = numpy array for the number of changes, used for the x-axis
+        b = numpy array of the percent of tile for a given number of changes, used
+            for the y-axis
+        outdir = string, the full path to the output location where the graph
+            will be saved as a .png file
+        tile = the ARD tile name, used for the title of the graph
+        labels = list of integers, the years of observations used to label the
+        x-axis ticks
+    
+    Return:
+        None
+    """
+            
     fig = plt.figure(figsize=(12,6))
 
     fig.suptitle("{} Area of Accumulated Change between {} and {}".format(tile, y1, y2),\
@@ -65,9 +79,13 @@ def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
     ax.set_xlabel("Number of Changes")
     ax.set_ylabel("% of Tile")
 
-    ax.bar(ind-width/2., b)
-
-    ax.xaxis.set_major_locator(MaxNLocator(len(ind)))
+    # ax.bar(ind-width/2., b)
+    ax.bar(ind, b, align="center")
+    
+    # ax.xaxis.set_major_locator(MaxNLocator(len(ind)))
+    
+    ax.set_xticks(np.arange(0, len(ind)))
+    # ax.set_xticklabels(labels)
 
     plt.xlim(0,len(ind))
 
@@ -88,8 +106,6 @@ def usage():
     print("\n\tExample: plot_areachange.py -i C:/.../CCDCMap -from " + \
           "-o C:/.../graphs -tile h05v02")
 
-    print ""
-
     return None
 
 #%%
@@ -100,8 +116,8 @@ def main():
     argv = sys.argv
 
     if len(argv) <= 1:
-        print "\n***Missing required arguments***"
-        print "Try -help\n"
+        print ("\n***Missing required arguments***")
+        print ("Try -help\n")
         sys.exit(0)
 
     i = 1
