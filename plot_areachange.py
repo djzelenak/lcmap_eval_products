@@ -14,8 +14,6 @@ import os, sys, glob #, re
 
 import matplotlib.pyplot as plt
 
-from matplotlib.ticker import MaxNLocator
-
 import numpy as np
 
 # from pprint import pprint
@@ -79,13 +77,9 @@ def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
     ax.set_xlabel("Number of Changes")
     ax.set_ylabel("% of Tile")
 
-    # ax.bar(ind-width/2., b)
     ax.bar(ind, b, align="center")
-    
-    # ax.xaxis.set_major_locator(MaxNLocator(len(ind)))
-    
+       
     ax.set_xticks(np.arange(0, len(ind)))
-    # ax.set_xticklabels(labels)
 
     plt.xlim(0,len(ind))
 
