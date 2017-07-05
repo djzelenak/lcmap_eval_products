@@ -110,7 +110,7 @@ def get_plots(ind, b, outdir, tile, labels):
 
     plt.xticks(rotation = 90)
 
-    plt.xlim(0,len(labels))
+    plt.xlim(-0.5, len(labels))
 
     outgraph = outdir + os.sep + "annual_change.png"
 
