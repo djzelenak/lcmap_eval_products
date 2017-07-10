@@ -106,12 +106,31 @@ def get_plots(ind, b, outdir, tile, labels):
 
     ax.set_ylabel("% of Tile")
 
-    ax.bar(ind, b, align="center")
+    rects = ax.bar(ind, b, align="center")
 
     plt.xticks(rotation = 90)
 
-    plt.xlim(-0.5, len(labels))
+    plt.xlim([-0.5, len(labels)])
+    
+    plt.ylim([0, max(b) + 2])
 
+    def autolabel(rects, ax):
+        
+        (y_bottom, y_top) = ax.get_ylim()
+        y_height = y_top - y_bottom
+        
+        for rect in rects:
+            
+            height = rect.get_height()
+            
+            label_position = height + (y_height * 0.01)
+            
+            ax.text(rect.get_x() + rect.get_width()/2., label_position, 
+                    "{:02.2f}%".format(height),
+                    ha = "center", va="bottom", fontsize=8, rotation=65)
+    
+    autolabel(rects, ax)
+    
     outgraph = outdir + os.sep + "annual_change.png"
 
     plt.savefig(outgraph, dpi=200, bbox_inches="tight")

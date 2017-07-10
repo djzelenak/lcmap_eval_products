@@ -14,8 +14,6 @@ import os, sys, glob #, re
 
 import matplotlib.pyplot as plt
 
-from matplotlib.ticker import MaxNLocator
-
 import numpy as np
 
 # from pprint import pprint
@@ -79,16 +77,14 @@ def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
     ax.set_xlabel("Number of Changes")
     ax.set_ylabel("% of Tile")
 
-    # ax.bar(ind-width/2., b)
-    # ax.bar(ind, b, align="center")
     rects = ax.bar(ind, b, align="center")
-    # ax.xaxis.set_major_locator(MaxNLocator(len(ind)))
     
     ax.set_xticks(np.arange(-1, len(ind)))
-    # ax.set_xticklabels(labels)
-
+    
     plt.xlim(-0.5, len(ind))
 
+    plt.ylim([0, max(b) + 5])
+    
     def autolabel(rects, ax):
         
         (y_bottom, y_top) = ax.get_ylim()
@@ -98,18 +94,16 @@ def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
             
             height = rect.get_height()
             
-            print(height)
-            
             label_position = height + (y_height * 0.01)
             
             ax.text(rect.get_x() + rect.get_width()/2., label_position, 
                     "{:02.2f}%".format(height),
-                    ha = "center", va="bottom", fontsize=8)
+                    ha = "center", va="bottom", fontsize=8, rotation=45)
     
     autolabel(rects, ax)
     
     outgraph = outdir + os.sep + "area_change.png"
-
+    
     plt.savefig(outgraph, dpi=200, bbox_inches="tight")
 
     return None
