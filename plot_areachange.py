@@ -88,6 +88,7 @@ def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
     def autolabel(rects, ax):
         
         (y_bottom, y_top) = ax.get_ylim()
+        
         y_height = y_top - y_bottom
         
         for rect in rects:
