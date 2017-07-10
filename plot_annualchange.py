@@ -112,15 +112,12 @@ def get_plots(ind, b, outdir, tile, labels):
 
     plt.xlim([-0.5, len(labels)])
     
-    plt.ylim([0, max(b) + 2])
+    plt.ylim([0, max(b) * 1.1])
 
     def autolabel(rects, ax):
-        """
-        Add value labels to the top of each bar.
-        source: http://composition.al/blog/2015/11/29/a-better-way-to-add-labels-to-bar-charts-with-matplotlib/
-        """
         
         (y_bottom, y_top) = ax.get_ylim()
+        
         y_height = y_top - y_bottom
         
         for rect in rects:
@@ -205,32 +202,32 @@ def main():
 
     # numpy array containing year values for the plot a-axis tick labels
     label_years = np.array([int(years[s]) for s in range(len(years))])
+    # pprint(label_years)
 
     # numpy array to be used for the plot x-axis tick marks
     ind = np.arange(len(years))
+    # pprint(ind)
 
     bin_count_vals = []
 
-    p = 1
-
-    for image in rasters:
+    for c, image in enumerate(rasters):
 
         print ("\nWorking on plot for image %s of %s"\
-                %(str(p), str(len(rasters))) )
+                %(c + 1, len(rasters)) )
 
         bin_count = get_data(image)
 
         if len(bin_count) == 2:
-
+            # bin_count[0] = number of 0-value pixels
+            # bin_count[1] = number of recoded 1-value pixels
             bin_count_vals.append(bin_count[1])
 
-            p += 1
+            # p += 1
 
         else:
-
-            ind = np.delete(ind, p-1)
-
-            p += 1
+            # case where the entire tile is 0
+            
+            bin_count_vals.append(0)
     
     for num, bin_val in enumerate(bin_count_vals):
 

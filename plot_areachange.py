@@ -83,13 +83,9 @@ def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
     
     plt.xlim(-0.5, len(ind))
 
-    plt.ylim([0, max(b) + 5])
+    plt.ylim([0, max(b) * 1.1])
     
     def autolabel(rects, ax):
-        """
-        Add value labels to the top of each bar.
-        source: http://composition.al/blog/2015/11/29/a-better-way-to-add-labels-to-bar-charts-with-matplotlib/
-        """
         
         (y_bottom, y_top) = ax.get_ylim()
         y_height = y_top - y_bottom
