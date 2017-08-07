@@ -169,7 +169,7 @@ def usage():
      "\n\t*Output raster will be saved in the same format "\
      "as input raster (GTiff).\n\n"
 
-     "\tExample: 6_ccdc_lcchange.py -i /.../CoverMaps -from 1984 -to 2015"\
+     "\tExample: 4_ccdc_lc_change.py -i /.../CoverMaps -from 1984 -to 2015"\
      " int 1 -o /.../OutputFolder -name CoverPrim")
 
     return None
