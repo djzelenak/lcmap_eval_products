@@ -328,15 +328,17 @@ def clean_up(outdir):
 def usage():
 
     print("\t[-i Full path to the directory where annual CCDC "\
-              "change layers are saved]\n" \
+              "cover map layers are saved]\n" \
      "\t[-from The start year]\n" \
      "\t[-to The end year]\n" \
+     "\t[-name the cover map product name]\n" \
+     "\t\tCoverPrim or CoverSec are valid names\n" \
      "\t[-o Full path to the output folder]\n" \
      "\n\t*Output raster will be saved in the same format "\
      "as input raster (GTiff).\n\n"
 
-     "\tExample: 5_ccdc_num_changes.py -i /.../ChangeMaps -from 1984 -to 2015"\
-     " -o /.../OutputFolder\n")
+     "\tExample: 5_ccdc_cover_changes.py -i /.../ChangeMaps -from 1984 -to 2015"\
+     " -o /.../OutputFolder\n -name CoverPrim")
 
     return None
 
