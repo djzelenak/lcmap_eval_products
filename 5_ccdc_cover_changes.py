@@ -142,9 +142,15 @@ def do_calc(in_files, out_r):
             # countable change, so replace it with the value that exists in 
             # the following year.
             holder[ holder == 9 ] = tempdata[ holder == 9 ]
+            
+            # Do the same for any "missing data" class 0 instances
+            holder[ holder == 0 ] = tempdata [ holder == 0]
        
         # recode class 9 to previous non-9 class value (i.e. no change)
         tempdata[ tempdata == 9 ] = holder[ tempdata == 9 ]
+        
+        # do the same for class 0
+        tempdata[ tempdata == 0 ] = holder[ tempdata == 0 ]
         
         # any classes in current year that don't equal the class in holder
         # are flagged as change with value of 1
