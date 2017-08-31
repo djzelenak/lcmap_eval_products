@@ -1,13 +1,16 @@
-'''
-Create change layers from user defined time frame and interval (annuals).
-Author: Devendra Dahal
-Date:    8/5/2015
+"""
 Last Updated: 2/2/2017 by Dan Zelenak to work on LCSRLNST01,
 2/6/2017 to compute CCDC vs NLCD land cover from-to comparison (output 32-bit raster)
 8/31/2017 updating to Python 3.6
-'''
+"""
 
-import os, sys, traceback, datetime, glob, subprocess
+import datetime
+import glob
+import os
+import subprocess
+import sys
+import traceback
+
 print (sys.version)
 
 t1 = datetime.datetime.now()
