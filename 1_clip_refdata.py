@@ -5,7 +5,7 @@ Last Updated: 1/10/2017, 2/2/2017 by Dan Zelenak
 '''
 
 import os, sys, traceback, datetime, glob, subprocess, pprint
-print sys.version
+print (sys.version)
 
 #GDALpath = '/usr/bin'
 
@@ -16,7 +16,7 @@ except ImportError:
 	import gdal	
 	
 t1 = datetime.datetime.now()
-print t1.strftime("%Y-%m-%d %H:%M:%S")
+print (t1.strftime("%Y-%m-%d %H:%M:%S"))
 
 def GetExtent(gt,cols,rows):
     ''' Return list of corner coordinates from a geotransform
@@ -44,7 +44,7 @@ def GetExtent(gt,cols,rows):
     return ext
 
 def GetGeoInfo(SourceDS):
-	print 'running GetGeoInfo function'
+	print ('running GetGeoInfo function')
 	# NDV 		= SourceDS.GetRasterBand(1).GetNoDataValue()
 	cols 		= SourceDS.RasterXSize
 	rows 		= SourceDS.RasterYSize
@@ -74,7 +74,7 @@ def NewRasterID(inFile,cols, rows,GeoTras, Projs, Value,OutFile):
 """
 	
 def ComputMask(inputD, ProjRaster,W,S,E,N, cSize, DestiProj):
-	print '\n running ComputMask function'
+	print ('\n running ComputMask function')
 	inMSSFile = gdal.Open(inputD)
 	InXsize, InYsize, InGeoT, InProj, bands, extent = GetGeoInfo(inMSSFile)
 	
@@ -84,9 +84,9 @@ def ComputMask(inputD, ProjRaster,W,S,E,N, cSize, DestiProj):
 
 def usage():
 
-	print('Usage: python 2_clip_refdata.py\n\n'\
-	'[-i Input File Directory] \n' \
-	'[-ref Input reference file(used for clipping)]\n' \
+	print('Usage: python 2_clip_refdata.py\n\n'
+	'[-i Input File Directory] \n'
+	'[-ref Input reference file(used for clipping)]\n'
 	'[-o Output Folder with complete path]\n\n')
 	
 
@@ -97,7 +97,7 @@ def main():
 		argv = sys.argv
 			
 		if argv is None:
-			print "try -help"
+			print ("try -help")
 			sys.exit(0)
 		## Parse command line arguments.
 		i = 1
@@ -128,15 +128,15 @@ def main():
 			i += 1
 
 		inputList = sorted(glob.glob(inputDir + os.sep + '*.img'))	
-		print 'Input Ref File List:\n'
+		print ('Input Ref File List:\n')
 		pprint.pprint(inputList)
 		
 		for inputD in inputList:
 			
 			#RefFile = '%s/ChangeMap_2000.tif' %(RefFolder) #arbitrary selection for reference file
-			print 'The reference file used for clipping is: {}\n'.format(os.path.basename(RefFile))
+			print ('The reference file used for clipping is: {}\n'.format(os.path.basename(RefFile)))
 		
-			print '\tWorking on ', os.path.basename(inputD)
+			print ('\tWorking on ', os.path.basename(inputD))
 			if not os.path.exists(outputDir):
 				os.makedirs(outputDir)
 
@@ -145,9 +145,9 @@ def main():
 			tifMSSFile = gdal.Open(RefFile)
 			Desxsize, Desysize, DesGeoT, DestiProj, desbands, dExt = GetGeoInfo(tifMSSFile)
 			
-			print '\n------------------------'
-			print 'Extent of the out layer:\n\t\t\t',dExt[3][1],'\n\n\t',dExt[0][0],'\t\t\t',dExt[2][0],'\n\n\t\t\t',dExt[1][1]
-			print '------------------------\n'
+			print ('\n------------------------')
+			print ('Extent of the out layer:\n\t\t\t',dExt[3][1],'\n\n\t',dExt[0][0],'\t\t\t',dExt[2][0],'\n\n\t\t\t',dExt[1][1])
+			print ('------------------------\n')
 			W = str(dExt[0][0])
 			S = str(dExt[1][1])
 			E = str(dExt[2][0])
@@ -162,14 +162,14 @@ def main():
 			tifMSSFile = None
 		
 	
-		print "\nAll done"
+		print ("\nAll done")
 	except:
-		print "Processed halted on the way."
-		print traceback.format_exc()
+		print ("Processed halted on the way.")
+		print (traceback.format_exc())
 
 if __name__ == '__main__':
 	main()
 t2 = datetime.datetime.now()
-print t2.strftime("%Y-%m-%d %H:%M:%S")
+print (t2.strftime("%Y-%m-%d %H:%M:%S"))
 tt = t2 - t1
-print "\nProcessing time: " + str(tt) 
+print ("\nProcessing time: " + str(tt))

@@ -45,17 +45,25 @@ def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
 
         if not os.path.exists(ccdc_file):
 
-            print ("Need to compute change layers for CCDC year {} to year {}".format(FromY, ToY))
+            ccdc_file = "{}{}ccdc{}to{}cl.tif".format(CCDCdir, os.sep, fromY, toY)
 
-            sys.exit(1)
+            if not os.path.exists(ccdc_file):
+
+                print ("Need to compute change layers for CCDC year {} to year {}".format(FromY, ToY))
+
+                sys.exit(0)
 
         nlcd_file = "{}{}nlcd{}to{}cl.tif".format(NLCDdir, os.sep, fromY, toY)
 
         if not os.path.exists(nlcd_file):
 
-            print ("Need to compute change layers for NLCD year {} to year {}".format(FromY, ToY))
+            nlcd_file = "{}{}nlcd{}to{}cl.tif".format(NLCDdir, os.sep, FromY, ToY)
 
-            sys.exit(1)
+            if not os.path.exists(nlcd_file):
+
+                print ("Need to compute change layers for NLCD year {} to year {}".format(FromY, ToY))
+
+                sys.exit(0)
 
         bandFile = '{a}{b}nlcd{c}to{d}cl_ccdc{c}to{d}cl.tif'.format(a=OutDir, b=os.sep, c=fromY, d=toY)
 
