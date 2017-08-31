@@ -83,7 +83,7 @@ def do_calc(name, file1, file2, outdir):
     y1 = os.path.basename(file1).split("_")[1][:4]
     y2 = os.path.basename(file2).split("_")[1][:4]
 
-    ofile = outdir + os.sep + "{}{}to{}lc.tif".format(name, y1, y2)
+    ofile = outdir + os.sep + "{}{}to{}cl.tif".format(name, y1, y2)
 
     driver = gdal.GetDriverByName("GTiff")
 

@@ -3,8 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fb71cf6d-08c2-453e-a05e-360494cafcc3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/1_clip_refdata.py" afterPath="$PROJECT_DIR$/1_clip_refdata.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" afterPath="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/4_refdata_lc_change.py" afterPath="$PROJECT_DIR$/4_refdata_lc_change.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -40,14 +39,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="6_ccdc_nlcd_cover_diff.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="6_ccdc_nlcd_cover_diff.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="47" column="82" lean-forward="true" selection-start-line="47" selection-start-column="82" selection-end-line="47" selection-end-column="82" />
+            <state relative-caret-position="731">
+              <caret line="61" column="45" lean-forward="true" selection-start-line="61" selection-start-column="45" selection-end-line="61" selection-end-column="45" />
               <folding>
                 <element signature="e#189#204#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="4_refdata_lc_change.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/4_refdata_lc_change.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="289">
+              <caret line="91" column="0" lean-forward="true" selection-start-line="91" selection-start-column="0" selection-end-line="91" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -63,13 +72,13 @@
       <list>
         <option value="$PROJECT_DIR$/1_reclassify_changemag.py" />
         <option value="$PROJECT_DIR$/4_trendsera_lc_change.py" />
-        <option value="$PROJECT_DIR$/4_refdata_lc_change.py" />
         <option value="$PROJECT_DIR$/plot_annualchange.py" />
         <option value="$PROJECT_DIR$/plot_areachange.py" />
         <option value="$PROJECT_DIR$/7_plot_annualchange.py" />
         <option value="$PROJECT_DIR$/7_plot_areachange.py" />
         <option value="$PROJECT_DIR$/1_clip_refdata.py" />
         <option value="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" />
+        <option value="$PROJECT_DIR$/4_refdata_lc_change.py" />
       </list>
     </option>
   </component>
@@ -233,7 +242,14 @@
       <option name="project" value="LOCAL" />
       <updated>1504210254144</updated>
     </task>
-    <option name="localTasksCounter" value="5" />
+    <task id="LOCAL-00005" summary="fixed issue with finding correct year in filename">
+      <created>1504211687750</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1504211687750</updated>
+    </task>
+    <option name="localTasksCounter" value="6" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -267,7 +283,8 @@
     <MESSAGE value="various fixes" />
     <MESSAGE value="various fixes, removed more unnecessary files" />
     <MESSAGE value="even more fixes for update to Python 3.6" />
-    <option name="LAST_COMMIT_MESSAGE" value="even more fixes for update to Python 3.6" />
+    <MESSAGE value="fixed issue with finding correct year in filename" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed issue with finding correct year in filename" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -296,14 +313,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="3485">
           <caret line="206" column="19" lean-forward="true" selection-start-line="206" selection-start-column="19" selection-end-line="206" selection-end-column="19" />
-          <folding />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/4_refdata_lc_change.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-940">
-          <caret line="69" column="0" lean-forward="true" selection-start-line="69" selection-start-column="0" selection-end-line="69" selection-end-column="0" />
           <folding />
         </state>
       </provider>
@@ -346,11 +355,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="47" column="82" lean-forward="true" selection-start-line="47" selection-start-column="82" selection-end-line="47" selection-end-column="82" />
+        <state relative-caret-position="731">
+          <caret line="61" column="45" lean-forward="true" selection-start-line="61" selection-start-column="45" selection-end-line="61" selection-end-column="45" />
           <folding>
             <element signature="e#189#204#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/4_refdata_lc_change.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="91" column="0" lean-forward="true" selection-start-line="91" selection-start-column="0" selection-end-line="91" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
