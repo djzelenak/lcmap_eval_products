@@ -7,9 +7,11 @@ Last Updated: 2/2/2017 by Dan Zelenak to work on LCSRLNST01,
 import datetime
 import glob
 import os
-import subprocess
 import sys
 import traceback
+
+from osgeo import gdal
+import numpy as np
 
 print (sys.version)
 
@@ -59,12 +61,23 @@ def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
 
         if not os.path.exists(bandFile):
 
+            ccdc = read_data(ccdc_file)
+            nlcd = read_data(nlcd_file)
+
+            results = np.zeros_like(ccdc["data"], dtype=np.float32)
+
+            results = ccdc["data"] * 10000.0 + nlcd["data"]
+
+            write_raster(bandFile, ccdc["geo"], ccdc["prj"], ccdc["cols"], ccdc["rows"], results)
+
+
+
             # Only process if the output file doesn't already exist
             # The first 3 or 4 digits are NLCD classes, last 4 digits are CCDC classes
-            runCalc  = 'gdal_calc --format GTiff --type {type} -A {file_A} -B {file_B} --outfile {outfile} --calc="( * 10000.0 + B)" '\
-                .format(type='Int32', file_A=nlcd_file, file_B=ccdc_file, outfile=bandFile)
+            # runCalc  = 'gdal_calc --format GTiff --type {type} -A {file_A} -B {file_B} --outfile {outfile} --calc="(A * 10000.0 + B)" '\
+                # .format(type='Int32', file_A=nlcd_file, file_B=ccdc_file, outfile=bandFile)
 
-            subprocess.call(runCalc, shell=True)
+            # subprocess.call(runCalc, shell=True)
 
         else:
 
@@ -73,6 +86,52 @@ def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
     except:
 
         print (traceback.format_exc())
+
+def read_data(file_name):
+    """
+    
+    :param file_name: <string> path to the input file 
+    :return: <dict>
+    """
+
+    src = gdal.Open(file_name, gdal.GA_ReadOnly)
+    src_data = src.GetRasterBand(1).ReadAsArray()
+    src_geo = src.GetGeoTransform()
+    src_prj = src.GetProjection()
+    cols = src.RasterXSize
+    rows = src.RasterYSize
+
+    return {"data" : src_data, "geo" : src_geo, "prj" : src_prj, "cols" : cols, "rows" : rows}
+
+def write_raster(file_name, geo, prj, cols, rows, out_array):
+    """
+    
+    :param file_name: <str>
+    :param geo: <tuple>
+    :param prj: <str>
+    :param cols: <int>
+    :param rows: <int>
+    :param out_array: <numpy.ndarray>
+    :return: 
+    """
+
+    driver = gdal.GetDriverByName('GTiff')
+
+    out_file = driver.Create(file_name, cols, rows, 1, gdal.GDT_Float32)
+
+    out_band = out_file.GetRasterBand(1)
+    out_band.WriteArray(out_array, 0, 0)
+
+    out_band.FlushCache()
+    out_band.SetNoDataValue(0)
+
+    out_file.SetGeoTransform(geo)
+    out_file.SetProjection(prj)
+
+    out_file = None
+
+    return None
+
 
 def usage():
 

@@ -212,7 +212,7 @@ def write_raster(raster, srcarray, outfile):
     outband.WriteArray(srcarray, 0, 0)
 
     #=======================================================================
-    #save data to the disk and set the nodata value=========================
+    #save data to the disk and set the no data value=========================
     outband.FlushCache()
     outband.SetNoDataValue(255)
 
