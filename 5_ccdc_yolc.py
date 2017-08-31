@@ -204,7 +204,7 @@ def allCalc(inDir, outDir, FileFormat, FromY, ToY):
 			os.remove(outcsv_File)
 
 		with open(outcsv_File, 'wb') as outcsv2_File:
-			outcsv2_File.write(str(temp_out2) + "\r\n")
+			outcsv2_File.write(temp_out2.encode('utf-8') + "\r\n".encode('utf-8'))
 
 		out_VRT = '{0}{1}zzzz_{2}-{3}.vrt'.format(outDir, os.sep, FromY[-2:], ToY[-2:])
 		com	= '%s/gdalbuildvrt -q -input_file_list %s %s' % (GDALPath, outcsv_File, out_VRT)
