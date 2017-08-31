@@ -17,14 +17,10 @@ try:
 except ImportError:
     import gdal
 
-print sys.version
+print (sys.version)
 
 t1 = datetime.datetime.now()
-print "\n", t1.strftime("%Y-%m-%d %H:%M:%S")
-
-#GDALpath = "/usr/bin"
-#GDALpath = r"C:\Users\dzelenak\AppData\Local\Continuum\Anaconda2\envs" + \
-#                "\python27gdal\Library\bin"
+print ("\n", t1.strftime("%Y-%m-%d %H:%M:%S"))
 
 gdal.UseExceptions()
 gdal.AllRegister()
@@ -66,7 +62,7 @@ def add_color_table(in_file, clr_table, dtype):
     for line in txt_read:
 
         write = r"%s" % line
-
+                 
         out_txt.write(write)
 
         # insert color table following keywords
@@ -113,12 +109,21 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
     #Generate a temporary output raster file--------------------------------
     tempoutfile = outputdir + os.sep + "zzzz_" + \
                    os.path.basename(infile) + ".tif"
+    
     runsubset   = "gdal_translate -of %s -b %s -q %s %s"\
                    % ("GTiff", "1", infile, tempoutfile)
+    
     subprocess.call(runsubset, shell=True)
 
     #write temporary raster file path to this .csv file (required for VRT)
-    open_csv.write(str(tempoutfile) + "\r\n")
+    
+    if sys.version[0] == '3':
+    
+        open_csv.write(tempoutfile.encode("utf-8") + ("\r\n").encode("utf-8"))
+        
+    else:
+        
+        open_csv.write(tempoutfile + "\r\n")
 
     open_csv.close()
 
@@ -126,8 +131,10 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
     #Genereate temporary VRT file based on temp raster listed in .csv file
     temp_VRT =  outputdir + os.sep +  "zzzz_" + \
                 os.path.basename(infile) + ".vrt"
+    
     com      = "gdalbuildvrt -q -input_file_list %s %s"\
                 % (outcsv_file, temp_VRT)
+    
     subprocess.call(com, shell=True)
 
     #subprocess.call(com, shell=True)
@@ -138,6 +145,7 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
     #Write the VRT w/ color table added to the output raster file
     runCom  = "gdal_translate -of %s -q %s %s"\
                % ("GTiff", color_VRT, outfile)
+    
     subprocess.call(runCom, shell=True)
 
     """
@@ -195,8 +203,6 @@ def usage():
     print("\n\tExample: 1_apply_colormap_ref.py -i C:/.../NLCD -name " + \
           "nlcd -o C:/.../OutputFolder\n")
 
-    print ""
-
     return None
 
 #%%
@@ -206,7 +212,7 @@ def main():
 
     if argv is None:
 
-        print "try -help"
+        print ("try -help")
 
         sys.exit(1)
 
@@ -245,15 +251,18 @@ def main():
 
     outputdir = "{}{}{}_color".format(outdir, os.sep, name)
 
+    if name == "trends": name = "Trends"
+
     filelist = sorted(glob.glob("{}{}{}*.tif".format(indir, os.sep, name) ) )
-    print filelist
+    print (filelist)
+    
     if not os.path.exists(outputdir):
 
         os.makedirs(outputdir)
 
-    print "\nFiles are saving in", outputdir, "\n"
+    print ("\nFiles are saving in", outputdir, "\n")
 
-    names = ["nlcd", "trends"]
+    names = ["nlcd", "Trends"]
 
     colortables = ["color_nlcd.txt", "color_trends.txt"]
 
@@ -275,7 +284,8 @@ def main():
 
         if not os.path.exists(outfile):
 
-            print "Processing file ", r, "\n"
+            print ("Processing file ", r, "\n")
+            
             # Call the primary function
             allCalc(r, outputdir, outfile, clrtable, dtype)
 
@@ -288,6 +298,6 @@ if __name__ == "__main__":
 
 #%%
 t2 = datetime.datetime.now()
-print t2.strftime("%Y-%m-%d %H:%M:%S")
+print (t2.strftime("%Y-%m-%d %H:%M:%S"))
 tt = t2 - t1
-print "\nProcessing time: " + str(tt)
+print ("\nProcessing time: " + str(tt))

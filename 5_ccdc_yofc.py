@@ -4,20 +4,16 @@
 '''
 Author: Dan Zelenak
 Last Updated: 5/12/2017
-Description:  Go through ChangeMap layers in reverse
-and flag each pixel with the first year in which a change
-is detected.  The resulting raster will show the last year that change
-occurred for each pixel.
+Description:  Go through ChangeMap layers and flag each pixel with the 
+first year in which a change is detected.  The resulting raster will show 
+the first year that change occurred for each pixel.
 '''
 
 import os, sys, datetime, glob, subprocess, re
 
 import numpy as np
 
-print sys.version
-
-# GDALPath = '/usr/bin'
-#GDALPath = r'C:\Users\dzelenak\Workspace\Testing\LCMAP_Tools\dist'
+print (sys.version)
 
 try:
     from osgeo import gdal
@@ -26,7 +22,7 @@ except ImportError:
     import gdal
 
 t1 = datetime.datetime.now()
-print "Processing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n")
+print ("Processing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
 gdal.AllRegister()
 gdal.UseExceptions()
@@ -82,7 +78,8 @@ def do_calc(in_f, temp_f):
     
     year_value = int(re.split("[_ .]", fname)[1])
     
-    if temp_f == None:
+    # if temp_f == None:
+    if not np.any(temp_f):
         
         srcdata_holder = np.copy(srcdata)
         
@@ -92,7 +89,8 @@ def do_calc(in_f, temp_f):
 
         return srcdata_holder
 
-    elif temp_f != None:
+    # elif temp_f != None:
+    elif np.any(temp_f):
 
         srcdata_holder = np.copy(srcdata)
 
@@ -234,8 +232,8 @@ def add_color(outdir, raster):
     """Add a color map to the created raster files
     
     Args:
-        outdir = The full path to the output folder
-        raster = The current raster being worked on
+        outdir = <string> The full path to the output folder
+        raster = <string> The current raster being worked on
         
     Return:
         None
@@ -260,7 +258,7 @@ def add_color(outdir, raster):
 
     with open(outcsv_file, 'wb') as outcsv2_file:
             
-        outcsv2_file.write(str(raster) + "\r\n")
+        outcsv2_file.write(raster.encode('utf-8') + "\r\n".encode('utf-8'))
 
     temp_vrt = '{}{}zzzz_{}.vrt'.format(outdir, os.sep, name)
     com      = 'gdalbuildvrt -q -input_file_list %s %s' \
@@ -284,7 +282,7 @@ def add_color(outdir, raster):
 
 #%%
 def usage():
-    print('\nUsage:python 5_ccdc_yolc.py\n\n \
+    print('\nUsage:python 5_ccdc_yofc.py\n\n \
     [\t-i Full path to the directory containing the CCDC annual change layers] \n\
     [\t-frm From Year]\n \
     [\t-to To Year]\n \
@@ -347,7 +345,7 @@ def main():
 
     for x in range(len(in_files)):
 
-        print "\nProcessing file ", os.path.basename(in_files[x])
+        print ("\nProcessing file ", os.path.basename(in_files[x]))
         
         if x == 0:
 
@@ -374,7 +372,7 @@ if __name__ == '__main__':
     main()
 
 t2 = datetime.datetime.now()
-print "\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S")
+print ("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
 
 tt = t2 - t1
-print "Processing time: " + str(tt),"\n"
+print ("Processing time: " + str(tt),"\n")

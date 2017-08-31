@@ -25,7 +25,7 @@ gdal.UseExceptions()
 gdal.AllRegister()
 
 t1 = datetime.datetime.now()
-print t1.strftime("\n%Y-%m-%d %H:%M:%S\n\n")
+print (t1.strftime("\n%Y-%m-%d %H:%M:%S\n\n"))
 
 #%%
 def get_layers(infolder, pattern, y1, y2):
@@ -157,7 +157,7 @@ def get_outname(infile, outfolder, pat):
 
     outname = outname + "_reclass" + ext
 
-    if not os.path.exists( outdir ): os.mkdir( outdir )
+    if not os.path.exists( outdir ): os.makedirs( outdir )
 
     outfile = outdir + os.sep + outname
 
@@ -237,8 +237,6 @@ def usage():
     print("\n\tExample: reclassify_changemag.py -i C:/.../CCDCMap -from " + \
           "1984 -to 2015")
 
-    print ""
-
     return None
 
 #%%
@@ -249,8 +247,8 @@ def main():
     argv = sys.argv
 
     if len(argv) <= 1:
-        print "\n***Missing required arguments***"
-        print "Try -help\n"
+        print ("\n***Missing required arguments***")
+        print ("Try -help\n")
         sys.exit(0)
 
     i = 1
@@ -296,7 +294,7 @@ def main():
 
         if not os.path.exists(output):
             
-            print "Processing image ", r
+            print ("Processing image ", r)
 
             write_raster(r, array, output)
 
@@ -309,7 +307,7 @@ if __name__ == "__main__":
 
 #%%
 t2 = datetime.datetime.now()
-print t2.strftime("\n\n%Y-%m-%d %H:%M:%S")
+print (t2.strftime("\n\n%Y-%m-%d %H:%M:%S"))
 tt = t2 - t1
-print "\nProcessing time: " + str(tt)
+print ("\nProcessing time: " + str(tt))
 

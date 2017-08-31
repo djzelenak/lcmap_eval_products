@@ -2,11 +2,14 @@
 # -*- coding: utf-8 -*-
 """
 Author: Dan Zelenak
+
 Last Updated: 8/7/2017
+
 Usage: Calculate the number of changes per pixel across all available
-ChangeMap layers.  Alternatively can specify a 'from' and 'to' and the script
+CoverMap layers.  Alternatively can specify a 'from' and 'to' and the script
 will calculate the number of changes for each year interval within
 the given range.
+
 """
 import os, sys, datetime, glob, subprocess
 
@@ -31,17 +34,21 @@ gdal.UseExceptions()
 #%%
 def get_inlayers(infolder, name, y1, y2):
 
-    """Generate a list of the input change map layers with full paths
+    """
+    
+    Generate a list of the input Cover Map layers with full paths
 
     Args:
-        infolder = the directory containing the annual change map layers
-        y1 = the 'from' year
-        y2 = the 'to' year
+        infolder: <string> the directory containing the annual cover map layers
+        y1: <string> the 'from' year
+        y2: <string> the 'to' year
 
     Returns:
-        templist = the complete list of change map raster files
+        templist: <list> contains strings of full paths to all cover map layers
         - or -
-        flist = the clipped list of change map raster files based on y1, y2
+        flist: <list> contains strings of full paths to cover map layers in
+                range of y1 and y2
+    
     """
 
     templist = glob.glob("{}{}{}*.tif".format(infolder, os.sep, name ))
@@ -63,15 +70,19 @@ def get_inlayers(infolder, name, y1, y2):
 #%%
 def get_outlayers(inrasters, outfolder, name):
 
-    """Generate a list of output rasters containing full paths
+    """
+    
+    Generate a list of output rasters containing full paths
 
     Args:
-        inrasters = list of the input rasters containing full paths
-        outfolder = the full path to the output folder
-        name = the name of the cover product
+        inrasters: <list> list of the input rasters containing full paths
+        outfolder: <string> the full path to the output folder
+        name: <string> the name of the cover product
 
     Return:
-        outlist = list of output rasters to be created
+        outlist: <list> list of full paths to output rasters
+        years: <list> list of years as strings
+    
     """
 
     years = []
@@ -92,15 +103,18 @@ def get_outlayers(inrasters, outfolder, name):
 #%%
 def do_calc(in_files, out_r):
 
-    """Generate the output layers and add color ramps for the default
+    """
+    
+    Generate the output layers and add color ramps for the default
     from/to years (i.e. the min and max years present)
 
     Args:
-        in_files = the current input raster filelist
-        out_r = the output raster file
+        in_files: <list> contains strings representing full paths to input rasters
+        out_r: <string> the full path of the output raster file
 
     Returns:
         None
+    
     """
 
     driver = gdal.GetDriverByName("GTiff")
@@ -190,14 +204,18 @@ def do_calc(in_files, out_r):
 #%%
 def add_color_table(in_vrt, clr_table, dtype):
 
-    """Write color map info to a VRT file
+    """
+    
+    Write color map info to a VRT file
 
     Args:
-        in_vrt = the input VRT file
-        clr_table = the input color table (.txt)
-        dtype = the bit depth of the original raster
+        in_vrt: <string> path to the input VRT file
+        clr_table: <string> path to the input color table (.txt)
+        dtype: <string> the bit depth of the original raster
+    
     Return:
-        out_vrt = the VRT with color map info written to it
+        out_vrt: <string> path to the VRT with color map info written to it
+    
     """
 
 
@@ -250,14 +268,17 @@ def add_color_table(in_vrt, clr_table, dtype):
 #%%
 def add_color(outdir, raster):
 
-    """Add a color map to the created raster files
+    """
+    
+    Add a color map to the created raster files
 
     Args:
-        outdir = The full path to the output folder
-        raster = The current raster being worked on
+        outdir: <string> path to the output folder
+        raster: <string> path to the current raster being worked on
 
     Return:
         None
+    
     """
 
     namex = os.path.basename(raster)
@@ -301,16 +322,20 @@ def add_color(outdir, raster):
 
     return None
 
+#%%
 def clean_up(outdir):
 
-    """Purpose: Remove duplicate files in the output directory, move the
+    """
+    
+    Remove duplicate files in the output directory, move the
     rasters with colortable added from /color to the main output directory.
 
     Args:
-        outdir = string, the full path to the output directory
+        outdir: <string> the full path to the output directory
 
     Return:
         None
+    
     """
     # remove the original uncolored rasters first
     rlist = glob.glob(outdir + os.sep + "*.tif")
@@ -402,13 +427,19 @@ def main():
 
     if not os.path.exists(outputdir): os.mkdir(outputdir)
 
+    if fromY is None: fromY = "1984"
+    
+    if toY is None: toY = "2015"
+    
     # create a new subdirectory based on the "from" and "to" years
     # to keep accumulated sets organized
     outputdir = outputdir + os.sep + "{a}_{b}".format(a=fromY, b=toY)
 
-    if not os.path.exists(outputdir): os.mkdir(outputdir)
+    if not os.path.exists(outputdir): os.makedirs(outputdir)
     
     infiles = get_inlayers(inputdir, name, fromY, toY)
+    
+    print("Input Files are:\n".format(infiles))
 
     outfiles, years = get_outlayers(infiles, outputdir, name)
 

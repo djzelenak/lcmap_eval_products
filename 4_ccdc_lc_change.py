@@ -135,7 +135,7 @@ def do_calc(in_files, out_files):
                 if outfile is None:
             
                     print ("\nCould not create image file {a}".format
-                           ( a=os.path.basename(out_file[index]) ))
+                           ( a=os.path.basename(out_files[index]) ))
             
                     sys.exit(1)
             
