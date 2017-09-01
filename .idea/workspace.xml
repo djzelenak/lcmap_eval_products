@@ -2,7 +2,6 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fb71cf6d-08c2-453e-a05e-360494cafcc3" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/6_ccdc_ref_cover_diff.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" afterPath="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" />
     </list>
@@ -15,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="6_ccdc_nlcd_cover_diff.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="6_ccdc_nlcd_cover_diff.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="527">
-              <caret line="51" column="102" lean-forward="true" selection-start-line="51" selection-start-column="102" selection-end-line="51" selection-end-column="102" />
+            <state relative-caret-position="408">
+              <caret line="53" column="23" lean-forward="true" selection-start-line="53" selection-start-column="23" selection-end-line="53" selection-end-column="23" />
               <folding>
                 <element signature="e#189#204#0" expanded="true" />
               </folding>
@@ -27,7 +26,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="6_ccdc_ref_cover_diff.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="6_ccdc_ref_cover_diff.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/6_ccdc_ref_cover_diff.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="221">
@@ -68,8 +67,8 @@
         <option value="$PROJECT_DIR$/5_ccdc_num_changes.py" />
         <option value="$PROJECT_DIR$/5_nlcd_num_changes.py" />
         <option value="$PROJECT_DIR$/5_trends_num_changes.py" />
-        <option value="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" />
         <option value="$PROJECT_DIR$/6_ccdc_ref_cover_diff.py" />
+        <option value="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" />
       </list>
     </option>
   </component>
@@ -292,7 +291,14 @@
       <option name="project" value="LOCAL" />
       <updated>1504295534492</updated>
     </task>
-    <option name="localTasksCounter" value="14" />
+    <task id="LOCAL-00014" summary="automatically look in ccdc lc change subdirectory">
+      <created>1504296925304</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1504296925304</updated>
+    </task>
+    <option name="localTasksCounter" value="15" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -421,7 +427,7 @@
         <state relative-caret-position="3706">
           <caret line="218" column="45" lean-forward="false" selection-start-line="218" selection-start-column="45" selection-end-line="218" selection-end-column="45" />
           <folding>
-            <element signature="e#216#227#0" expanded="true" />
+            <element signature="e#216#227#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -431,7 +437,7 @@
         <state relative-caret-position="548">
           <caret line="34" column="46" lean-forward="true" selection-start-line="34" selection-start-column="46" selection-end-line="34" selection-end-column="46" />
           <folding>
-            <element signature="e#270#298#0" expanded="true" />
+            <element signature="e#270#298#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -476,7 +482,7 @@
         <state relative-caret-position="-137">
           <caret line="336" column="78" lean-forward="false" selection-start-line="336" selection-start-column="78" selection-end-line="336" selection-end-column="78" />
           <folding>
-            <element signature="e#330#339#0" expanded="true" />
+            <element signature="e#330#339#0" expanded="false" />
           </folding>
         </state>
       </provider>
@@ -499,22 +505,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="527">
-          <caret line="51" column="102" lean-forward="true" selection-start-line="51" selection-start-column="102" selection-end-line="51" selection-end-column="102" />
-          <folding>
-            <element signature="e#189#204#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/6_ccdc_ref_cover_diff.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="221">
           <caret line="13" column="18" lean-forward="true" selection-start-line="13" selection-start-column="18" selection-end-line="13" selection-end-column="18" />
           <folding>
             <element signature="e#260#275#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="53" column="23" lean-forward="true" selection-start-line="53" selection-start-column="23" selection-end-line="53" selection-end-column="23" />
+          <folding>
+            <element signature="e#189#204#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -45,13 +45,13 @@ def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
 
         if not os.path.exists(ccdc_file):
 
-            ccdc_file = "{dir}{sep}{y1}_{y2}{sep}ccdc{y1}to{y2}cl.tif".format(dir=CCDCdir, sep=os.sep, y1=fromY, y2=toY)
+            ccdc_file = "{dir}{sep}2001_2011{sep}ccdc{y1}to{y2}cl.tif".format(dir=CCDCdir, sep=os.sep, y1=FromY, y2=ToY)
 
-            if not os.path.exists(ccdc_file):
+        if not os.path.exists(ccdc_file):
 
-                print ("Need to compute change layers for CCDC year {} to year {}".format(FromY, ToY))
+            print ("Need to compute change layers for CCDC year {} to year {}".format(FromY, ToY))
 
-                sys.exit(0)
+            sys.exit(0)
 
         nlcd_file = "{}{}nlcd{}to{}cl.tif".format(NLCDdir, os.sep, fromY, toY)
 
