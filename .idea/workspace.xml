@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fb71cf6d-08c2-453e-a05e-360494cafcc3" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/5_nlcd_num_changes.py" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/5_nlcd_change_freq.py" afterPath="" />
+      <change type="DELETED" beforePath="$PROJECT_DIR$/5_trends_change_freq.py" afterPath="" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/5_ccdc_num_changes.py" afterPath="$PROJECT_DIR$/5_ccdc_num_changes.py" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/5_nlcd_change_freq.py" afterPath="$PROJECT_DIR$/5_nlcd_change_freq.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/5_nlcd_num_changes.py" afterPath="$PROJECT_DIR$/5_nlcd_num_changes.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -28,11 +28,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="5_nlcd_num_changes.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="5_nlcd_num_changes.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/5_nlcd_num_changes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="421">
-              <caret line="336" column="83" lean-forward="true" selection-start-line="336" selection-start-column="83" selection-end-line="336" selection-end-column="83" />
+            <state relative-caret-position="-4991">
+              <caret line="97" column="32" lean-forward="false" selection-start-line="97" selection-start-column="32" selection-end-line="97" selection-end-column="32" />
               <folding>
                 <element signature="e#330#339#0" expanded="true" />
               </folding>
@@ -40,11 +40,11 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="5_ccdc_num_changes.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="5_ccdc_num_changes.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/5_ccdc_num_changes.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-140">
-              <caret line="347" column="78" lean-forward="true" selection-start-line="347" selection-start-column="78" selection-end-line="347" selection-end-column="78" />
+            <state relative-caret-position="47">
+              <caret line="397" column="0" lean-forward="true" selection-start-line="397" selection-start-column="0" selection-end-line="397" selection-end-column="0" />
               <folding>
                 <element signature="e#332#341#0" expanded="true" />
               </folding>
@@ -89,8 +89,8 @@
         <option value="$PROJECT_DIR$/4_refdata_lc_change.py" />
         <option value="$PROJECT_DIR$/try_argparser.py" />
         <option value="$PROJECT_DIR$/5_nlcd_change_freq.py" />
-        <option value="$PROJECT_DIR$/5_nlcd_num_changes.py" />
         <option value="$PROJECT_DIR$/5_ccdc_num_changes.py" />
+        <option value="$PROJECT_DIR$/5_nlcd_num_changes.py" />
       </list>
     </option>
   </component>
@@ -271,14 +271,20 @@
       <option name="project" value="LOCAL" />
       <updated>1504213219036</updated>
     </task>
-    <option name="localTasksCounter" value="8" />
+    <task id="LOCAL-00008" summary="various fixes">
+      <created>1504292392465</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1504292392465</updated>
+    </task>
+    <option name="localTasksCounter" value="9" />
     <servers />
   </component>
   <component name="ToolWindowManager">
     <frame x="1272" y="-8" width="1296" height="1040" extended-state="6" />
-    <editor active="true" />
     <layout>
-      <window_info id="Project" active="false" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1933657" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
+      <window_info id="Project" active="true" anchor="left" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="true" show_stripe_button="true" weight="0.1933657" sideWeight="0.5" order="0" side_tool="false" content_ui="combo" />
       <window_info id="TODO" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="6" side_tool="false" content_ui="tabs" />
       <window_info id="Event Log" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="true" content_ui="tabs" />
       <window_info id="Version Control" active="false" anchor="bottom" auto_hide="false" internal_type="DOCKED" type="DOCKED" visible="false" show_stripe_button="true" weight="0.33" sideWeight="0.5" order="7" side_tool="false" content_ui="tabs" />
@@ -302,13 +308,13 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="VcsManagerConfiguration">
-    <MESSAGE value="various fixes" />
     <MESSAGE value="various fixes, removed more unnecessary files" />
     <MESSAGE value="even more fixes for update to Python 3.6" />
     <MESSAGE value="fixed issue with finding correct year in filename" />
     <MESSAGE value="fixed filename error" />
     <MESSAGE value="added new files" />
-    <option name="LAST_COMMIT_MESSAGE" value="added new files" />
+    <MESSAGE value="various fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="various fixes" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -439,22 +445,22 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/5_nlcd_num_changes.py">
+    <entry file="file://$PROJECT_DIR$/5_ccdc_num_changes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="421">
-          <caret line="336" column="83" lean-forward="true" selection-start-line="336" selection-start-column="83" selection-end-line="336" selection-end-column="83" />
+        <state relative-caret-position="47">
+          <caret line="397" column="0" lean-forward="true" selection-start-line="397" selection-start-column="0" selection-end-line="397" selection-end-column="0" />
           <folding>
-            <element signature="e#330#339#0" expanded="true" />
+            <element signature="e#332#341#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/5_ccdc_num_changes.py">
+    <entry file="file://$PROJECT_DIR$/5_nlcd_num_changes.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-140">
-          <caret line="347" column="78" lean-forward="true" selection-start-line="347" selection-start-column="78" selection-end-line="347" selection-end-column="78" />
+        <state relative-caret-position="-4991">
+          <caret line="97" column="32" lean-forward="false" selection-start-line="97" selection-start-column="32" selection-end-line="97" selection-end-column="32" />
           <folding>
-            <element signature="e#332#341#0" expanded="true" />
+            <element signature="e#330#339#0" expanded="true" />
           </folding>
         </state>
       </provider>

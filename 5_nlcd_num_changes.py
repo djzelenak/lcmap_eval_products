@@ -54,7 +54,7 @@ def get_inlayers(infolder, y1, y2):
         rlist = the clipped list of change map raster files based on y1, y2
     """
 
-    templist = glob.glob("{a}{b}ChangeMap*.tif".format(a=infolder, b=os.sep))
+    templist = glob.glob("{a}{b}nlcd*.tif".format(a=infolder, b=os.sep))
 
     templist.sort()
 
@@ -95,7 +95,7 @@ def get_outlayers(inrasters, outfolder):
         years.append(name[-4:])
 
     for i in range(len(inrasters)):
-        rlist.append("{a}{b}ccdc{c}to{d}ct.tif".format \
+        rlist.append("{a}{b}nlcd{c}to{d}ct.tif".format \
                          (a=outfolder, b=os.sep, c=years[0], d=years[i]))
 
     return rlist
@@ -326,15 +326,15 @@ def clean_up(outdir):
 
 # %%
 def usage():
-    print("\t[-i Full path to the directory where annual CCDC "
-          "change layers are saved]\n"
+    print("\t[-i Full path to the directory where NLCD LC "
+          "layers are saved]\n"
           "\t[-from The start year]\n"
           "\t[-to The end year]\n"
           "\t[-o Full path to the output folder]\n"
           "\n\t*Output raster will be saved in the same format "
           "as input raster (GTiff).\n\n"
 
-          "\tExample: 5_ccdc_num_changes.py -i /.../ChangeMaps -from 1984 -to 2015"
+          "\tExample: 5_nlcd_num_changes.py -i /.../NLCD -from 1992 -to 2001"
           " -o /.../OutputFolder\n")
 
     return None
