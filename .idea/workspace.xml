@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fb71cf6d-08c2-453e-a05e-360494cafcc3" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/5_trends_num_changes.py" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" afterPath="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -14,11 +14,11 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="6_ccdc_nlcd_cover_diff.py" pinned="false" current-in-tab="false">
+      <file leaf-file-name="6_ccdc_nlcd_cover_diff.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="238">
-              <caret line="41" column="38" lean-forward="false" selection-start-line="41" selection-start-column="38" selection-end-line="41" selection-end-column="38" />
+            <state relative-caret-position="374">
+              <caret line="30" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
               <folding>
                 <element signature="e#189#204#0" expanded="true" />
               </folding>
@@ -38,7 +38,7 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="5_trends_num_changes.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="5_trends_num_changes.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/5_trends_num_changes.py">
           <provider selected="true" editor-type-id="text-editor">
             <state relative-caret-position="-137">
@@ -95,13 +95,13 @@
         <option value="$PROJECT_DIR$/7_plot_annualchange.py" />
         <option value="$PROJECT_DIR$/7_plot_areachange.py" />
         <option value="$PROJECT_DIR$/1_clip_refdata.py" />
-        <option value="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" />
         <option value="$PROJECT_DIR$/4_refdata_lc_change.py" />
         <option value="$PROJECT_DIR$/try_argparser.py" />
         <option value="$PROJECT_DIR$/5_nlcd_change_freq.py" />
         <option value="$PROJECT_DIR$/5_ccdc_num_changes.py" />
         <option value="$PROJECT_DIR$/5_nlcd_num_changes.py" />
         <option value="$PROJECT_DIR$/5_trends_num_changes.py" />
+        <option value="$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py" />
       </list>
     </option>
   </component>
@@ -310,7 +310,14 @@
       <option name="project" value="LOCAL" />
       <updated>1504293029997</updated>
     </task>
-    <option name="localTasksCounter" value="12" />
+    <task id="LOCAL-00012" summary="added new file">
+      <created>1504293444470</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1504293444470</updated>
+    </task>
+    <option name="localTasksCounter" value="13" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -348,7 +355,8 @@
     <MESSAGE value="added new files" />
     <MESSAGE value="various fixes" />
     <MESSAGE value="fixed year indices in filename str" />
-    <option name="LAST_COMMIT_MESSAGE" value="fixed year indices in filename str" />
+    <MESSAGE value="added new file" />
+    <option name="LAST_COMMIT_MESSAGE" value="added new file" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -469,16 +477,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="238">
-          <caret line="41" column="38" lean-forward="false" selection-start-line="41" selection-start-column="38" selection-end-line="41" selection-end-column="38" />
-          <folding>
-            <element signature="e#189#204#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/5_ccdc_num_changes.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="47">
@@ -505,6 +503,16 @@
           <caret line="336" column="78" lean-forward="false" selection-start-line="336" selection-start-column="78" selection-end-line="336" selection-end-column="78" />
           <folding>
             <element signature="e#330#339#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/6_ccdc_nlcd_cover_diff.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="30" column="0" lean-forward="true" selection-start-line="30" selection-start-column="0" selection-end-line="30" selection-end-column="0" />
+          <folding>
+            <element signature="e#189#204#0" expanded="true" />
           </folding>
         </state>
       </provider>

@@ -29,7 +29,7 @@ def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
 
             os.makedirs(OutDir)
 
-        inCCDCList = glob.glob(CCDCdir + os.sep + "*.tif")
+        inCCDCList = glob.glob("{dir}{sep}{y1}_{y2}{sep}*.tif".format(dir=CCDCdir, sep=os.sep, y1=FromY, y2=ToY))
 
         inNLCDList = glob.glob(NLCDdir + os.sep + "*.tif")
 
@@ -149,8 +149,8 @@ def usage():
     \t[-from From Year]\n \
     \t[-to To Year]\n \
     \t[-o Output Folder with complete path]\n\n \
-    \tExample:\n\tpython 6_ccdc_nlcd_cover_diff.py -ccdc path_to_ccdc -nlcd path_to_nlcd -from 1992 -to 2001 \n \
-    \t\t-o path_to_output\n')
+    \tExample:\n\tpython 6_ccdc_nlcd_cover_diff.py -ccdc path_to_ccdc \n\t -nlcd path_to_nlcd -from 1992 -to 2001 \n \
+    \t-o path_to_output\n')
     
     sys.exit(0)
 
