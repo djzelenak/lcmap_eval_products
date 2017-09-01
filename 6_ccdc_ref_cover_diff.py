@@ -19,74 +19,64 @@ t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S"))
 
 
-def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
+def allCalc(ccdcdir, refdir, outdir, name, yyyy1, yyyy2):
     try:
 
         # Extract last 2 digits from years to use for naming
-        fromY, toY = FromY[-2:], ToY[-2:]
+        yy1, yy2 = yyyy1[-2:], yyyy2[-2:]
 
-        if not os.path.exists(OutDir):
-            os.makedirs(OutDir)
+        if not os.path.exists(outdir):
+            os.makedirs(outdir)
 
-        inCCDCList = glob.glob("{dir}{sep}{y1}_{y2}{sep}*.tif".format(dir=CCDCdir, sep=os.sep, y1=FromY, y2=ToY))
+        ccdc_list = glob.glob("{dir}{sep}{y1}_{y2}{sep}*.tif".format(dir=ccdcdir, sep=os.sep, y1=yyyy1, y2=yyyy2))
 
-        inNLCDList = glob.glob(NLCDdir + os.sep + "*.tif")
+        ref_list = glob.glob(refdir + os.sep + "*.tif")
 
-        inCCDCList.sort()
+        ccdc_list.sort()
 
-        inNLCDList.sort()
+        ref_list.sort()
 
-        # import pprint
-        # pprint.pprint (inCCDCList) #for testing
-        # pprint.pprint (inNLCDList) #for testing
-
-        ccdc_file = "{}{}ccdc{}to{}cl.tif".format(CCDCdir, os.sep, FromY, ToY)
+        ccdc_file = "{}{}ccdc{}to{}cl.tif".format(ccdcdir, os.sep, yyyy1, yyyy2)
 
         if not os.path.exists(ccdc_file):
 
-            ccdc_file = "{}{}ccdc{}to{}cl.tif".format(CCDCdir, os.sep, fromY, toY)
+            ccdc_file = "{}{}ccdc{}to{}cl.tif".format(ccdcdir, os.sep, yyyy1, yyyy2)
 
             if not os.path.exists(ccdc_file):
-                print("Need to compute change layers for CCDC year {} to year {}".format(FromY, ToY))
+                print("Could not locate file {}, may need to compute change layers "
+                      "for CCDC year {} to year {}".format(os.path.basename(ccdc_file), yyyy1, yyyy2))
 
                 sys.exit(0)
 
-        nlcd_file = "{}{}nlcd{}to{}cl.tif".format(NLCDdir, os.sep, fromY, toY)
+        ref_file = "{dir}{sep}{name}{y1}to{y2}cl.tif".format(dir=refdir, sep=os.sep, name=name, y1=yyyy1, y2=yyyy2)
 
-        if not os.path.exists(nlcd_file):
+        if not os.path.exists(ref_file):
 
-            nlcd_file = "{}{}nlcd{}to{}cl.tif".format(NLCDdir, os.sep, FromY, ToY)
+            ref_file = "{dir}{sep}{name}{y1}to{y2}cl.tif".format(dir=refdir, sep=os.sep, name=name, y1=yy1, y2=yy2)
 
-            if not os.path.exists(nlcd_file):
-                print("Need to compute change layers for NLCD year {} to year {}".format(FromY, ToY))
+            if not os.path.exists(ref_file):
+                print("Could not locate file {}, may need to compute change layers "
+                      "for CCDC year {} to year {}".format(os.path.basename(ref_file), yyyy1, yyyy2))
 
                 sys.exit(0)
 
-        bandFile = '{a}{b}nlcd{c}to{d}cl_ccdc{c}to{d}cl.tif'.format(a=OutDir, b=os.sep, c=fromY, d=toY)
+        out_file = '{a}{b}{name}{c}to{d}cl_ccdc{c}to{d}cl.tif'.format(a=outdir, b=os.sep, c=yyyy1, d=yyyy2, name=name)
 
-        if not os.path.exists(bandFile):
+        if not os.path.exists(out_file):
 
             ccdc = read_data(ccdc_file)
-            nlcd = read_data(nlcd_file)
+
+            ref = read_data(ref_file)
 
             results = np.zeros_like(ccdc["data"], dtype=np.float32)
 
-            results = ccdc["data"] * 10000.0 + nlcd["data"]
+            results = ccdc["data"] * 10000.0 + ref["data"]
 
-            write_raster(bandFile, ccdc["geo"], ccdc["prj"], ccdc["cols"], ccdc["rows"], results)
-
-
-
-            # Only process if the output file doesn't already exist
-            # The first 3 or 4 digits are NLCD classes, last 4 digits are CCDC classes
-            # runCalc  = 'gdal_calc --format GTiff --type {type} -A {file_A} -B {file_B} --outfile {outfile} --calc="(A * 10000.0 + B)" '\
-            # .format(type='Int32', file_A=nlcd_file, file_B=ccdc_file, outfile=bandFile)
-
-            # subprocess.call(runCalc, shell=True)
+            write_raster(out_file, ccdc["geo"], ccdc["prj"], ccdc["cols"], ccdc["rows"], results)
 
         else:
 
-            print("\nFile {} already exists".format(os.path.basename(bandFile)))
+            print("\nFile {} already exists".format(os.path.basename(out_file)))
 
     except:
 
@@ -175,11 +165,17 @@ def main():
 
             inputCCDC = argv[i]
 
-        elif arg == '-nlcd':
+        elif arg == '-ref':
 
             i = i + 1
 
             inputNLCD = argv[i]
+
+        elif arg =='-name':
+
+            i = i + 1
+
+            name = argv[i]
 
         elif arg == '-o':
 
@@ -208,7 +204,7 @@ def main():
         i += 1
 
     # Call the primary function
-    allCalc(inputCCDC, inputNLCD, outputDir, fromY, toY)
+    allCalc(inputCCDC, inputNLCD, outputDir, name, year_1, year_2)
 
 
 if __name__ == '__main__':
