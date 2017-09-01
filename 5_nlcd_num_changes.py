@@ -92,7 +92,7 @@ def get_outlayers(inrasters, outfolder):
 
         name, ext = os.path.splitext(filex)
 
-        years.append(name[-4:])
+        years.append(name[5:9])
 
     for i in range(len(inrasters)):
         rlist.append("{a}{b}nlcd{c}to{d}ct.tif".format \
@@ -385,11 +385,6 @@ def main():
             sys.exit(1)
 
         i += 1
-
-    if not os.path.exists(outputdir): os.mkdir(outputdir)
-
-    # create a new subdirectory based on the "from" and "to" years to keep accumulated sets organized
-    outputdir = outputdir + os.sep + "{a}_{b}".format(a=fromY, b=toY)
 
     if not os.path.exists(outputdir): os.mkdir(outputdir)
 
