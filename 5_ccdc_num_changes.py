@@ -8,7 +8,11 @@ ChangeMap layers.  Alternatively can specify a 'from' and 'to' and the script
 will calculate the number of changes for each year interval within 
 the given range.
 """
-import os, sys, datetime, glob, subprocess
+import os
+import sys
+import datetime
+import glob
+import subprocess
 
 import numpy as np
 
@@ -25,11 +29,17 @@ print(sys.version)
 t1 = datetime.datetime.now()
 print("\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
+#driver = gdal.GetDriverByName("GTiff")
+#driver.Register()
+
 gdal.AllRegister()
 gdal.UseExceptions()
 
+#GDALPath = r"C:\LCMAP_Tools\dist"
+#GDALPath = "/usr/bin"
+
 #%%
-def get_inlayers(infolder, name, y1, y2):
+def get_inlayers(infolder, y1, y2):
     
     """Generate a list of the input change map layers with full paths
     
@@ -41,10 +51,10 @@ def get_inlayers(infolder, name, y1, y2):
     Returns:
         templist = the complete list of change map raster files
         - or -
-        flist = the clipped list of change map raster files based on y1, y2
+        rlist = the clipped list of change map raster files based on y1, y2
     """
 
-    templist = glob.glob("{}{}{}*.tif".format(infolder, os.sep, name ))
+    templist = glob.glob("{a}{b}ChangeMap*.tif".format( a=infolder, b=os.sep ))
     
     templist.sort()
     
@@ -56,9 +66,9 @@ def get_inlayers(infolder, name, y1, y2):
     
         ylist = [y for y in range(int(y1), int(y2)+1)]
         
-        flist = [r for y in ylist for r in templist if str(y) in r]
+        rlist = [r for y in ylist for r in templist if str(y) in r]
             
-        return flist
+        return rlist
 
 #%%    
 def get_outlayers(inrasters, outfolder):
@@ -327,15 +337,15 @@ def clean_up(outdir):
 #%%
 def usage():
 
-    print("\t[-i Full path to the directory where annual CCDC "\
-              "change layers are saved]\n" \
-     "\t[-from The start year]\n" \
-     "\t[-to The end year]\n" \
-     "\t[-o Full path to the output folder]\n" \
-     "\n\t*Output raster will be saved in the same format "\
+    print("\t[-i Full path to the directory where annual CCDC"
+              "change layers are saved]\n"
+     "\t[-from The start year]\n"
+     "\t[-to The end year]\n"
+     "\t[-o Full path to the output folder]\n"
+     "\n\t*Output raster will be saved in the same format "
      "as input raster (GTiff).\n\n"
      
-     "\tExample: 5_ccdc_num_changes.py -i /.../ChangeMaps -from 1984 -to 2015"\
+     "\tExample: 5_ccdc_num_changes.py -i /.../ChangeMaps -from 1984 -to 2015"
      " -o /.../OutputFolder\n")
 
     return None
@@ -377,10 +387,6 @@ def main():
             i           = i + 1
             outputdir      = argv[i]
 
-        elif arg == '-name':
-            i = i + 1
-            name = argv[i]
-        
         elif arg == '-help':
             usage()
             sys.exit(1)
@@ -394,13 +400,12 @@ def main():
     
     if not os.path.exists(outputdir): os.mkdir(outputdir)
 
-    # create a new subdirectory based on the "from" and "to" years
-    # to keep accumulated sets organized
+    # create a new subdirectory based on the "from" and "to" years to keep accumulated sets organized
     outputdir = outputdir + os.sep + "{a}_{b}".format(a=fromY, b=toY)
     
     if not os.path.exists(outputdir): os.mkdir(outputdir)
     
-    infiles = get_inlayers(inputdir, name, fromY, toY)
+    infiles = get_inlayers(inputdir, fromY, toY)
     
     outfiles = get_outlayers(infiles, outputdir)
     

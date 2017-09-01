@@ -1,25 +1,21 @@
-'''
+"""
 ScriptName: Frequency_computation.py
 Author: Devendra Dahal
 Date:	8/18/2015
 Last Updated : 2/6/2017 by Dan Zelenak to work on LCSRLNST01
-'''
-import os, sys, traceback, datetime, time,numpy,glob, subprocess, re, pprint, fnmatch
-print sys.version
+"""
+import os, sys, traceback, datetime, numpy,glob, subprocess, re
+
+print (sys.version)
 
 try:
 	from osgeo import gdal
 	from osgeo.gdalconst import *
 except ImportError:
-	import gdal	
-
-GDALPath = '/usr/bin'
+	import gdal
 
 t1 = datetime.datetime.now()
-print "Processing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n")
-def errMsg(i, Year):
-	print "\n----------\nOooops!! assigned",i,"year (",str(Year),") is not valid. Please check your input folder for valid", i, "year.\n--------\n"
-	os._exit(1)
+print ("Processing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n")
 
 ## function to read properties of a raster file
 def GetGeoInfo(SourceDS):
@@ -39,7 +35,7 @@ def GetGeoInfo(SourceDS):
 def RasterChange1(inDir,frmY, toY, FFormat, OutFile, ext):
 	RasterList = glob.glob(inDir + os.sep + "*" +ext)	
 	RasterList = sorted(RasterList)
-	print len(RasterList)
+
 	sys.exit()
 	##--------GDAL reading file and file information--------
 	inFile = gdal.Open(RasterList[0])
