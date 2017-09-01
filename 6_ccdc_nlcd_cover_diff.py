@@ -41,11 +41,11 @@ def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
         # pprint.pprint (inCCDCList) #for testing
         # pprint.pprint (inNLCDList) #for testing
 
-        ccdc_file = "{}{}ccdc{}to{}cl.tif".format(CCDCdir, os.sep, FromY, ToY)
+        ccdc_file = "{dir}{sep}{y1}_{y2}{sep}ccdc{y1}to{y2}cl.tif".format(dir=CCDCdir, sep=os.sep, y1=FromY, y2=ToY)
 
         if not os.path.exists(ccdc_file):
 
-            ccdc_file = "{}{}ccdc{}to{}cl.tif".format(CCDCdir, os.sep, fromY, toY)
+            ccdc_file = "{dir}{sep}{y1}_{y2}{sep}ccdc{y1}to{y2}cl.tif".format(dir=CCDCdir, sep=os.sep, y1=fromY, y2=toY)
 
             if not os.path.exists(ccdc_file):
 
