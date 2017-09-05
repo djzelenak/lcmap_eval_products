@@ -34,7 +34,7 @@ def get_rasters(indir):
 
 
 # %%
-def read_data(cl, type=original):
+def read_data(cl, type='original'):
     """
     Purpose: Open the Trends from-to LC Change .tif file.  
                 Iterate through the list of from-to classes.
