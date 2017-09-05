@@ -177,11 +177,11 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
         df_temp.columns = ["Name", "Count", "Percent of Tile"]
 
         # generate bar charts in first column for class L in row i
-        if type='original':
+        if type=='original':
 
             axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_orig[L])
 
-        elif type='recode':
+        else:
 
             axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_recode[L])
 
