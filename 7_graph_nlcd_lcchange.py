@@ -14,7 +14,10 @@ import glob
 import os
 import sys
 
+import matplotlib
+matplotlib.use('agg')
 import matplotlib.pyplot as plt
+
 import numpy as np
 from osgeo import gdal
 from pandas import DataFrame
@@ -149,8 +152,7 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
                    "95": (0.439215686, 0.639215686, 0.729411765)}
 
     # Generate figure with length(label_set) rows and 2 columns
-    fig, axes = plt.subplots(nrows=len(label_set), ncols=2,
-                             figsize=(16, 50))
+    fig, axes = plt.subplots(nrows=len(label_set), ncols=2, figsize=(16, 50))
 
     # Add figure title
     fig.text(0.5, .90, "%s NLCD %s to %s From-To Classes" % (tile, year1, year2),
@@ -202,21 +204,6 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
 
     return None
 
-
-# %%
-def usage():
-    print("\n\t[-i the full path to the input raster file]\n"
-          "\t[-o the full path to the output graph image (.png)]\n"
-          "\t[-tile the tile name (used for graph title)]\n"
-          "\t[-frm the from year]\n"
-          "\t[-to the to year]\n"
-          "\t[-help display this message]\n")
-
-    print("Example: python graph_nlcd.py -i C:\... -o C:\... -tile h05v02 "
-          "-name trends -frm 1992 -to 2011")
-
-
-# %%
 def main():
     parser = argparse.ArgumentParser()
 
@@ -247,17 +234,19 @@ def main():
 
     tile = args.tile
 
-    type=args.type
+    type = args.type
 
     if not os.path.exists(out_dir): os.mkdir(out_dir)
 
     in_files = get_rasters(in_dir)
 
     for in_cl in in_files:
-        year1 = in_cl[-12:-10]
-        year2 = in_cl[-8:-6]
+        year1 = in_cl[-16:-12]
+        year2 = in_cl[-10:-6]
 
         outname = "{}{}{}_nlcd{}to{}_lchange.png".format(out_dir, os.sep, tile, year1, year2)
+
+
 
         classes, class_sums = read_data(in_cl, type)
 
@@ -290,7 +279,6 @@ def main():
 
     return None
 
-
-# %%
 if __name__ == "__main__":
+
     main()
