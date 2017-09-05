@@ -120,6 +120,8 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
 
     # RGB colors taken from Arc colormap and rescaled from 0-255 to 0-1
 
+    default = (0.0, 0.0, 0.0)
+
     colors_recode = {"1": (0.0, 0.0, 0.9333333333333333),
                      "2": (0.9019607843137255, 0.0, 0.058823529411764705),
                      "5": (0.7019607843137254, 0.7019607843137254, 0.7019607843137254),
@@ -181,11 +183,11 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
         # generate bar charts in first column for class L in row i
         if type=='original':
 
-            axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_orig[L])
+            axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_orig.get(L, default=default))
 
         else:
 
-            axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_recode[L])
+            axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_recode.get(L, default=default))
 
         axes[i, 0].set_title('"From" Class ' + L + " Bar Chart")
         axes[i, 0].set_xticks(df_temp.index)
