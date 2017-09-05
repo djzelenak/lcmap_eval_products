@@ -18,11 +18,7 @@ import numpy as np
 
 from shutil import copy2
 
-try:
-    from osgeo import gdal
-    # from osgeo.gdalconst import *
-except ImportError:
-    import gdal
+from osgeo import gdal
 
 print(sys.version)
 
@@ -36,10 +32,6 @@ gdal.AllRegister()
 gdal.UseExceptions()
 
 
-# GDALPath = r"C:\LCMAP_Tools\dist"
-# GDALPath = "/usr/bin"
-
-# %%
 def get_inlayers(infolder, y1, y2):
     """Generate a list of the input change map layers with full paths
 
@@ -70,8 +62,6 @@ def get_inlayers(infolder, y1, y2):
 
         return rlist
 
-
-# %%
 def get_outlayers(inrasters, outfolder):
     """Generate a list of output rasters containing full paths
 
@@ -92,7 +82,7 @@ def get_outlayers(inrasters, outfolder):
 
         name, ext = os.path.splitext(filex)
 
-        years.append(name[-4:])
+        years.append(name[12:16])
 
     for i in range(len(inrasters)):
         rlist.append("{a}{b}trends{c}to{d}ct.tif".format \
@@ -100,8 +90,6 @@ def get_outlayers(inrasters, outfolder):
 
     return rlist
 
-
-# %%
 def do_calc(out_r, in_r1, in_r2):
     """Generate the output layers and add color ramps for the default
     from/to years (i.e. the min and max years present)
@@ -186,8 +174,6 @@ def do_calc(out_r, in_r1, in_r2):
 
         return None
 
-
-# %%
 def add_color_table(in_vrt, clr_table, dtype):
     """Write color map info to a VRT file
 
@@ -244,8 +230,6 @@ def add_color_table(in_vrt, clr_table, dtype):
 
     return out_vrt
 
-
-# %%
 def add_color(outdir, raster):
     """Add a color map to the created raster files
 
@@ -323,8 +307,6 @@ def clean_up(outdir):
 
     return None
 
-
-# %%
 def usage():
     print("\t[-i Full path to the directory where Trends LC "
           "layers are saved]\n"
@@ -339,8 +321,6 @@ def usage():
 
     return None
 
-
-# %%
 def main():
     fromY, toY = None, None
 
@@ -418,8 +398,6 @@ def main():
 
     return None
 
-
-# %%
 if __name__ == '__main__':
     main()
 

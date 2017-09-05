@@ -3,18 +3,18 @@
 Author: Dan Zelenak
 Purpose: Recode Trends classes to match PyCCD classes
 
-PyCCD Class Scheme
+Trends --> PyCCD Class Scheme
 
-0      No data (insufficient data)
-1.     Developed (includes mining)
-2.     Agriculture
-3.     Grassland/shrubland
-4.     Tree Cover  
-5.     Water bodies
-6.     Wetland
-7.     Ice and Snow
-8.     Barren
-9.     Disturbed or transitional
+0 --> 0      No data (insufficient data)
+2 --> 1.     Developed (includes mining)
+8 --> 2.     Agriculture
+7 --> 3.     Grassland/shrubland
+6 --> 4.     Tree Cover
+1 --> 5.     Water bodies
+9 --> 6.     Wetland
+11 -> 7.     Ice and Snow
+4 --> 8.     Barren
+3,10 -> 9.    Disturbed or transitional
 
 """
 
@@ -138,7 +138,3 @@ print (t2.strftime("%Y-%m-%d %H:%M:%S\n"))
 tt = t2 - t1
 
 print ("\tProcessing time: " + str(tt))
-    
-
-    
-
