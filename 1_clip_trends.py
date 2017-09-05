@@ -7,26 +7,26 @@ Based on script originally written by Dev Dahal
 Last Updated 5/16/2017
 """
 
-import os, sys, datetime, glob, subprocess, pprint, re
+import datetime
+import glob
+import os
+import pprint
+import re
+import subprocess
+import sys
 
-print (sys.version)
+from osgeo import gdal
 
-try:
-    from osgeo import gdal
-    # from osgeo.gdalconst import *
-except ImportError:
-    import gdal    
-
+print(sys.version)
 
 t1 = datetime.datetime.now()
-print (t1.strftime("%Y-%m-%d %H:%M:%S"))
+
+print(t1.strftime("%Y-%m-%d %H:%M:%S"))
 
 gdal.UseExceptions()
 gdal.AllRegister()
 
-#%%
-def GetExtent(gt,cols,rows):
-    
+def GetExtent(gt, cols, rows):
     """ Return list of corner coordinates from a geotransform
 
         @type gt:   C{tuple/list}
@@ -39,30 +39,27 @@ def GetExtent(gt,cols,rows):
         @return:   coordinates of each corner
     
     """
-    
-    ext=[]
-    xarr=[0,cols]
-    yarr=[0,rows]
+
+    ext = []
+    xarr = [0, cols]
+    yarr = [0, rows]
 
     for px in xarr:
-        
+
         for py in yarr:
-            
-            x=gt[0]+(px*gt[1])+(py*gt[2])
-            
-            y=gt[3]+(px*gt[4])+(py*gt[5])
-            
-            ext.append([x,y])
-            
+            x = gt[0] + (px * gt[1]) + (py * gt[2])
+
+            y = gt[3] + (px * gt[4]) + (py * gt[5])
+
+            ext.append([x, y])
+
             # print x,y
-        
+
         yarr.reverse()
-    
+
     return ext
 
-#%%
 def GetGeoInfo(SourceDS):
-    
     """Obtain information about the transformation, projection, and size
     of the raster dataset
     
@@ -77,39 +74,34 @@ def GetGeoInfo(SourceDS):
         proj = 
         extent = 
     """
-    
-    
-    print ('running GetGeoInfo function')
+
+    print('running GetGeoInfo function')
     # NDV         = SourceDS.GetRasterBand(1).GetNoDataValue()
-    cols         = SourceDS.RasterXSize
-    rows         = SourceDS.RasterYSize
-    bands         = SourceDS.RasterCount
-    GeoT         = SourceDS.GetGeoTransform()
-    proj         = SourceDS.GetProjection()
-    extent        = GetExtent(GeoT, cols, rows)
-    
+    cols = SourceDS.RasterXSize
+    rows = SourceDS.RasterYSize
+    bands = SourceDS.RasterCount
+    GeoT = SourceDS.GetGeoTransform()
+    proj = SourceDS.GetProjection()
+    extent = GetExtent(GeoT, cols, rows)
+
     return cols, rows, GeoT, proj, bands, extent
 
-#%%
-def ComputMask(inputD, ProjRaster,W,S,E,N, cSize, DestiProj):
-    
+def ComputMask(inputD, ProjRaster, W, S, E, N, cSize, DestiProj):
     """
     """
-    
-    print ('\n running ComputMask function')
+
+    print('\n running ComputMask function')
     inMSSFile = gdal.Open(inputD)
     InXsize, InYsize, InGeoT, InProj, bands, extent = GetGeoInfo(inMSSFile)
-    
+
     runwarp = "gdalwarp -of HFA -s_srs %s -overwrite -t_srs %s -te %s %s %s %s -tr %s %s -dstnodata 0 -q -r near %s %s" % \
-    (InProj,DestiProj, W, S, E, N, cSize,cSize, inputD, ProjRaster) ## -dstnodata 0
-    
+              (InProj, DestiProj, W, S, E, N, cSize, cSize, inputD, ProjRaster)  ## -dstnodata 0
+
     subprocess.call(runwarp, shell=True)
-    
+
     return None
 
-#%%
 def RemoveEmpty(raster):
-    
     """Open the clipped Trends rasters and delete those that are entirely
     no data.
     
@@ -120,54 +112,49 @@ def RemoveEmpty(raster):
         None
     """
     import numpy as np
-    
-    test = gdal.Open(raster)
-    
+
+    test = gdal.Open(raster, gdal.GA_ReadOnly)
+
     testband = test.GetRasterBand(1)
-    
+
     testbanddata = testband.ReadAsArray()
-    
-    if np.all(testbanddata == 0):
-    
+
+    if not np.any(testbanddata):
+
         test, testband, testbanddata = None, None, None
-        
+
         os.remove(raster)
-        
-        ancillary = glob.glob(raster + '*') # remove associated files too (.aux)
-        
+
+        ancillary = glob.glob(raster + '*')  # remove associated files too (.aux)
+
         for i in ancillary:
-            
             os.remove(i)
-            
-        print ('%s is entirely no data and it has been removed' %(os.path.basename(raster)))
-    
+
+        print('%s is entirely no data and it has been removed' % (os.path.basename(raster)))
+
     allfiles = glob.glob(raster + "*")
-        
+
     for anc in allfiles:
-            
+
         anc_ = re.sub("era", "", anc)
-        
+
         os.rename(anc, anc_)
 
     return None
 
-#%%
 def usage():
-
     print('\n\n \
     [-i Input File Directory] \n \
     [-ref Input reference file Directory (used for clipping NLCD)]\n \
     [-o Output Folder with complete path]\n\n')
-    
+
     return None
 
-#%%
 def main():
-
     argv = sys.argv
-        
+
     if argv is None:
-        print ("try -help")
+        print("try -help")
         sys.exit(0)
     ## Parse command line arguments.
     i = 1
@@ -175,49 +162,57 @@ def main():
         arg = argv[i]
 
         if arg == '-i':
-            i           = i + 1
-            inputDir    = argv[i]        
-        
+            i = i + 1
+            inputDir = argv[i]
+
         elif arg == '-o':
-            i           = i + 1
-            outputDir   = argv[i] 
-        
+            i = i + 1
+            outputDir = argv[i]
+
         elif arg == '-ref':
-            i           = i + 1
-            RefFile     = argv[i]     
-        
+            i = i + 1
+            RefFile = argv[i]
+
         elif arg[:1] == ':':
             print('Unrecognized command option: %s' % arg)
             usage()
             sys.exit(1)
-        
+
         elif arg == '-help':
             usage()
-            sys.exit(1) 
-        
+            sys.exit(1)
+
         i += 1
 
-    inputList = sorted(glob.glob(inputDir + os.sep + '*.img'))        
-    
-    print ('Input File List:\n')
+    inputList = sorted(glob.glob(inputDir + os.sep + '*.img'))
+
+    if len(inputList) == 0:
+        inputList = sorted(glob.glob(inputDir + os.sep + "*.tif"))
+
+    if len(inputList) == 0:
+        print("Couldn't locate Trends files in:\n{}".format(inputDir))
+
+        sys.exit(0)
+
+    print('Input File List:\n')
     pprint.pprint(inputList)
-    
+
     for inputD in inputList:
         # RefFile = '%s/ChangeMap_2000.tif' %(RefFolder) #arbitrary selection for reference file
-        print ('\n\tWorking on', inputD.split('/')[-1])
+        print('\n\tWorking on', inputD.split('/')[-1])
         if not os.path.exists(outputDir):
             os.makedirs(outputDir)
 
         # tifDriver = gdal.GetDriverByName('GTiff')
         # tifDriver.Register()
-        ref = gdal.Open(RefFile)
+        ref = gdal.Open(RefFile, gdal.GA_ReadOnly)
         Desxsize, Desysize, DesGeoT, DestiProj, desbands, dExt = GetGeoInfo(ref)
-        
-        print ('\n------------------------')
-        print ('Extent of the out layer:\n\t\t\t',dExt[3][1],'\n\n\t',dExt[0][0],
-        '\t\t\t',dExt[2][0],'\n\n\t\t\t',dExt[1][1])
-        print ('------------------------\n')
-        
+
+        print('\n------------------------')
+        print('Extent of the out layer:\n\t\t\t', dExt[3][1], '\n\n\t', dExt[0][0],
+              '\t\t\t', dExt[2][0], '\n\n\t\t\t', dExt[1][1])
+        print('------------------------\n')
+
         W = str(dExt[0][0])
         S = str(dExt[1][1])
         E = str(dExt[2][0])
@@ -225,28 +220,31 @@ def main():
 
         cSize = DesGeoT[1]
 
-
         if not os.path.exists(outputDir):
             os.makedirs(outputDir)
-        
-        ProjRaster = outputDir + os.sep + os.path.basename(inputD).split('.')[0]+ '.tif'
-        
-        if not os.path.exists(ProjRaster):
-            ComputMask(inputD,ProjRaster,W,S,E,N,cSize,DestiProj)
-            RemoveEmpty(ProjRaster)    #check if empty dataset
-        
-        else:
-            print ('%s already exists' %(os.path.basename(ProjRaster)))
-            RemoveEmpty(ProjRaster)    #check if empty dataset
 
-    print ("\nAll done")
-    
+        ProjRaster = outputDir + os.sep + os.path.basename(inputD).split('.')[0] + '.tif'
+
+        if not os.path.exists(ProjRaster):
+            ComputMask(inputD, ProjRaster, W, S, E, N, cSize, DestiProj)
+            RemoveEmpty(ProjRaster)  # check if empty dataset
+
+        else:
+            print('%s already exists' % (os.path.basename(ProjRaster)))
+            RemoveEmpty(ProjRaster)  # check if empty dataset
+
+    print("\nAll done")
+
     return None
 
-#%%
 if __name__ == '__main__':
+
     main()
+
 t2 = datetime.datetime.now()
-print (t2.strftime("%Y-%m-%d %H:%M:%S"))
+
+print(t2.strftime("%Y-%m-%d %H:%M:%S"))
+
 tt = t2 - t1
-print ("\nProcessing time: " + str(tt) )
+
+print("\nProcessing time: " + str(tt))
