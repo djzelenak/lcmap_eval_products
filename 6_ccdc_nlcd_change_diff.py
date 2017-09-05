@@ -91,7 +91,6 @@ def usage():
     print('Usage:python 6_ccdc_nlcd_change_diff.py\n\n \
        [-ic Full path to the input CCDC change map layers]\n \
        [-ir Full path to the reference NLCD change map layers]\n\
-       [-of outfile format (only 3 format supported: GTiff, HFA, and GRID)]\n \
        [-frm From Year]\n \
        [-to To Year]\n \
        [-o Main output directory]\n\n')
