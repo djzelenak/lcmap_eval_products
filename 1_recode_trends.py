@@ -19,6 +19,7 @@ PyCCD Class Scheme
 """
 
 import os
+import sys
 import glob
 import numpy as np
 from osgeo import gdal
@@ -39,9 +40,21 @@ def recode_trends(indir, outdir=None):
     driver = gdal.GetDriverByName("GTiff")
     
     in_trends_list = glob.glob(indir + "*.img")
+
+    if len(in_trends_list) == 0:
+
+        in_trends_list = glob.glob(indir + "*.tif")
+
+    if len(in_trends_list) == 0:
+
+        print("Could not locate any Trends data in:\n{}".format(indir))
+
+        sys.exit(0)
     
     for idx, trends in enumerate(in_trends_list):
         
+        print("Working on recoding {}\n".format(os.path.basename(trends)))
+
         src = gdal.Open(trends, gdal.GA_ReadOnly)
         
         srcdata = src.GetRasterBand(1).ReadAsArray()
@@ -78,6 +91,8 @@ def recode_trends(indir, outdir=None):
         
         outraster = driver.Create(outname, cols, rows, 1, gdal.GDT_Byte)
         
+        print("Generating output file {}\n".format(os.path.basename(outname)))
+
         outband = outraster.GetRasterBand(1)
         
         outband.WriteArray(holder, 0, 0)
