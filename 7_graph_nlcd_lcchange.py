@@ -183,11 +183,11 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
         # generate bar charts in first column for class L in row i
         if type=='original':
 
-            axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_orig.get(L, default=default))
+            axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_orig.get(L, default))
 
         else:
 
-            axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_recode.get(L, default=default))
+            axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_recode.get(L, default))
 
         axes[i, 0].set_title('"From" Class ' + L + " Bar Chart")
         axes[i, 0].set_xticks(df_temp.index)
