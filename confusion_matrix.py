@@ -215,7 +215,7 @@ def main():
     parser.add_argument('-p', '-pred', '--prediction', type=str, required=True,
                         help='Full path to the prediction file (CCDC)')
 
-    parser.add_argument('-plt', '--plot', type=bool, choice=[True, False], required=False,
+    parser.add_argument('-plt', '--plot', type=bool, choices=[True, False], required=False,
                         help='Either True or False to generate a plot (default is False)')
 
     parser.add_argument('-o', '--output', type=str, required=True,
