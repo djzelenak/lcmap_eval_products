@@ -15,6 +15,7 @@ import os
 import sys
 
 import matplotlib
+
 matplotlib.use('agg')
 import matplotlib.pyplot as plt
 
@@ -57,31 +58,29 @@ def read_data(cl, type='original'):
     # count_src = gdal.Open(count, gdal.GA_ReadOnly)
 
     cl_data = cl_src.GetRasterBand(1).ReadAsArray()
-    # count_data = count_src.GetRasterBand(1).ReadAsArray()
-
 
     # these are valid for the NLCD recoded classes, use np.unique below
     # to ignore empty classes if desired
 
     classes_recode = [101, 102, 105, 106, 107, 108, 109, 111, 181, 201, 202, 205, 206,
-               207, 208, 209, 211, 281, 501, 502, 505, 506, 507, 508, 509, 511,
-               581, 601, 602, 605, 606, 607, 608, 609, 611, 681, 701, 702, 705,
-               706, 707, 708, 709, 711, 781, 801, 802, 805, 806, 807, 808, 809,
-               811, 881, 901, 902, 905, 906, 907, 908, 909, 911, 981, 1101,
-               1102, 1105, 1106, 1107, 1108, 1109, 1111, 1181, 8101, 8102,
-               8105, 8106, 8107, 8108, 8109, 8111, 8181]
+                      207, 208, 209, 211, 281, 501, 502, 505, 506, 507, 508, 509, 511,
+                      581, 601, 602, 605, 606, 607, 608, 609, 611, 681, 701, 702, 705,
+                      706, 707, 708, 709, 711, 781, 801, 802, 805, 806, 807, 808, 809,
+                      811, 881, 901, 902, 905, 906, 907, 908, 909, 911, 981, 1101,
+                      1102, 1105, 1106, 1107, 1108, 1109, 1111, 1181, 8101, 8102,
+                      8105, 8106, 8107, 8108, 8109, 8111, 8181]
 
     classes_original = np.unique(cl_data)
 
     masked_sum = []
 
-    if type=='original':
+    if type == 'original':
 
         classes = classes_original
 
     else:
 
-        classes= classes_recode
+        classes = classes_recode
 
     for c in classes:
         mask_cl = np.copy(cl_data)
@@ -101,7 +100,6 @@ def read_data(cl, type='original'):
     return classes, masked_sum
 
 
-# %%
 def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
     """Purpose: Generate a matplotlib figure of n rows and 2 columns, the number
                 rows is equal to the number of classes (label_set).  Column 1
@@ -118,10 +116,12 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
         None
     """
 
-    # RGB colors taken from Arc colormap and rescaled from 0-255 to 0-1
 
+
+    # default color value to use if a key is missing
     default = (0.0, 0.0, 0.0)
 
+    # RGB colors taken from Arc colormap and rescaled from 0-255 to 0-1
     colors_recode = {"1": (0.0, 0.0, 0.9333333333333333),
                      "2": (0.9019607843137255, 0.0, 0.058823529411764705),
                      "5": (0.7019607843137254, 0.7019607843137254, 0.7019607843137254),
@@ -154,17 +154,18 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
                    "95": (0.439215686, 0.639215686, 0.729411765)}
 
     # Generate figure with length(label_set) rows and 2 columns
-    fig, axes = plt.subplots(nrows=len(label_set), ncols=2, figsize=(16, 50))
+    fig, axes = plt.subplots(nrows=len(label_set), ncols=2, figsize=(25, len(label_set) * 5), dpi=150)
 
     # Add figure title
-    fig.text(0.5, .90, "%s NLCD %s to %s From-To Classes" % (tile, year1, year2),
+    fig.text(0.5, .90, "{tile} {type} NLCD classes {y1} to {y2} From-To Classes".format(tile=tile,
+                                                                                        type=type, y1=year1, y2=year2),
              horizontalalignment="center", fontsize=22, fontweight='bold')
 
     for i, L in enumerate(label_set):
 
         t = []
 
-        # iterate through rows of dataframe to retrieve values for class L
+        # iterate through rows of data frame to retrieve values for class L
         for x in df.itertuples():
 
             if x[1][0] == L and len(x[1]) == 3:
@@ -181,7 +182,7 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
         df_temp.columns = ["Name", "Count", "Percent of Tile"]
 
         # generate bar charts in first column for class L in row i
-        if type=='original':
+        if type == 'original':
 
             axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors_orig.get(L, default))
 
@@ -206,7 +207,9 @@ def get_figure(label_set, df, tile, year1, year2, outname, type='original'):
 
     return None
 
+
 def main():
+
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-i', '--input', type=str, required=True,
@@ -238,7 +241,8 @@ def main():
 
     type = args.type
 
-    if not os.path.exists(out_dir): os.mkdir(out_dir)
+    if not os.path.exists(out_dir):
+        os.mkdir(out_dir)
 
     in_files = get_rasters(in_dir)
 
@@ -247,8 +251,6 @@ def main():
         year2 = in_cl[-10:-6]
 
         outname = "{}{}{}_nlcd{}to{}_lchange.png".format(out_dir, os.sep, tile, year1, year2)
-
-
 
         classes, class_sums = read_data(in_cl, type)
 
@@ -281,6 +283,6 @@ def main():
 
     return None
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     main()
