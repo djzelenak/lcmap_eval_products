@@ -13,10 +13,6 @@ import datetime
 import os
 import sys
 
-import matplotlib
-matplotlib.use('agg')
-import matplotlib.pyplot as plt
-
 import numpy as np
 
 from osgeo import gdal
@@ -147,32 +143,8 @@ def compute_confusion_matrix(truth, predicted, classes):
     return confusion_matrix
 
 
-def plot_confusion_matrix(df_confusion, title, normalize=True, cmap=plt.cm.RdYlGn):
-    # define a function for generating graphical plot output of the confusion matrix
-
-    # plt.imshow(df_confusion, interpolation='cubic', cmap=cmap
-    plt.matshow(df_confusion, cmap=cmap)  # imshow
-
-    plt.title(title)
-
-    plt.colorbar()
-
-    tick_marks = np.arange(len(df_confusion.columns))
-
-    plt.xticks(tick_marks, df_confusion.columns, rotation=90)
-
-    plt.yticks(tick_marks, df_confusion.index)
-
-    # plt.tight_layout()
-
-    plt.ylabel(df_confusion.index.name)
-
-    plt.xlabel(df_confusion.columns.name)
-
-    return None
-
-
 def write_to_csv(matrix, outdir, name):
+
     lookfor = '99999999'
 
     if os.path.exists('%s/%s.csv' % (outdir, lookfor)):
@@ -215,9 +187,6 @@ def main():
     parser.add_argument('-p', '-pred', '--prediction', type=str, required=True,
                         help='Full path to the prediction file (CCDC)')
 
-    parser.add_argument('-plt', '--plot', type=bool, choices=[True, False], required=False,
-                        help='Either True or False to generate a plot (default is False)')
-
     parser.add_argument('-o', '--output', type=str, required=True,
                         help='Full path to the output folder')
 
@@ -228,8 +197,6 @@ def main():
     ref_file = args.reference
 
     pred_file = args.prediction
-
-    plot_yn = args.plot
 
     if not os.path.exists(out_dir):
 
@@ -243,15 +210,6 @@ def main():
 
     # create a name for the confusion matrix .csv file
     fname = '{}_{}_cnfmatrix'.format(os.path.basename(ref_file)[:-4], os.path.basename(pred_file)[:-4])
-
-    if plot_yn:
-
-        print("\nGenerating graphical plot now...")
-
-        # Run the plot function
-        plot_confusion_matrix(cnf_mat, fname)
-
-        plt.show()
 
     write_to_csv(cnf_mat, out_dir, fname)
 
