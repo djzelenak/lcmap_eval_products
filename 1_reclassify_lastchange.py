@@ -15,7 +15,10 @@ Last updated on Tue Apr 25, 2017
 
 """
 
-import os, sys, glob, datetime
+import os
+import sys
+import glob
+import datetime
 import numpy as np
 
 try:
@@ -300,7 +303,7 @@ def main():
 
         if not os.path.exists(output):
             
-            print "Processing image ", r, "\n"
+            print ("Processing image ", r, "\n")
 
             write_raster(r, array, output)
 
