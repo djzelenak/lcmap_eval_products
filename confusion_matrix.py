@@ -205,19 +205,6 @@ def write_to_csv(matrix, outdir, name):
     return None
 
 
-def usage():
-
-    print("\n\tUsage: Generate a confusion matrix to compare NLCD and CCD LC\n"
-          "\t[-ir Full path to the reference file (Trends or NLCD)]\n"
-          "\t[-ip Full path to the prediction file (CCDC)]\n"
-          "\t[-plt Either Yes,Y,y, or YES to generate a plot (default is No)]\n"
-          "\t[-o Main output directory]\n\n"
-          "\tExample: python confusion_matrix.py -r C:/... -p C:/..."
-          "\n\t-o C:/... plt N")
-
-    return None
-
-
 def main():
 
     parser = argparse.ArgumentParser()
