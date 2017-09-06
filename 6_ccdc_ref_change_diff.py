@@ -52,7 +52,7 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
 
         if not os.path.exists(ccdc_file):
 
-            ccdc_file = '{dir}{sep}1992_2011{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY)
+            ccdc_file = '{dir}{sep}{y1}_2011{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY)
 
         if not os.path.exists(ccdc_file):
 
