@@ -55,7 +55,7 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
 
                 continue
 
-            else:
+            elif c == ccdc_files[-1]:
 
                 print("Could not locate ccdc file")
 
@@ -72,7 +72,7 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
 
                 continue
 
-            else:
+            elif r == ref_files[-1]:
 
                 print("Could not locate the reference file")
 
