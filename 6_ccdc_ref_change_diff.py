@@ -48,11 +48,17 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
         ccdc_file = '{dir}{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY)
 
         if not os.path.exists(ref_file):
+
+            ref_file = '{dir}{sep}{name}{y1}to{y2}ct.tif'.format(dir=inRef, sep=os.sep, name=Name, y1=FromY, y2=ToY)
+
+        if not os.path.exists(ref_file):
+
             print('Layer {} does not exist'.format(os.path.basename(ref_file)))
 
             sys.exit(0)
 
         if not os.path.exists(ccdc_file):
+
             print('Layer {} does not exist'.format(os.path.basename(ccdc_file)))
 
             sys.exit(0)
