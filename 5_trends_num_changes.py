@@ -106,7 +106,7 @@ def do_calc(out_r, in_r1, in_r2):
 
     if in_r1 == None:
 
-        src2 = gdal.Open(in_r2)
+        src2 = gdal.Open(in_r2, gdal.GA_ReadOnly)
 
         rows = src2.RasterYSize
 

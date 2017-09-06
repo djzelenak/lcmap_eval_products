@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="fb71cf6d-08c2-453e-a05e-360494cafcc3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/6_ccdc_ref_cover_diff.py" afterPath="$PROJECT_DIR$/6_ccdc_ref_cover_diff.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -29,7 +28,7 @@
       <file leaf-file-name="6_ccdc_ref_cover_diff.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/6_ccdc_ref_cover_diff.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="1156">
+            <state relative-caret-position="-1598">
               <caret line="68" column="12" lean-forward="false" selection-start-line="68" selection-start-column="12" selection-end-line="68" selection-end-column="12" />
               <folding>
                 <element signature="e#260#275#0" expanded="true" />
@@ -305,7 +304,14 @@
       <option name="project" value="LOCAL" />
       <updated>1504297532593</updated>
     </task>
-    <option name="localTasksCounter" value="16" />
+    <task id="LOCAL-00016" summary="work with either nlcd or trends">
+      <created>1504298960777</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1504298960777</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -345,7 +351,8 @@
     <MESSAGE value="fixed year indices in filename str" />
     <MESSAGE value="added new file" />
     <MESSAGE value="automatically look in ccdc lc change subdirectory" />
-    <option name="LAST_COMMIT_MESSAGE" value="automatically look in ccdc lc change subdirectory" />
+    <MESSAGE value="work with either nlcd or trends" />
+    <option name="LAST_COMMIT_MESSAGE" value="work with either nlcd or trends" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -524,7 +531,7 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/6_ccdc_ref_cover_diff.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1156">
+        <state relative-caret-position="-1598">
           <caret line="68" column="12" lean-forward="false" selection-start-line="68" selection-start-column="12" selection-end-line="68" selection-end-column="12" />
           <folding>
             <element signature="e#260#275#0" expanded="true" />
