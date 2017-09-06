@@ -5,7 +5,7 @@ Date:	8/18/2015
 Last Updated : 2/6/2017 by Dan Zelenak to work on LCSRLNST01
 '''
 import os, sys, traceback, datetime, time,numpy,glob, subprocess, re, pprint, fnmatch
-print sys.version
+print (sys.version)
 
 try:
 	from osgeo import gdal
@@ -16,9 +16,9 @@ except ImportError:
 GDALPath = '/usr/bin'
 
 t1 = datetime.datetime.now()
-print "Processing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n")
+print ("Processing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 def errMsg(i, Year):
-	print "\n----------\nOooops!! assigned",i,"year (",str(Year),") is not valid. Please check your input folder for valid", i, "year.\n--------\n"
+	print ("\n----------\nOooops!! assigned",i,"year (",str(Year),") is not valid. Please check your input folder for valid", i, "year.\n--------\n")
 	os._exit(1)
 
 ## function to read properties of a raster file
@@ -39,7 +39,7 @@ def GetGeoInfo(SourceDS):
 def RasterChange1(inDir,frmY, toY, FFormat, OutFile, ext):
 	RasterList = glob.glob(inDir + os.sep + "*" +ext)	
 	RasterList = sorted(RasterList)
-	print len(RasterList)
+	print (len(RasterList))
 	sys.exit()
 	##--------GDAL reading file and file information--------
 	inFile = gdal.Open(RasterList[0])
@@ -54,9 +54,9 @@ def RasterChange1(inDir,frmY, toY, FFormat, OutFile, ext):
 	
 	inY = int(intYear) - int(minYear)
 	if inY == 0:
-		print "\n-------------------\nOooops!! The input folder seems to have files for multiple interval of change. \
-		This may create wrong frequency output. Please check and make sure\
-		consistency of interval among change layers.\n----------------------\n"
+		print ("\n-------------------\nOooops!! The input folder seems to have files for multiple interval of change." \
+		"This may create wrong frequency output. Please check and make sure"\
+		"consistency of interval among change layers.\n----------------------\n")
 		os._exit(1)
 	if int(frmY) < int(minYear):
 		errMsg("FROM",frmY)
@@ -65,10 +65,10 @@ def RasterChange1(inDir,frmY, toY, FFormat, OutFile, ext):
 	div = int(frmY) % int(minYear)
 	div2 = div % inY
 	if div != 0 and div2 != 0:
-		print "\n-------------------\nOooops!! Asking 'From' year is not matching in the input files. \
-		Please make sure change layers was computed for the 'From' year, you are asking.\n----------------------\n"
+		print ("\n-------------------\nOooops!! Asking 'From' year is not matching in the input files." \
+		"Please make sure change layers was computed for the 'From' year, you are asking.\n----------------------\n")
 		os._exit(1)
-	print '0 ..',
+	print ('0 ..',)
 	for i, Year in enumerate(range(int(frmY), int(toY)-inY, inY)):
 		Year2 = int(Year+inY)
 		file1 = glob.glob(inDir +os.sep + "Change*_"+str(Year)+"*"+ext)[0]
@@ -78,7 +78,7 @@ def RasterChange1(inDir,frmY, toY, FFormat, OutFile, ext):
 		ff = int(frmY)
 		dif = int(toY) - ff		
 		ii = int(((i+i+int(inY))/float(dif)) *100)
-		print ii,'..',
+		print (ii,'..',)
 		# sys.exit()
 		(dirName, fileName) = os.path.split(file1)
 		
@@ -99,7 +99,7 @@ def RasterChange1(inDir,frmY, toY, FFormat, OutFile, ext):
 	dst_ds.SetGeoTransform(geot)
 	dst_ds.SetProjection(proj)	
 	dst_ds.GetRasterBand(1).WriteArray(newArray)
-	print '100 - Done'
+	print ('100 - Done')
 	# ListArray.append(OutFile)
 	newArray = None
 	return OutFile
@@ -128,7 +128,7 @@ def RasterChange(FFormat,outputDir,RasterList,exten, OutFile):
 	return OutFiles
 	
 def RasterChangeGrid1(outputDir,RasterList,FfFormat, OutFile):
-	print "Using numpy"
+	print ("Using numpy")
 	
 	f1 = RasterList[0].split('.')[0]
 	file1 = outputDir + os.sep + 'zzzzx.tif'	
@@ -164,7 +164,7 @@ def RasterChangeGrid1(outputDir,RasterList,FfFormat, OutFile):
 
 		newArray += ArrayT
 	
-	driver = gdal.GetDriverByName(FFormat)
+	driver = gdal.GetDriverByName(FfFormat)
 	dst_ds = driver.Create(OutFile, cols, rows, bands, GDT_Byte)
 	dst_ds.SetGeoTransform(geot)
 	dst_ds.SetProjection(proj)	
@@ -183,12 +183,12 @@ def RasterChangeGrid(outputDir,inputD,fromY, toY, FfFormat, OutFile):
 	
 	inY = int(intYear) - int(minYear)
 	if inY == 0:
-		print "\n-------------------\nOooops!! The input folder seems to have files for multiple interval of change. \
-		This may create wrong frequency output. Please check and make sure\
-		consistency of interval among change layers.\n----------------------\n"
+		print ("\n-------------------\nOooops!! The input folder seems to have files for multiple interval of change." \
+		"This may create wrong frequency output. Please check and make sure"\
+		"consistency of interval among change layers.\n----------------------\n")
 		os._exit(1)
 	if int(fromY) < int(minYear):
-		errMsg("FROM",frmY)
+		errMsg("FROM",fromY)
 
 	if int(toY) > int(maxYear):
 		errMsg("TO",toY)
@@ -196,8 +196,8 @@ def RasterChangeGrid(outputDir,inputD,fromY, toY, FfFormat, OutFile):
 	div2 = div % inY
 
 	if div != 0 and div2 != 0:
-		print "\n-------------------\nOooops!! Asking 'From' year is not matching in the input files. \
-		Please make sure change layers was computed for the 'From' year, you are asking.\n----------------------\n"
+		print ("\n-------------------\nOooops!! Asking 'From' year is not matching in the input files." \
+		"Please make sure change layers was computed for the 'From' year, you are asking.\n----------------------\n")
 		os._exit(1)
 	runCalc0  = '%s\gdal_calc --type %s -A %s --outfile %s --calc="0 *(A > 0)" ' % (GDALPath, 'Int16', RasterList[0],OutFile)			
 	subprocess.call(runCalc0, shell=True)
@@ -279,12 +279,12 @@ def allCalc(inputDir, outputDir, FileFormat, FromY, ToY):
 			#print "\tOutFile: ", OutFile #for testing
 			# cumulativeChange = RasterChange1(inputDir,frmY, toY,FFormat, OutFile, exten)
 			if not os.path.exists(OutFile):
-				print 'working on change frequency for years %s to %s' %(FromY, ToY)
+				print ('working on change frequency for years %s to %s' %(FromY, ToY))
 				cumulativeChange = RasterChange(FFormat, outFolder, NLCDList, exten, OutFile)
 				runsubset3  = '%s/gdal_translate -of %s -q %s %s ' % (GDALPath, FFormat, cumulativeChange, OutFile)				
 				subprocess.call(runsubset3, shell=True)
 			else:
-				print '%s already exists' %(os.path.basename(OutFile))
+				print ('%s already exists' %(os.path.basename(OutFile)))
 	
 		elif FileFormat == 'HFA':
 			FFormat = 'HFA'
@@ -293,14 +293,14 @@ def allCalc(inputDir, outputDir, FileFormat, FromY, ToY):
 			rastDriver.Register()
 			
 			OutFile = '%s/nlcd%sto%sct%s' %(outFolder, frmY, toY, exten)
-			print "\tOutFile: ", OutFile
+			print ("\tOutFile: ", OutFile)
 			#cumulativeChange = RasterChange1(inputDir,frmY, toY,FFormat, OutFile, exten)
-			cumulativeChange = RasterChange(FFormat,outputDir, RasterList,exten, OutFile)
+			cumulativeChange = RasterChange(FFormat,outputDir, NLCDList,exten, OutFile)
 		elif FileFormat == 'GRID':
 			FFormat = 'AAIGrid'
 			OutFile = outFolder + os.sep + "zzzz.tif"
 			OutFile1 = '%s/nlcd%sto%sct.asc' %(outFolder, frmY, toY)
-			print "\tOutFile: ", OutFile1
+			print ("\tOutFile: ", OutFile1)
 			cumulativeChange = RasterChangeGrid(outFolder, inFolder, frmY, toY, 'GTiff', OutFile)
 			
 			runsubset2  = GDALPath + os.sep+'gdal_translate -of %s -q %s %s ' % (FFormat, cumulativeChange, OutFile1)				
@@ -309,12 +309,12 @@ def allCalc(inputDir, outputDir, FileFormat, FromY, ToY):
 			os.remove(v)
 			
 	except:
-		print "Opps! something is not working"
-		print traceback.format_exc()
-		print  "Unexpected error:", sys.exc_info()[0]
+		print ("Opps! something is not working")
+		print (traceback.format_exc())
+		print  ("Unexpected error:", sys.exc_info()[0])
 	
 def usage():
-	print ''
+	print ('')
 	print('Usage: python 5_nlcd_change_freq.py\n\n \
 	[-i Input directory where the NLCD layers are saved] \n\
 	[-frm From Year]\n \
@@ -322,7 +322,7 @@ def usage():
 	[-o Output Folderpath] \n \
 	[-if input File Format (only 3 format supported: GTiff, HFA, and GRID)] \n\n \
 	Output raster will be saved in the same format as input raster.\n\n')
-	print ''
+	print ('')
 	
 
 def main():
@@ -378,7 +378,7 @@ if __name__ == '__main__':
 	main()     
 
 t2 = datetime.datetime.now()
-print "\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S")
+print ("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
 
 tt = t2 - t1
-print "Processing time: " + str(tt),"\n"
+print ("Processing time: " + str(tt),"\n")
