@@ -33,13 +33,6 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
 
             os.makedirs(outDir)
 
-        inCCDCList = glob.glob("{dir}{sep}{y1}_{y2}{sep}*.tif".format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY))
-
-        inRefList = glob.glob(inRef + os.sep + "*.tif")
-
-        inCCDCList.sort()
-        inRefList.sort()
-
         # take the last two digits from the years for file naming
         frmY, toY = FromY[-2:], ToY[-2:]
 
@@ -56,6 +49,10 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
             print('Layer {} does not exist'.format(os.path.basename(ref_file)))
 
             sys.exit(0)
+
+        if not os.path.exists(ccdc_file):
+
+            ccdc_file = '{dir}{sep}1992_2011{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY)
 
         if not os.path.exists(ccdc_file):
 
