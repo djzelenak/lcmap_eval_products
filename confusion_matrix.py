@@ -26,7 +26,8 @@ t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
 
-def readData(reffile, predfile):
+def readData(reffile, predfile, year):
+
 
     # Load raster data into arrays
     refdata = gdal.Open(reffile, gdal.GA_ReadOnly).ReadAsArray()
@@ -50,6 +51,7 @@ def readData(reffile, predfile):
     ref, ccdc = None, None
 
     return refdata, preddata, classes
+
 
 def compute_confusion_matrix(truth, predicted, classes):
     total = float(len(classes) ** 2)

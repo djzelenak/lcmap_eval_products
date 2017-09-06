@@ -36,29 +36,47 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
         # take the last two digits from the years for file naming
         frmY, toY = FromY[-2:], ToY[-2:]
 
-        ref_file = '{dir}{sep}{name}{y1}to{y2}ct.tif'.format(dir=inRef, sep=os.sep, name=Name, y1=frmY, y2=toY)
+        # ref_file = '{dir}{sep}{name}{y1}to{y2}ct.tif'.format(dir=inRef, sep=os.sep, name=Name, y1=frmY, y2=toY)
 
-        ccdc_file = '{dir}{sep}{y1}_{y2}{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY)
+        # ccdc_file = '{dir}{sep}{y1}_{y2}{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY)
 
-        if not os.path.exists(ref_file):
+        ccdc_files = ['{dir}{sep}{y1}_{y2}{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY),
+                     '{dir}{sep}{y1}_2011{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY),
+                     '{dir}{sep}{y1}_2011{sep}CoverPrim{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep,
+                                                                                y1=FromY, y2=ToY),
+                     '{dir}{sep}{y1}_{y2}{sep}CoverPrim{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep,
+                                                                                y1=FromY, y2=ToY)]
 
-            ref_file = '{dir}{sep}{name}{y1}to{y2}ct.tif'.format(dir=inRef, sep=os.sep, name=Name, y1=FromY, y2=ToY)
+        for ind, c in enumerate(ccdc_files):
 
-        if not os.path.exists(ref_file):
+            if os.path.exists(c):
 
-            print('Layer {} does not exist'.format(os.path.basename(ref_file)))
+                ccdc_file = c
 
-            sys.exit(0)
+                continue
 
-        if not os.path.exists(ccdc_file):
+            else:
 
-            ccdc_file = '{dir}{sep}{y1}_2011{sep}ccdc{y1}to{y2}ct.tif'.format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY)
+                print("Could not locate ccdc file")
 
-        if not os.path.exists(ccdc_file):
+                sys.exit(0)
 
-            print('Layer {} does not exist'.format(os.path.basename(ccdc_file)))
+        ref_files = ['{dir}{sep}{name}{y1}to{y2}ct.tif'.format(dir=inRef, sep=os.sep, name=Name, y1=frmY, y2=toY),
+                     '{dir}{sep}{name}{y1}to{y2}ct.tif'.format(dir=inRef, sep=os.sep, name=Name, y1=FromY, y2=ToY)]
 
-            sys.exit(0)
+        for ind, r in enumerate(ref_files):
+
+            if os.path.exists(r):
+
+                ref_file = r
+
+                continue
+
+            else:
+
+                print("Could not locate the reference file")
+
+                sys.exit(0)
 
         print("\n\tmatched layers are: \n", os.path.basename(ref_file),
               "\n", os.path.basename(ccdc_file), "\n")
