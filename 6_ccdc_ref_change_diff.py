@@ -26,12 +26,15 @@ print(t1.strftime("%Y-%m-%d %H:%M:%S"))
 
 
 def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
+
     try:
 
         if not os.path.exists(outDir):
+
             os.makedirs(outDir)
 
-        inCCDCList = glob.glob(inCCDC + os.sep + "*.tif")
+        inCCDCList = glob.glob("{dir}{sep}{y1}_{y2}{sep}*.tif".format(dir=inCCDC, sep=os.sep, y1=FromY, y2=ToY))
+
         inRefList = glob.glob(inRef + os.sep + "*.tif")
 
         inCCDCList.sort()
