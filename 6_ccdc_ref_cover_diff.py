@@ -3,7 +3,7 @@ Last Updated: 2/2/2017 by Dan Zelenak to work on LCSRLNST01,
 2/6/2017 to compute CCDC vs NLCD land cover from-to comparison (output 32-bit raster)
 8/31/2017 updating to Python 3.6
 """
-# TODO make changes to work with nlcd and trends, take in name argument
+
 import datetime
 import glob
 import os
@@ -13,56 +13,59 @@ import traceback
 from osgeo import gdal
 import numpy as np
 
-print(sys.version)
+import argparse
+
+print (sys.version)
 
 t1 = datetime.datetime.now()
-print(t1.strftime("%Y-%m-%d %H:%M:%S"))
+print (t1.strftime("%Y-%m-%d %H:%M:%S"))
 
+def allCalc(CCDCdir, Refdir, OutDir, FromY, ToY, Name):
 
-def allCalc(ccdcdir, refdir, outdir, name, yyyy1, yyyy2):
     try:
 
         # Extract last 2 digits from years to use for naming
-        yy1, yy2 = yyyy1[-2:], yyyy2[-2:]
+        fromY, toY = FromY[-2:], ToY[-2:]
 
-        if not os.path.exists(outdir):
-            os.makedirs(outdir)
+        if not os.path.exists(OutDir):
 
-        ccdc_list = glob.glob("{dir}{sep}{y1}_{y2}{sep}*.tif".format(dir=ccdcdir, sep=os.sep, y1=yyyy1, y2=yyyy2))
+            os.makedirs(OutDir)
 
-        ref_list = glob.glob(refdir + os.sep + "*.tif")
+        inCCDCList = glob.glob("{dir}{sep}{y1}_{y2}{sep}*.tif".format(dir=CCDCdir, sep=os.sep, y1=FromY, y2=ToY))
 
-        ccdc_list.sort()
+        inRefList = glob.glob(Refdir + os.sep + "*.tif")
 
-        ref_list.sort()
+        inCCDCList.sort()
 
-        ccdc_file = "{}{}ccdc{}to{}cl.tif".format(ccdcdir, os.sep, yyyy1, yyyy2)
+        inRefList.sort()
+
+        ccdc_file = "{dir}{sep}{y1}_{y2}{sep}ccdc{y1}to{y2}cl.tif".format(dir=CCDCdir, sep=os.sep, y1=FromY, y2=ToY)
 
         if not os.path.exists(ccdc_file):
 
-            ccdc_file = "{}{}ccdc{}to{}cl.tif".format(ccdcdir, os.sep, yyyy1, yyyy2)
+            ccdc_file = "{dir}{sep}2001_2011{sep}ccdc{y1}to{y2}cl.tif".format(dir=CCDCdir, sep=os.sep, y1=FromY, y2=ToY)
 
-            if not os.path.exists(ccdc_file):
-                print("Could not locate file {}, may need to compute change layers "
-                      "for CCDC year {} to year {}".format(os.path.basename(ccdc_file), yyyy1, yyyy2))
+        if not os.path.exists(ccdc_file):
 
-                sys.exit(0)
+            print ("Need to compute change layers for CCDC year {} to year {}".format(FromY, ToY))
 
-        ref_file = "{dir}{sep}{name}{y1}to{y2}cl.tif".format(dir=refdir, sep=os.sep, name=name, y1=yyyy1, y2=yyyy2)
+            sys.exit(0)
+
+        ref_file = "{dir}{sep}{name}{y1}to{y2}cl.tif".format(dir=Refdir, sep=os.sep, name=Name, y1=fromY, y2=toY)
 
         if not os.path.exists(ref_file):
 
-            ref_file = "{dir}{sep}{name}{y1}to{y2}cl.tif".format(dir=refdir, sep=os.sep, name=name, y1=yy1, y2=yy2)
+            ref_file = "{dir}{sep}{name}{y1}to{y2}cl.tif".format(dir=Refdir, sep=os.sep, name=Name, y1=FromY, y2=ToY)
 
             if not os.path.exists(ref_file):
-                print("Could not locate file {}, may need to compute change layers "
-                      "for CCDC year {} to year {}".format(os.path.basename(ref_file), yyyy1, yyyy2))
+
+                print ("Need to compute change layers for Ref year {} to year {}".format(FromY, ToY))
 
                 sys.exit(0)
 
-        out_file = '{a}{b}{name}{c}to{d}cl_ccdc{c}to{d}cl.tif'.format(a=outdir, b=os.sep, c=yyyy1, d=yyyy2, name=name)
+        bandFile = '{a}{b}{name}{c}to{d}cl_ccdc{c}to{d}cl.tif'.format(a=OutDir, b=os.sep, c=fromY, d=toY, name=Name)
 
-        if not os.path.exists(out_file):
+        if not os.path.exists(bandFile):
 
             ccdc = read_data(ccdc_file)
 
@@ -72,16 +75,15 @@ def allCalc(ccdcdir, refdir, outdir, name, yyyy1, yyyy2):
 
             results = ccdc["data"] * 10000.0 + ref["data"]
 
-            write_raster(out_file, ccdc["geo"], ccdc["prj"], ccdc["cols"], ccdc["rows"], results)
+            write_raster(bandFile, ccdc["geo"], ccdc["prj"], ccdc["cols"], ccdc["rows"], results)
 
         else:
 
-            print("\nFile {} already exists".format(os.path.basename(out_file)))
+            print ("\nFile {} already exists".format(os.path.basename(bandFile)))
 
     except:
 
-        print(traceback.format_exc())
-
+        print (traceback.format_exc())
 
 def read_data(file_name):
     """
@@ -91,14 +93,18 @@ def read_data(file_name):
     """
 
     src = gdal.Open(file_name, gdal.GA_ReadOnly)
+
     src_data = src.GetRasterBand(1).ReadAsArray()
+
     src_geo = src.GetGeoTransform()
+
     src_prj = src.GetProjection()
+
     cols = src.RasterXSize
+
     rows = src.RasterYSize
 
-    return {"data": src_data, "geo": src_geo, "prj": src_prj, "cols": cols, "rows": rows}
-
+    return {"data" : src_data, "geo" : src_geo, "prj" : src_prj, "cols" : cols, "rows" : rows}
 
 def write_raster(file_name, geo, prj, cols, rows, out_array):
     """
@@ -130,90 +136,49 @@ def write_raster(file_name, geo, prj, cols, rows, out_array):
     return None
 
 
-def usage():
-    print('\n\tUsage:python 6_ccdc_ref_cover_diff.py\n\n \
-    \t[-ccdc Full path to the CCDC CoverDistMap layers]\n \
-    \t[-ref Full path to the NLCD or Trends layers]\n \
-    \t[-name nlcd or Trendsblock]\n\
-    \t[-from From Year]\n \
-    \t[-to To Year]\n \
-    \t[-o Output Folder with complete path]\n\n \
-    \tExample:\n\tpython 6_ccdc_nlcd_cover_diff.py -ccdc path_to_ccdc \n\t -nlcd path_to_nlcd -from 1992 -to 2001 \n \
-    \t-o path_to_output\n')
-
-    sys.exit(0)
-
-
 def main():
-    argv = sys.argv
 
-    if argv is None:
-        print("try -help")
+    parser = argparse.ArgumentParser()
 
-        sys.exit(1)
+    parser.add_argument('-ccdc', '--ccdc', type=str, required=True,
+                        help='Full path to the CCDC LC change layers')
 
-    # Parse command line arguments.
-    i = 1
+    parser.add_argument('-ref', '--ref', type=str, required=True,
+                        help='Full path to the reference LC change layers')
 
-    while i < len(argv):
+    parser.add_argument('-type', '--type', type=str, choices=['nlcd', 'trends'], required=True,
+                        help='Specify either nlcd or trends')
 
-        arg = argv[i]
+    parser.add_argument('-o', '--output', type=str, required=True,
+                        help='Full path to the output folder')
 
-        if arg == '-ccdc':
+    parser.add_argument('-from', '-frm', '--year1', type=str, required=True,
+                        help='The beginning year')
 
-            i = i + 1
+    parser.add_argument('-to', '--year2', type=str, required=True,
+                        help='The end year')
 
-            inputCCDC = argv[i]
+    args = parser.parse_args()
 
-        elif arg == '-ref':
+    if args.type == "trends":
 
-            i = i + 1
+        name = "Trendsblock"
 
-            inputNLCD = argv[i]
+    else:
 
-        elif arg =='-name':
-
-            i = i + 1
-
-            name = argv[i]
-
-        elif arg == '-o':
-
-            i = i + 1
-
-            outputDir = argv[i]
-
-        elif arg == '-from':
-
-            i = i + 1
-
-            fromY = argv[i]
-
-        elif arg == '-to':
-
-            i = i + 1
-
-            toY = argv[i]
-
-        elif arg == '-help':
-
-            i = i + 1
-
-            usage()
-
-        i += 1
+        name = "nlcd"
 
     # Call the primary function
-    allCalc(inputCCDC, inputNLCD, outputDir, name, year_1, year_2)
-
+    allCalc(args.ccdc, args.ref, args.output, args.year1, args.year2, name)
 
 if __name__ == '__main__':
+
     main()
 
 t2 = datetime.datetime.now()
 
-print(t2.strftime("%Y-%m-%d %H:%M:%S"))
+print (t2.strftime("%Y-%m-%d %H:%M:%S"))
 
 tt = t2 - t1
 
-print("\tProcessing time: " + str(tt))
+print ("\tProcessing time: " + str(tt) )

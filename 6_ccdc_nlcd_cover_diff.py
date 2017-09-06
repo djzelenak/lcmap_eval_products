@@ -18,7 +18,7 @@ print (sys.version)
 t1 = datetime.datetime.now()
 print (t1.strftime("%Y-%m-%d %H:%M:%S"))
 
-def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
+def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY, Name):
 
     try:
 
@@ -61,7 +61,7 @@ def allCalc(CCDCdir, NLCDdir, OutDir, FromY, ToY):
 
             if not os.path.exists(nlcd_file):
 
-                print ("Need to compute change layers for NLCD year {} to year {}".format(FromY, ToY))
+                print ("Need to compute change layers for {} year {} to year {}".format(Name, FromY, ToY))
 
                 sys.exit(0)
 
