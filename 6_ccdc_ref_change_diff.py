@@ -53,6 +53,8 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
 
                 ccdc_file = c
 
+                print(ccdc_file)
+
                 continue
 
             elif c == ccdc_files[-1]:
@@ -69,6 +71,8 @@ def allCalc(inRef, inCCDC, outDir, FromY, ToY, Name):
             if os.path.exists(r):
 
                 ref_file = r
+
+                print(ref_file)
 
                 continue
 

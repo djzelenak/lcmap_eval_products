@@ -26,7 +26,7 @@ t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
 
-def readData(reffile, predfile, year):
+def readData(reffile, predfile):
 
 
     # Load raster data into arrays
