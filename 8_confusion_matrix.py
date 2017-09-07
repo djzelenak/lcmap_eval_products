@@ -67,6 +67,10 @@ def readData(refdir, preddir, y):
 
     predfile = get_file(preddir, y)
 
+    print("The reference file is:\n\t{}\n".format(reffile))
+
+    print("The prediction file is:\n\t{}\n".format(predfile))
+
     # Load raster data into arrays
     refdata = gdal.Open(reffile, gdal.GA_ReadOnly).ReadAsArray()
 
@@ -233,9 +237,6 @@ def main():
     parser.add_argument('-y', '--year', type=str, required=True,
                         help='The year used to identify matching layers for comparing in the matrix')
 
-    parser.add_argument('-n', '--name', type=str, required=True,
-                        help='File name to match for')
-
     args = parser.parse_args()
 
     out_dir = args.output
@@ -247,7 +248,6 @@ def main():
     if not os.path.exists(args.output):
 
         os.makedirs(args.output)
-
 
     refData, predData, Classes = readData(args.reference, args.prediction, args.year)
 

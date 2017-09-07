@@ -31,7 +31,7 @@ print("\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 gdal.AllRegister()
 gdal.UseExceptions()
 
-#%%
+
 def get_inlayers(infolder, name, y1, y2):
 
     """
@@ -67,7 +67,7 @@ def get_inlayers(infolder, name, y1, y2):
         
         return flist
 
-#%%
+
 def get_outlayers(inrasters, outfolder, name):
 
     """
