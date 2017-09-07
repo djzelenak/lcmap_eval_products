@@ -101,6 +101,7 @@ def readData(refdir, preddir, y):
 
 
 def compute_confusion_matrix(truth, predicted, classes):
+
     total = float(len(classes) ** 2)
 
     # create boolean arrays of all zeros
