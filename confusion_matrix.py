@@ -4,14 +4,18 @@ Created on Fri Jun 16 14:05:09 2017
 
 @author: dzelenak
 
-Purpose:
+Purpose: Generate confusion matrix comparing pyccd and trends/nlcd land cover agreement
 
-Last Updated: 8/4/2017
+Horizontal Axis = Pyccd classes
+Vertical Axis = Trends/NLCD classes
+
+Last Updated: 8/4/2017, 9/7/2017
 """
 
 import datetime
 import os
 import sys
+import glob
 
 import numpy as np
 
@@ -26,8 +30,42 @@ t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
 
-def readData(reffile, predfile):
+def get_file(path, year):
+    """
 
+    :param path: Location to search for the appropriate input file based on year
+    :type path: str
+    :param name:
+    :param year:
+    :return: Item from templist based on the matching year
+    """
+
+    filelist = glob.glob("{p}{sep}*.tif".format(p=path, sep=os.sep))
+
+    filelist.sort()
+
+    templist = [item for item in filelist if year in os.path.basename(item)]
+
+    if len(templist) == 0:
+
+        print("\nCould not locate a file in the give path {}\n".format(path))
+
+        sys.exit(0)
+
+    elif len(templist) == 1:
+
+        return templist[0]
+
+    else:
+
+        return templist[-1]
+
+
+def readData(refdir, preddir, y):
+
+    reffile = get_file(refdir, y)
+
+    predfile = get_file(preddir, y)
 
     # Load raster data into arrays
     refdata = gdal.Open(reffile, gdal.GA_ReadOnly).ReadAsArray()
@@ -184,36 +222,55 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-r', '-ref', '--reference', type=str, required=True,
-                        help='Full path to the reference file (Trends or NLCD)')
+                        help='Full path to the reference file parent directory (Trends or NLCD)')
 
     parser.add_argument('-p', '-pred', '--prediction', type=str, required=True,
-                        help='Full path to the prediction file (CCDC)')
+                        help='Full path to the prediction file parent directory (CCDC CoverPrim)')
 
     parser.add_argument('-o', '--output', type=str, required=True,
                         help='Full path to the output folder')
+
+    parser.add_argument('-y', '--year', type=str, required=True,
+                        help='The year used to identify matching layers for comparing in the matrix')
+
+    parser.add_argument('-n', '--name', type=str, required=True,
+                        help='File name to match for')
 
     args = parser.parse_args()
 
     out_dir = args.output
 
-    ref_file = args.reference
+    ref_dir = args.reference
 
-    pred_file = args.prediction
+    pred_dir = args.prediction
 
-    if not os.path.exists(out_dir):
+    if not os.path.exists(args.output):
 
-        os.makedirs(out_dir)
+        os.makedirs(args.output)
 
-    refData, predData, Classes = readData(ref_file, pred_file)
+
+    refData, predData, Classes = readData(args.reference, args.prediction, args.year)
 
     cnf_mat = compute_confusion_matrix(refData, predData, Classes)
 
     print("\n", cnf_mat, "\n")
 
-    # create a name for the confusion matrix .csv file
-    fname = '{}_{}_cnfmatrix'.format(os.path.basename(ref_file)[:-4], os.path.basename(pred_file)[:-4])
+    names = ['nlcd', 'trends']
 
-    write_to_csv(cnf_mat, out_dir, fname)
+    for n in names:
+
+        if n in args.reference:
+
+            name = n
+
+        else:
+
+            name = "ref"
+
+    # create a name for the confusion matrix .csv file
+    fname = '{}_{}_{}_cnfmatrix'.format(name, "ccdc", args.year)
+
+    write_to_csv(cnf_mat, args.output, fname)
 
     print("All done")
 
