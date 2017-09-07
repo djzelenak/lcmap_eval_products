@@ -16,6 +16,7 @@ import datetime
 import os
 import sys
 import glob
+import pprint
 
 import numpy as np
 
@@ -48,7 +49,11 @@ def get_file(path, year):
 
     if len(templist) == 0:
 
-        print("\nCould not locate a file in the give path {}\n".format(path))
+        print("\nCould not locate a file for year {} in the given path {}\n".format(year, path))
+
+        print("Available files in path are:\n")
+
+        pprint.pprint(filelist)
 
         sys.exit(0)
 
@@ -92,7 +97,7 @@ def readData(refdir, preddir, y):
 
     ref, ccdc = None, None
 
-    return refdata, preddata, classes
+    return refdata, preddata, classes, reffile, predfile
 
 
 def compute_confusion_matrix(truth, predicted, classes):
@@ -249,23 +254,26 @@ def main():
 
         os.makedirs(args.output)
 
-    refData, predData, Classes = readData(args.reference, args.prediction, args.year)
+    refData, predData, Classes, ref_file, pred_file = readData(args.reference, args.prediction, args.year)
 
     cnf_mat = compute_confusion_matrix(refData, predData, Classes)
 
     print("\n", cnf_mat, "\n")
 
-    names = ['nlcd', 'trends']
+    names = ['nlcd', 'NLCD', 'trends', 'Trendsblock']
 
     for n in names:
 
-        if n in args.reference:
+        if n in os.path.basename(ref_file):
 
             name = n
 
-        else:
+            if name == 'Trendsblock':
 
-            name = "ref"
+                name = 'trends'
+
+            break
+
 
     # create a name for the confusion matrix .csv file
     fname = '{}_{}_{}_cnfmatrix'.format(name, "ccdc", args.year)
