@@ -6,15 +6,15 @@ Purpose: Recode Trends classes to match PyCCD classes
 Trends --> PyCCD Class Scheme
 
 0 --> 0      No data (insufficient data)
-2 --> 1.     Developed (includes mining)
-8 --> 2.     Agriculture
-7 --> 3.     Grassland/shrubland
-6 --> 4.     Tree Cover
-1 --> 5.     Water bodies
-9 --> 6.     Wetland
-11 -> 7.     Ice and Snow
-4 --> 8.     Barren
-3,10 -> 9.    Disturbed or transitional
+2,4 --> 1    Developed (includes mining)
+8 --> 2      Agriculture
+7 --> 3      Grassland/shrubland
+6 --> 4      Tree Cover
+1 --> 5      Water bodies
+9 --> 6      Wetland
+11 -> 7      Ice and Snow
+5 --> 8      Barren
+3,10 -> 9    Disturbed or transitional
 
 """
 
@@ -64,8 +64,8 @@ def recode_trends(indir, outdir=None):
         holder[ srcdata == 1 ] = 5
         holder[ srcdata == 2 ] = 1
         holder[ srcdata == 3 ] = 9
-        holder[ srcdata == 4 ] = 8
-        holder[ srcdata == 5 ] = 1
+        holder[ srcdata == 4 ] = 1
+        holder[ srcdata == 5 ] = 8
         holder[ srcdata == 6 ] = 4
         holder[ srcdata == 7 ] = 3
         holder[ srcdata == 8 ] = 2
