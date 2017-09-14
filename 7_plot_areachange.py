@@ -198,7 +198,9 @@ def main():
     if type_ is None:
         type_ = "change"
 
-    if not os.path.exists(outfolder): os.mkdir(outfolder)
+    if not os.path.exists(outfolder):
+
+        os.mkdir(outfolder)
 
     raster = get_rasters(infolder, fromy, toy, type_)
 
