@@ -2,30 +2,48 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed May 17 13:44:42 2017
+Last Updated on 9/14/2017 to work with annual thematic land cover in addition
+to annual spectral change maps.
 
 Create vertical bar charts that show the area of accumulated change.
-Generate change accumulated between two specified years, or 1984 and 2015 
+Generate change accumulated between two specified years, or 1984 and 2015
 by default.
 
 @author: dzelenak
 """
-# %%
-import os, sys, glob  # , re
 
+import os
+import sys
+import glob
+
+import matplotlib
+
+matplotlib.use("agg")
 import matplotlib.pyplot as plt
 
 import numpy as np
 
-# from pprint import pprint
-
 from osgeo import gdal
 
-def get_rasters(indir, y1, y2):
-    infile = glob.glob(indir + os.sep + "ccdc{}to{}ct.tif".format(y1, y2))[0]
+
+def get_rasters(indir, y1, y2, name):
+    if name == "change":
+
+        infile = glob.glob(indir + os.sep + "ccdc{}to{}ct.tif".format(y1, y2))[0]
+
+    elif name == "cover":
+
+        infile = glob.glob(indir + os.sep + "CoverPrim{}to{}ct.tif".format(y1, y2))[0]
+
+    else:
+
+        print("\n-type argument must either be 'change' or 'cover'\n")
 
     return infile
 
+
 def get_data(r):
+
     src = gdal.Open(r, gdal.GA_ReadOnly)
 
     srcdata = src.GetRasterBand(1).ReadAsArray()
@@ -34,33 +52,44 @@ def get_data(r):
 
     a_unique = np.arange(np.amax(srcdata) + 1)
 
-    b = np.bincount(srcdata)  # retrieve count of unique values in srcdata array
+    # retrieve count of unique values in srcdata array
+    b = np.bincount(srcdata)
 
-    src, srcdata = None, None  # close these datasets
+    # close these datasets
+    src, srcdata = None, None
 
     return b, a_unique
 
-def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
+
+def get_plots(ind, b, outdir, type_, tile, sum_b, y1, y2):
     """Purpose: Generate the Matplotlib bar plots.
-    
+
     Args:
         ind = numpy array for the number of changes, used for the x-axis
         b = numpy array of the percent of tile for a given number of changes, used
             for the y-axis
         outdir = string, the full path to the output location where the graph
             will be saved as a .png file
+        type_ = the product type (change or cover)
         tile = the ARD tile name, used for the title of the graph
         labels = list of integers, the years of observations used to label the
         x-axis ticks
-    
+
     Return:
         None
     """
 
     fig = plt.figure(figsize=(12, 6))
 
-    fig.suptitle("{} Area of Accumulated Change between {} and {}".format(tile, y1, y2),
-                 fontsize=18, fontweight="bold")
+    if type_ == "change":
+
+        fig.suptitle("{} Area of Accumulated Spectral Change between {} and {}".format(tile, y1, y2),
+                     fontsize=18, fontweight="bold")
+
+    elif type_ == "cover":
+
+        fig.suptitle("{} Area of Accumulated Cover Change between {} and {}".format(tile, y1, y2),
+                     fontsize=18, fontweight="bold")
 
     ax = fig.add_subplot(111)
 
@@ -80,6 +109,7 @@ def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
     plt.ylim([0, max(b) * 1.1])
 
     def autolabel(rects, ax):
+
         (y_bottom, y_top) = ax.get_ylim()
 
         y_height = y_top - y_bottom
@@ -101,19 +131,22 @@ def get_plots(ind, b, outdir, tile, sum_b, y1, y2):
 
     return None
 
+
 def usage():
     print("\n\t[-i Full path to the input File Directory]\n"
           "\t[-o Full path to the output location]\n"
+          "\t[-type Product type ('change' or 'cover')]"
           "\t[-tile Name of ARD tile for the graph title]\n"
           "\t[-help Display this message]\n\n")
 
-    print("\n\tExample: 7_plot_areachange.py -i C:/.../CCDCMap -from "
-          "-o C:/.../graphs -tile h05v02")
+    print("\n\tExample: plot_areachange.py -i C:/.../CCDCMap -from " + \
+          "-o C:/.../graphs -type change -tile h05v02")
 
     return None
 
+
 def main():
-    infolder, outfolder, tile, fromy, toy = None, None, None, None, None
+    fromy, toy, type_ = None, None, None
 
     argv = sys.argv
 
@@ -134,6 +167,10 @@ def main():
         elif arg == "-o":
             i = i + 1
             outfolder = argv[i]
+
+        elif arg == "-type":
+            i = i + 1
+            type_ = argv[i]
 
         elif arg == "-frm":
             i = i + 1
@@ -158,16 +195,18 @@ def main():
 
         toy = '2015'
 
+    if type_ is None:
+        type_ = "change"
+
     if not os.path.exists(outfolder): os.mkdir(outfolder)
 
-    raster = get_rasters(infolder, fromy, toy)
+    raster = get_rasters(infolder, fromy, toy, type_)
 
     b, ind = get_data(raster)
 
     bv = []
 
     for z in range(len(b)):
-
         bv.append(float(b[z]) / 25000000.0 * 100.0)
 
     sum_b = 0.00
@@ -177,9 +216,14 @@ def main():
 
     b_vals = np.array(bv)
 
-    get_plots(ind, b_vals, outfolder, tile, sum_b, fromy, toy)
+    get_plots(ind, b_vals, outfolder, type_, tile, sum_b, fromy, toy)
 
     return None
 
+
 if __name__ == "__main__":
     main()
+
+
+
+
