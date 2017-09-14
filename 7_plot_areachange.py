@@ -200,7 +200,7 @@ def main():
 
     if not os.path.exists(outfolder):
 
-        conos.mkdir(outfolder)
+        conacos.mkdir(outfolder)
 
     raster = get_rasters(infolder, fromy, toy, type_)
 
