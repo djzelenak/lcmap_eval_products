@@ -83,11 +83,11 @@ def recode_nlcd(indir, outdir=None):
 
     if len(in_nlcd_list) == 0:
 
-        in_trends_list = glob.glob(indir + "*.tif")
+        in_nlcd_list = glob.glob(indir + "*.tif")
 
     if len(in_nlcd_list) == 0:
 
-        print("Could not locate any Trends data in:\n{}".format(indir))
+        print("Could not locate any NLCD layers in:\n{}".format(indir))
 
         sys.exit(0)
     
