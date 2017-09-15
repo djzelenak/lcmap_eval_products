@@ -2,8 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fb71cf6d-08c2-453e-a05e-360494cafcc3" name="Default" comment="">
+      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/color_covermap_nlcd.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/1_recode_nlcd.py" afterPath="$PROJECT_DIR$/1_recode_nlcd.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/1_apply_colormap_ref.py" afterPath="$PROJECT_DIR$/1_apply_colormap_ref.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -26,14 +27,24 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="1_recode_nlcd.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="1_recode_nlcd.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/1_recode_nlcd.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="427">
-              <caret line="110" column="37" lean-forward="true" selection-start-line="110" selection-start-column="37" selection-end-line="110" selection-end-column="37" />
+            <state relative-caret-position="495">
+              <caret line="114" column="37" lean-forward="true" selection-start-line="114" selection-start-column="37" selection-end-line="114" selection-end-column="37" />
               <folding>
                 <element signature="e#2398#2407#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="1_apply_colormap_ref.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/1_apply_colormap_ref.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="395">
+              <caret line="269" column="0" lean-forward="true" selection-start-line="269" selection-start-column="0" selection-end-line="269" selection-end-column="0" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -76,6 +87,7 @@
         <option value="$PROJECT_DIR$/4_refdata_lc_change.py" />
         <option value="$PROJECT_DIR$/7_graph_trends_lcchange.py" />
         <option value="$PROJECT_DIR$/1_recode_nlcd.py" />
+        <option value="$PROJECT_DIR$/1_apply_colormap_ref.py" />
       </list>
     </option>
   </component>
@@ -429,7 +441,14 @@
       <option name="project" value="LOCAL" />
       <updated>1505495412789</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="New script for recoding NLCD values">
+      <created>1505495858493</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1505495858493</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -667,11 +686,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/1_recode_nlcd.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="427">
-          <caret line="110" column="37" lean-forward="true" selection-start-line="110" selection-start-column="37" selection-end-line="110" selection-end-column="37" />
+        <state relative-caret-position="495">
+          <caret line="114" column="37" lean-forward="true" selection-start-line="114" selection-start-column="37" selection-end-line="114" selection-end-column="37" />
           <folding>
             <element signature="e#2398#2407#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/1_apply_colormap_ref.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="395">
+          <caret line="269" column="0" lean-forward="true" selection-start-line="269" selection-start-column="0" selection-end-line="269" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>

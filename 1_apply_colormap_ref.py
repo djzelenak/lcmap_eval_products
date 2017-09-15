@@ -264,7 +264,7 @@ def main():
 
     names = ["nlcd", "Trends"]
 
-    colortables = ["color_nlcd.txt", "color_covermap.txt"]
+    colortables = ["color_covermap_nlcd.txt", "color_covermap.txt"]
 
     dtypes = ["Byte", "Byte"]
 
