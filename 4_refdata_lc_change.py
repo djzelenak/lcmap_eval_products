@@ -6,15 +6,14 @@ Last Updated: 8/7/2017
 Usage: Calculate the from-to class-to-class comparison between each year at a
 user-specified interval and also between user-specified end-years
 """
-import os, sys, datetime, glob
+import datetime
+import glob
+import os
+import sys
+import argparse
 
 import numpy as np
-
-try:
-    from osgeo import gdal
-    # from osgeo.gdalconst import *
-except ImportError:
-    import gdal
+from osgeo import gdal
 
 print(sys.version)
 
@@ -43,6 +42,10 @@ def get_inlayers(infolder, name, y1, y2):
     """
 
     infile1, infile2 = None, None
+
+    if name == "trends":
+
+        name = "Trendsblock"
 
     filelist = glob.glob("{}{}{}*.tif".format(infolder, os.sep, name))
 
@@ -120,7 +123,7 @@ def do_calc(name, file1, file2, outdir):
     outband.WriteArray(from_to, 0, 0)
 
     outband.FlushCache()
-    outband.SetNoDataValue(-9999)
+    outband.SetNoDataValue(0)
 
     outfile.SetGeoTransform(src1.GetGeoTransform())
     outfile.SetProjection(src1.GetProjection())
@@ -128,73 +131,42 @@ def do_calc(name, file1, file2, outdir):
     src1, src2, srcdata1, srcdata2, data1, data2, outfile = None, None, None, None, None, None, None
 
     return None
-# %%
-def usage():
-    print("\t[-i Full path to the directory where reference LC data map layers are saved]\n"
-          "\t[-from The start year]\n"
-          "\t[-to The end year]\n"
-          "\t[-name the cover map product name]\n"
-          "\t**nlcd or Trendsblock are valid names (case sensitive!)**\n"
-          "\t[-o Full path to the output folder]\n"
-          "\n\t*Output raster will be saved in the same format "
-          "as input raster (GTiff).\n\n"
 
-          "\tExample: 4_nlcd_lc_change.py -i /.../reference_data/NLCD -from 1992 -to 2011"
-          " -o /.../OutputFolder -name nlcd")
 
-    return None
-# %%
 def main():
 
-    inputdir, outputdir, fromY, toY, name = None, None, None, None, None
+    parser = argparse.ArgumentParser()
 
-    argv = sys.argv
+    parser.add_argument("-i", "--input", type=str, required=True,
+                        help="The full path to the input land cover products")
 
-    if len(argv) < 3:
-        print("\n\tMissing one or more arguments:\n ")
+    parser.add_argument("-o", "--output", type=str, required=True,
+                        help="The full path to the output folder")
 
-        usage()
+    parser.add_argument("-n", "--name", type=str, required=True, choices=["nlcd", "trends"],
+                        help="Specify the land cover product as NLCD or Trends")
 
-        sys.exit(1)
+    parser.add_argument("-frm", "-from", "--year1", type=str, required=True,
+                        help="Specify Year 1")
 
-    # Parse command line arguments.
-    i = 1
-    while i < len(argv):
+    parser.add_argument("-to", "--year2", type=str, required=True,
+                        help="Specify Year 2")
 
-        arg = argv[i]
+    args = parser.parse_args()
 
-        if arg == '-i':
-            i = i + 1
-            inputdir = argv[i]
+    outputdir = args.output
 
-        elif arg == '-from':
-            i = i + 1
-            fromY = argv[i]
+    inputdir = args.input
 
-        elif arg == '-to':
-            i = i + 1
-            toY = argv[i]
+    name = args.name
 
-        elif arg == '-o':
-            i = i + 1
-            outputdir = argv[i]
+    fromY = args.year1
 
-        elif arg == '-name':
-            i = i + 1
-            name = argv[i]
+    toY = args.year2
 
-        elif arg == '-help':
-            usage()
-            sys.exit(1)
+    if not os.path.exists(outputdir):
 
-        elif arg[:1] == ':':
-            print('Unrecognized command option: %s' % arg)
-            usage()
-            sys.exit(1)
-
-        i += 1
-
-    if not os.path.exists(outputdir): os.mkdir(outputdir)
+        os.mkdir(outputdir)
 
     file1, file2 = get_inlayers(inputdir, name, fromY, toY)
 
@@ -203,11 +175,10 @@ def main():
     return None
 
 
-# %%
 if __name__ == '__main__':
+
     main()
 
-# %%
 t2 = datetime.datetime.now()
 print("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
 

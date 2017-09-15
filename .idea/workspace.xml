@@ -3,7 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="fb71cf6d-08c2-453e-a05e-360494cafcc3" name="Default" comment="">
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/7_graph_trends_lcchange.py" afterPath="$PROJECT_DIR$/7_graph_trends_lcchange.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/4_refdata_lc_change.py" afterPath="$PROJECT_DIR$/4_refdata_lc_change.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -36,14 +36,36 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="7_graph_trends_lcchange.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="7_graph_trends_lcchange.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/7_graph_trends_lcchange.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="646">
-              <caret line="38" column="8" lean-forward="false" selection-start-line="38" selection-start-column="8" selection-end-line="38" selection-end-column="8" />
+            <state relative-caret-position="1428">
+              <caret line="249" column="60" lean-forward="false" selection-start-line="249" selection-start-column="60" selection-end-line="249" selection-end-column="60" />
               <folding>
                 <element signature="e#179#199#0" expanded="true" />
               </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="4_refdata_lc_change.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/4_refdata_lc_change.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-810">
+              <caret line="95" column="27" lean-forward="true" selection-start-line="95" selection-start-column="27" selection-end-line="95" selection-end-column="27" />
+              <folding>
+                <element signature="e#241#256#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="1_reclassify_seglength.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/1_reclassify_seglength.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="393">
+              <caret line="214" column="4" lean-forward="false" selection-start-line="214" selection-start-column="4" selection-end-line="214" selection-end-column="31" />
+              <folding />
             </state>
           </provider>
         </entry>
@@ -85,7 +107,6 @@
         <option value="$PROJECT_DIR$/plot_areachange.py" />
         <option value="$PROJECT_DIR$/7_plot_annualchange.py" />
         <option value="$PROJECT_DIR$/1_clip_refdata.py" />
-        <option value="$PROJECT_DIR$/4_refdata_lc_change.py" />
         <option value="$PROJECT_DIR$/try_argparser.py" />
         <option value="$PROJECT_DIR$/5_nlcd_change_freq.py" />
         <option value="$PROJECT_DIR$/5_ccdc_num_changes.py" />
@@ -95,6 +116,7 @@
         <option value="$PROJECT_DIR$/6_ccdc_ref_cover_diff.py" />
         <option value="$PROJECT_DIR$/7_plot_areachange.py" />
         <option value="$PROJECT_DIR$/7_graph_trends_lcchange.py" />
+        <option value="$PROJECT_DIR$/4_refdata_lc_change.py" />
       </list>
     </option>
   </component>
@@ -387,7 +409,14 @@
       <option name="project" value="LOCAL" />
       <updated>1505482059255</updated>
     </task>
-    <option name="localTasksCounter" value="24" />
+    <task id="LOCAL-00024" summary="Designed for Trends recoded values, added argparse">
+      <created>1505483500506</created>
+      <option name="number" value="00024" />
+      <option name="presentableId" value="LOCAL-00024" />
+      <option name="project" value="LOCAL" />
+      <updated>1505483500506</updated>
+    </task>
+    <option name="localTasksCounter" value="25" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -429,7 +458,8 @@
     <MESSAGE value="work with either nlcd or trends" />
     <MESSAGE value="added ability to plot cover change" />
     <MESSAGE value="various fixes" />
-    <option name="LAST_COMMIT_MESSAGE" value="various fixes" />
+    <MESSAGE value="Designed for Trends recoded values, added argparse" />
+    <option name="LAST_COMMIT_MESSAGE" value="Designed for Trends recoded values, added argparse" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -503,13 +533,6 @@
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/1_clip_refdata.py" />
-    <entry file="file://$PROJECT_DIR$/4_refdata_lc_change.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="91" column="0" lean-forward="true" selection-start-line="91" selection-start-column="0" selection-end-line="91" selection-end-column="0" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/try_argparser.py" />
     <entry file="file://$PROJECT_DIR$/5_nlcd_change_freq.py">
       <provider selected="true" editor-type-id="text-editor">
@@ -578,10 +601,28 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/7_graph_trends_lcchange.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="646">
-          <caret line="38" column="8" lean-forward="false" selection-start-line="38" selection-start-column="8" selection-end-line="38" selection-end-column="8" />
+        <state relative-caret-position="1428">
+          <caret line="249" column="60" lean-forward="false" selection-start-line="249" selection-start-column="60" selection-end-line="249" selection-end-column="60" />
           <folding>
             <element signature="e#179#199#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/1_reclassify_seglength.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="393">
+          <caret line="214" column="4" lean-forward="false" selection-start-line="214" selection-start-column="4" selection-end-line="214" selection-end-column="31" />
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/4_refdata_lc_change.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-810">
+          <caret line="95" column="27" lean-forward="true" selection-start-line="95" selection-start-column="27" selection-end-line="95" selection-end-column="27" />
+          <folding>
+            <element signature="e#241#256#0" expanded="true" />
           </folding>
         </state>
       </provider>
