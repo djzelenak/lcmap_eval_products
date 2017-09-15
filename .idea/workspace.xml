@@ -2,9 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="fb71cf6d-08c2-453e-a05e-360494cafcc3" name="Default" comment="">
-      <change type="NEW" beforePath="" afterPath="$PROJECT_DIR$/color_covermap_nlcd.txt" />
       <change type="MODIFICATION" beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/1_apply_colormap_ref.py" afterPath="$PROJECT_DIR$/1_apply_colormap_ref.py" />
+      <change type="MODIFICATION" beforePath="$PROJECT_DIR$/7_graph_nlcd_lcchange.py" afterPath="$PROJECT_DIR$/7_graph_nlcd_lcchange.py" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -15,36 +14,26 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-      <file leaf-file-name="1_recode_trends.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/1_recode_trends.py">
+      <file leaf-file-name="7_graph_trends_lcchange.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/7_graph_trends_lcchange.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="476">
-              <caret line="37" column="12" lean-forward="true" selection-start-line="37" selection-start-column="11" selection-end-line="37" selection-end-column="12" />
+            <state relative-caret-position="-2238">
+              <caret line="114" column="12" lean-forward="false" selection-start-line="114" selection-start-column="12" selection-end-line="114" selection-end-column="12" />
               <folding>
-                <element signature="e#436#445#0" expanded="true" />
+                <element signature="e#179#199#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="1_recode_nlcd.py" pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/1_recode_nlcd.py">
+      <file leaf-file-name="7_graph_nlcd_lcchange.py" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/7_graph_nlcd_lcchange.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="495">
-              <caret line="114" column="37" lean-forward="true" selection-start-line="114" selection-start-column="37" selection-end-line="114" selection-end-column="37" />
+            <state relative-caret-position="125">
+              <caret line="217" column="0" lean-forward="true" selection-start-line="217" selection-start-column="0" selection-end-line="217" selection-end-column="0" />
               <folding>
-                <element signature="e#2398#2407#0" expanded="true" />
+                <element signature="e#177#192#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file leaf-file-name="1_apply_colormap_ref.py" pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/1_apply_colormap_ref.py">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="395">
-              <caret line="269" column="0" lean-forward="true" selection-start-line="269" selection-start-column="0" selection-end-line="269" selection-end-column="0" />
-              <folding />
             </state>
           </provider>
         </entry>
@@ -88,6 +77,7 @@
         <option value="$PROJECT_DIR$/7_graph_trends_lcchange.py" />
         <option value="$PROJECT_DIR$/1_recode_nlcd.py" />
         <option value="$PROJECT_DIR$/1_apply_colormap_ref.py" />
+        <option value="$PROJECT_DIR$/7_graph_nlcd_lcchange.py" />
       </list>
     </option>
   </component>
@@ -448,7 +438,14 @@
       <option name="project" value="LOCAL" />
       <updated>1505495858493</updated>
     </task>
-    <option name="localTasksCounter" value="33" />
+    <task id="LOCAL-00033" summary="New script for recoding NLCD values">
+      <created>1505496561584</created>
+      <option name="number" value="00033" />
+      <option name="presentableId" value="LOCAL-00033" />
+      <option name="project" value="LOCAL" />
+      <updated>1505496561584</updated>
+    </task>
+    <option name="localTasksCounter" value="34" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -620,16 +617,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/7_graph_trends_lcchange.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="660">
-          <caret line="114" column="12" lean-forward="false" selection-start-line="114" selection-start-column="12" selection-end-line="114" selection-end-column="12" />
-          <folding>
-            <element signature="e#179#199#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/7_plot_areachange.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="172">
@@ -674,13 +661,11 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/1_recode_trends.py">
+    <entry file="file://$PROJECT_DIR$/1_apply_colormap_ref.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="476">
-          <caret line="37" column="12" lean-forward="true" selection-start-line="37" selection-start-column="11" selection-end-line="37" selection-end-column="12" />
-          <folding>
-            <element signature="e#436#445#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="395">
+          <caret line="269" column="0" lean-forward="true" selection-start-line="269" selection-start-column="0" selection-end-line="269" selection-end-column="0" />
+          <folding />
         </state>
       </provider>
     </entry>
@@ -694,11 +679,33 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/1_apply_colormap_ref.py">
+    <entry file="file://$PROJECT_DIR$/1_recode_trends.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="395">
-          <caret line="269" column="0" lean-forward="true" selection-start-line="269" selection-start-column="0" selection-end-line="269" selection-end-column="0" />
-          <folding />
+        <state relative-caret-position="476">
+          <caret line="37" column="12" lean-forward="true" selection-start-line="37" selection-start-column="11" selection-end-line="37" selection-end-column="12" />
+          <folding>
+            <element signature="e#436#445#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/7_graph_trends_lcchange.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2238">
+          <caret line="114" column="12" lean-forward="false" selection-start-line="114" selection-start-column="12" selection-end-line="114" selection-end-column="12" />
+          <folding>
+            <element signature="e#179#199#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/7_graph_nlcd_lcchange.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="125">
+          <caret line="217" column="0" lean-forward="true" selection-start-line="217" selection-start-column="0" selection-end-line="217" selection-end-column="0" />
+          <folding>
+            <element signature="e#177#192#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
