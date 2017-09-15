@@ -12,12 +12,15 @@ for specific years.
 import os, sys, glob
 from osgeo import gdal
 import numpy as np
+import matplotlib
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
-#%%
-def get_rasters(indir):
 
+
+def get_rasters(indir):
     """Purpose: Construct a string pointing to a specific land cover from-to
     raster, and check to make sure that it exists.
 
@@ -31,16 +34,15 @@ def get_rasters(indir):
     in_cl = glob.glob(indir + os.sep + "*.tif")
 
     if in_cl is None:
-
         print("\n**Could not locate input LC Change file for the years specified**\n")
 
         sys.exit(1)
 
     return in_cl
 
-#%%
-def read_data(cl):
 
+
+def read_data(cl):
     """
     Purpose: Open the Trends from-to LC Change .tif file.
                 Iterate through the list of from-to classes.
@@ -62,7 +64,7 @@ def read_data(cl):
 
     # these are valid for the Trends classes
     classes = [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 201, 202,
-               203, 204 ,205, 206, 207, 208, 209, 210, 211, 301, 302, 303, 304,
+               203, 204, 205, 206, 207, 208, 209, 210, 211, 301, 302, 303, 304,
                305, 306, 307, 308, 309, 310, 311, 401, 402, 403, 404, 405, 406,
                407, 408, 409, 410, 411, 501, 502, 503, 504, 505, 506, 507, 508,
                509, 510, 511, 601, 602, 603, 604, 605, 606, 607, 608, 609, 610,
@@ -77,7 +79,6 @@ def read_data(cl):
     masked_sum = []
 
     for c in classes:
-
         mask_cl = np.copy(cl_data)
 
         mask_cl[mask_cl != c] = 0
@@ -96,9 +97,9 @@ def read_data(cl):
 
     return classes, masked_sum, total_pixels
 
-#%%
-def get_trends_area(data):
 
+
+def get_trends_area(data):
     """Purpose:  Calculate the area of coverage by Trends within the ARD tile,
     which will be used to calculate the percentage for each Trends From-To class.
 
@@ -119,9 +120,9 @@ def get_trends_area(data):
 
     return count
 
-#%%
-def get_figure(label_set, df, tile, year1, year2, outname):
 
+
+def get_figure(label_set, df, tile, year1, year2, outname):
     """Purpose: Generate a matplotlib figure of n rows and 2 columns, the number
                 rows is equal to the number of classes (label_set).  Column 1
                 will contain vertical bar charts colored by the 'from' class.
@@ -138,21 +139,21 @@ def get_figure(label_set, df, tile, year1, year2, outname):
     """
 
     # RGB colors taken from Arc colormap and rescaled from 0-255 to 0-1
-    colors = {"1" : (0.0, 0.0, 0.9333333333333333),
-          "2" : (0.9019607843137255, 0.0, 0.058823529411764705),
-          "3" : (0.9333333333333333, 0.0, 0.9333333333333333),
-          "4" : (0.129, 0.129, 0.129),
-          "5" : (0.7019607843137254, 0.7019607843137254, 0.7019607843137254),
-          "6" : (0.0, 0.5294117647058824, 0.10980392156862745),
-          "7" : (0.9333333333333333, 0.9333333333333333, 0.25098039215686274),
-          "8" : (0.9333333333333333, 0.592156862745098, 0.0),
-          "9" : (0.0, 0.9215686274509803, 0.9215686274509803),
-          "10" : (0.004, 0.1098, 0.4745),
-          "11" : (0.2901960784313726, 0.43137254901960786, 0.6392156862745098)}
+    colors = {"1": (0.0, 0.0, 0.9333333333333333),
+              "2": (0.9019607843137255, 0.0, 0.058823529411764705),
+              "3": (0.9333333333333333, 0.0, 0.9333333333333333),
+              "4": (0.7019607843137254, 0.7019607843137254, 0.7019607843137254),
+              "5": (0.129, 0.129, 0.129),
+              "6": (0.0, 0.5294117647058824, 0.10980392156862745),
+              "7": (0.9333333333333333, 0.9333333333333333, 0.25098039215686274),
+              "8": (0.9333333333333333, 0.592156862745098, 0.0),
+              "9": (0.0, 0.9215686274509803, 0.9215686274509803),
+              "10": (0.004, 0.1098, 0.4745),
+              "11": (0.2901960784313726, 0.43137254901960786, 0.6392156862745098)}
 
     # Generate figure with length(label_set) rows and 2 columns
-    fig, axes = plt.subplots(nrows = len(label_set), ncols = 2,
-                                  figsize=(16, 50))
+    fig, axes = plt.subplots(nrows=len(label_set), ncols=2,
+                             figsize=(16, 50))
 
     # Add figure title
     fig.suptitle("%s Trends %s to %s From-To Classes" % (tile, year1, year2),
@@ -189,7 +190,7 @@ def get_figure(label_set, df, tile, year1, year2, outname):
         axes[i, 0].set_ylabel("Count")
 
         # generate tables in second column for class L in row i
-        axes[i, 1].table(cellText=df_temp.values, bbox=[0,0,1,1], colLabels=df_temp.columns)
+        axes[i, 1].table(cellText=df_temp.values, bbox=[0, 0, 1, 1], colLabels=df_temp.columns)
         axes[i, 1].set_title('"From" Class ' + L + " Table")
         axes[i, 1].set_xticks([])
         axes[i, 1].set_yticks([])
@@ -202,25 +203,26 @@ def get_figure(label_set, df, tile, year1, year2, outname):
 
     return None
 
-#%%
-def usage():
-    print("\n\t[-i the full path to the folder containing the input raster file]\n"\
-    "\t[-o the full path to the output graph image (.png)]\n"\
-    "\t[-tile the tile name (used for graph title)]\n"\
-    "\t[-frm the from year]\n"\
-    "\t[-to the to year]\n"\
-    "\t[-help display this message]\n")
 
-    print("Example: python graph_nlcd.py -i C:\... -o C:\... -tile h05v02 "\
+
+def usage():
+
+    print("\n\t[-i the full path to the folder containing the input raster file]\n"
+          "\t[-o the full path to the output graph image (.png)]\n"
+          "\t[-tile the tile name (used for graph title)]\n"
+          "\t[-frm the from year]\n"
+          "\t[-to the to year]\n"
+          "\t[-help display this message]\n")
+
+    print("Example: python graph_nlcd.py -i C:\... -o C:\... -tile h05v02 "
           "-name trends -frm 1992 -to 2011")
 
-#%%
-def main():
 
+
+def main():
     argv = sys.argv
 
     if len(argv) <= 1:
-
         print("***Missing required arguments***\n")
 
         print("Try using -help\n")
@@ -260,56 +262,52 @@ def main():
 
         i += 1
 
-    # just some values used for testing
-    # tile = "h02v09"
-    # in_dir = r"C:\Users\dzelenak\Workspace\LCMAP_Eval\ARD_h02v09\reference_data"
-    # year1 = "1992"
-    # year2 = "2011"
-    # out_dir = r"C:\Users\dzelenak\Workspace\LCMAP_Eval\ARD_h02v09\graphs\test"
+    if not os.path.exists(out_dir):
 
-    if not os.path.exists(out_dir): os.mkdir(out_dir)
+        os.mkdir(out_dir)
 
     in_files = get_rasters(in_dir)
-    
+
     for in_cl in in_files:
 
         year1 = in_cl[-12:-10]
+
         year2 = in_cl[-8:-6]
-                
+
         outname = "%s%s%strends%sto%s_lchange.png" % (out_dir, os.sep, tile, year1, year2)
-        
+
         classes, class_sums, total = read_data(in_cl)
-    
+
         # calculate the percent of the total for each from-to class
-        class_perc= ["%.2f" % (val / float(total) * 100.0) for val in class_sums]
-    
+        class_perc = ["%.2f" % (val / float(total) * 100.0) for val in class_sums]
+
         # convert the items in classes list to strings and save in a new list
         labels = [str(c) for c in classes]
-    
+
         # get a set of the unique "from" classes (the first 1 or 2 digits)
-        labels_ =  [l[0] if len(l)==3 else l[:2] for l in labels]
-        label_set = set(labels_) # converting to set removes duplicates
-        label_set = list(label_set) # convert back to list to allow indexing
-    
+        labels_ = [l[0] if len(l) == 3 else l[:2] for l in labels]
+        label_set = set(labels_)  # converting to set removes duplicates
+        label_set = list(label_set)  # convert back to list to allow indexing
+
         # Cluttered way to return a list of class values with the correct order
         label_set = [int(l) for l in label_set]
         label_set.sort()
         label_set = [str(l) for l in label_set]
-    
+
         # create list of tuples to populate three data columns
-        data = [(x,y,z) for x,y,z in zip(labels, class_sums, class_perc)]
-    
+        data = [(x, y, z) for x, y, z in zip(labels, class_sums, class_perc)]
+
         # create pandas dataframe from the list of tuples
         df = DataFrame(data)
-    
+
         # add column names to the dataframe
         df.columns = ["Name", "Count", "Percent"]
-    
+
         get_figure(label_set, df, tile, year1, year2, outname)
 
     return None
 
-#%%
+
 if __name__ == "__main__":
 
     main()
