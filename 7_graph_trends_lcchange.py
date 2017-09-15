@@ -92,24 +92,28 @@ def read_data(cl):
 
         if c == 0:
 
-            mask_cl[mask_cl != c] = 999
+            # mask_cl[mask_cl != c] = 999
 
-            mask_cl[mask_cl == c] = 1
+            # mask_cl[mask_cl == c] = 1
 
-            mask_cl[mask_cl == 999] = 0
+            # mask_cl[mask_cl == 999] = 0
+
+            # holder = 25000000 - np.sum(mask_cl)
+
+             masked_sum.append(0)
 
         else:
-        
+
             mask_cl[mask_cl != c] = 0
 
             mask_cl[mask_cl == c] = 1
 
-        holder = np.sum(mask_cl)
+            holder = np.sum(mask_cl)
 
-        masked_sum.append(holder)
+            masked_sum.append(holder)
 
-        # gives an idea of progress for the user
-        print(c, " ", holder)
+            # gives an idea of progress for the user
+            print(c, " ", holder)
 
     total_pixels = get_trends_area(cl_data)
 
