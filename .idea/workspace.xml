@@ -39,8 +39,8 @@
       <file leaf-file-name="7_graph_trends_lcchange.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/7_graph_trends_lcchange.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-174">
-              <caret line="230" column="0" lean-forward="true" selection-start-line="230" selection-start-column="0" selection-end-line="230" selection-end-column="0" />
+            <state relative-caret-position="439">
+              <caret line="101" column="8" lean-forward="true" selection-start-line="101" selection-start-column="8" selection-end-line="101" selection-end-column="8" />
               <folding>
                 <element signature="e#179#199#0" expanded="true" />
               </folding>
@@ -435,7 +435,21 @@
       <option name="project" value="LOCAL" />
       <updated>1505485205686</updated>
     </task>
-    <option name="localTasksCounter" value="26" />
+    <task id="LOCAL-00026" summary="Fixed from-class 0, added argparse">
+      <created>1505488300826</created>
+      <option name="number" value="00026" />
+      <option name="presentableId" value="LOCAL-00026" />
+      <option name="project" value="LOCAL" />
+      <updated>1505488300826</updated>
+    </task>
+    <task id="LOCAL-00027" summary="Created notebook for testing">
+      <created>1505488405048</created>
+      <option name="number" value="00027" />
+      <option name="presentableId" value="LOCAL-00027" />
+      <option name="project" value="LOCAL" />
+      <updated>1505488405048</updated>
+    </task>
+    <option name="localTasksCounter" value="28" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -479,7 +493,9 @@
     <MESSAGE value="various fixes" />
     <MESSAGE value="Designed for Trends recoded values, added argparse" />
     <MESSAGE value="Fixed nodata value, added argparse" />
-    <option name="LAST_COMMIT_MESSAGE" value="Fixed nodata value, added argparse" />
+    <MESSAGE value="Fixed from-class 0, added argparse" />
+    <MESSAGE value="Created notebook for testing" />
+    <option name="LAST_COMMIT_MESSAGE" value="Created notebook for testing" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -649,8 +665,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/7_graph_trends_lcchange.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-174">
-          <caret line="230" column="0" lean-forward="true" selection-start-line="230" selection-start-column="0" selection-end-line="230" selection-end-column="0" />
+        <state relative-caret-position="439">
+          <caret line="101" column="8" lean-forward="true" selection-start-line="101" selection-start-column="8" selection-end-line="101" selection-end-column="8" />
           <folding>
             <element signature="e#179#199#0" expanded="true" />
           </folding>

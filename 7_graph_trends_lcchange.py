@@ -90,9 +90,19 @@ def read_data(cl):
 
         mask_cl = np.copy(cl_data)
 
-        mask_cl[mask_cl != c] = 0
+        if c == 0:
 
-        mask_cl[mask_cl == c] = 1
+            mask_cl[mask_cl != c] = 999
+
+            mask_cl[mask_cl == c] = 1
+
+            mask_cl[mask_cl == 999] = 0
+
+        else:
+        
+            mask_cl[mask_cl != c] = 0
+
+            mask_cl[mask_cl == c] = 1
 
         holder = np.sum(mask_cl)
 
