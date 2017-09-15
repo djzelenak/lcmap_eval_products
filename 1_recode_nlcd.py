@@ -101,7 +101,7 @@ def recode_nlcd(indir, outdir=None):
         
         holder = np.copy(srcdata)
         
-        if nlcd[5:9] == "1992":
+        if os.path.basename(nlcd)[5:9] == "1992":
 
             holder[srcdata == 11] = 5
             holder[srcdata == 12] = 7
@@ -192,11 +192,7 @@ def main():
                         help='Full path to the output location')
     
     args = parser.parse_args()
-    
-    # in_trends_dir = r"Z:\working\ReferenceLayers\Reference_Data\TrendsMosaics\Era"
 
-    # out_trends_dir = r"Z:\working\ReferenceLayers\Reference_Data\TrendsMosaics\Era\PyCCD_class"
-    
     in_nlcd_dir = args.input
     
     out_nlcd_dir = args.output
