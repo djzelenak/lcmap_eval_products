@@ -13,6 +13,7 @@ import os, sys, glob
 from osgeo import gdal
 import numpy as np
 import matplotlib
+import argparse
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -34,6 +35,7 @@ def get_rasters(indir):
     in_cl = glob.glob(indir + os.sep + "*.tif")
 
     if in_cl is None:
+
         print("\n**Could not locate input LC Change file for the years specified**\n")
 
         sys.exit(1)
@@ -62,6 +64,8 @@ def read_data(cl):
 
     cl_data = cl_src.GetRasterBand(1).ReadAsArray()
 
+
+    """
     # these are valid for the Trends classes
     classes = [101, 102, 103, 104, 105, 106, 107, 108, 109, 110, 111, 201, 202,
                203, 204, 205, 206, 207, 208, 209, 210, 211, 301, 302, 303, 304,
@@ -73,15 +77,18 @@ def read_data(cl):
                904, 905, 906, 907, 908, 909, 910, 911, 1001, 1002, 1003, 1004,
                1005, 1006, 1007, 1008, 1009, 1010, 1011, 1101, 1102, 1103, 1104,
                1105, 1106, 1107, 1108, 1109, 1110, 1111]
+    """
 
-    # classes = np.unique(cl_data)
+    classes = np.unique(cl_data)
 
     masked_sum = []
 
     for c in classes:
+
         mask_cl = np.copy(cl_data)
 
         mask_cl[mask_cl != c] = 0
+
         mask_cl[mask_cl == c] = 1
 
         holder = np.sum(mask_cl)
@@ -114,6 +121,7 @@ def get_trends_area(data):
     mask_data = np.copy(data)
 
     mask_data[mask_data > 0] = 1
+
     mask_data[mask_data <= 0] = 0
 
     count = np.sum(mask_data)
@@ -137,19 +145,6 @@ def get_figure(label_set, df, tile, year1, year2, outname):
     Returns:
         None
     """
-
-    # RGB colors taken from Arc colormap and rescaled from 0-255 to 0-1
-    colors = {"1": (0.0, 0.0, 0.9333333333333333),
-              "2": (0.9019607843137255, 0.0, 0.058823529411764705),
-              "3": (0.9333333333333333, 0.0, 0.9333333333333333),
-              "4": (0.7019607843137254, 0.7019607843137254, 0.7019607843137254),
-              "5": (0.129, 0.129, 0.129),
-              "6": (0.0, 0.5294117647058824, 0.10980392156862745),
-              "7": (0.9333333333333333, 0.9333333333333333, 0.25098039215686274),
-              "8": (0.9333333333333333, 0.592156862745098, 0.0),
-              "9": (0.0, 0.9215686274509803, 0.9215686274509803),
-              "10": (0.004, 0.1098, 0.4745),
-              "11": (0.2901960784313726, 0.43137254901960786, 0.6392156862745098)}
 
     # Generate figure with length(label_set) rows and 2 columns
     fig, axes = plt.subplots(nrows=len(label_set), ncols=2,
@@ -182,7 +177,7 @@ def get_figure(label_set, df, tile, year1, year2, outname):
         df_temp.columns = ["Name", "Count", "Percent of Trends Coverage"]
 
         # generate bar charts in first column for class L in row i
-        axes[i, 0].bar(df_temp.index, df_temp.Count, facecolor=colors[L])
+        axes[i, 0].bar(df_temp.index, df_temp.Count)
         axes[i, 0].set_title('"From" Class ' + L + " Bar Chart")
         axes[i, 0].set_xticks(df_temp.index)
         axes[i, 0].set_xticklabels(df_temp.Name)
@@ -196,6 +191,7 @@ def get_figure(label_set, df, tile, year1, year2, outname):
         axes[i, 1].set_yticks([])
 
     plt.tight_layout()
+
     plt.subplots_adjust(top=0.95)
 
     # save the figure to a .png file
@@ -204,75 +200,39 @@ def get_figure(label_set, df, tile, year1, year2, outname):
     return None
 
 
-
-def usage():
-
-    print("\n\t[-i the full path to the folder containing the input raster file]\n"
-          "\t[-o the full path to the output graph image (.png)]\n"
-          "\t[-tile the tile name (used for graph title)]\n"
-          "\t[-frm the from year]\n"
-          "\t[-to the to year]\n"
-          "\t[-help display this message]\n")
-
-    print("Example: python graph_nlcd.py -i C:\... -o C:\... -tile h05v02 "
-          "-name trends -frm 1992 -to 2011")
-
-
-
 def main():
-    argv = sys.argv
 
-    if len(argv) <= 1:
-        print("***Missing required arguments***\n")
+    parser = argparse.ArgumentParser()
 
-        print("Try using -help\n")
+    parser.add_argument("-i", "--input", type=str, required=True,
+                        help="The full path to the Trends LC Change products")
 
-        sys.exit(0)
+    parser.add_argument("-o", "--output", type=str, required=True,
+                        help="The full path to the output location of the graphs")
 
-    i = 1
+    parser.add_argument("-t", "--tile", type=str, required=True,
+                        help="The ARD tile name")
 
-    while i < len(argv):
+    args=parser.parse_args()
 
-        arg = argv[i]
+    out_dir = args.output
 
-        if arg == "-i":
-            i = i + 1
-            in_dir = argv[i]
+    in_dir = args.input
 
-        elif arg == "-o":
-            i = i + 1
-            out_dir = argv[i]
+    tile = args.tile
 
-        elif arg == "-tile":
-            i = i + 1
-            tile = argv[i]
-
-        elif arg == "-frm":
-            i = i + 1
-            year1 = argv[i]
-
-        elif arg == "-to":
-            i = i + 1
-            year2 = argv[i]
-
-        elif arg == "-help":
-            i = i + 1
-            usage()
-            sys.exit(1)
-
-        i += 1
 
     if not os.path.exists(out_dir):
 
-        os.mkdir(out_dir)
+        os.makedirs(out_dir)
 
     in_files = get_rasters(in_dir)
 
     for in_cl in in_files:
 
-        year1 = in_cl[-12:-10]
+        year1 = in_cl[-16:-12]
 
-        year2 = in_cl[-8:-6]
+        year2 = in_cl[-10:-6]
 
         outname = "%s%s%strends%sto%s_lchange.png" % (out_dir, os.sep, tile, year1, year2)
 
@@ -286,12 +246,16 @@ def main():
 
         # get a set of the unique "from" classes (the first 1 or 2 digits)
         labels_ = [l[0] if len(l) == 3 else l[:2] for l in labels]
+
         label_set = set(labels_)  # converting to set removes duplicates
+
         label_set = list(label_set)  # convert back to list to allow indexing
 
         # Cluttered way to return a list of class values with the correct order
         label_set = [int(l) for l in label_set]
+
         label_set.sort()
+
         label_set = [str(l) for l in label_set]
 
         # create list of tuples to populate three data columns
