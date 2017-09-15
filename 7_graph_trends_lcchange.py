@@ -79,7 +79,10 @@ def read_data(cl):
                1105, 1106, 1107, 1108, 1109, 1110, 1111]
     """
 
-    classes = np.unique(cl_data)
+    # classes = np.unique(cl_data)
+
+    # valid for the recoded Trends class scheme
+    classes = [i * 100 + j for i in range(0, 10) for j in range(0, 10)]
 
     masked_sum = []
 
@@ -105,7 +108,6 @@ def read_data(cl):
     return classes, masked_sum, total_pixels
 
 
-
 def get_trends_area(data):
     """Purpose:  Calculate the area of coverage by Trends within the ARD tile,
     which will be used to calculate the percentage for each Trends From-To class.
@@ -127,7 +129,6 @@ def get_trends_area(data):
     count = np.sum(mask_data)
 
     return count
-
 
 
 def get_figure(label_set, df, tile, year1, year2, outname):
@@ -158,16 +159,23 @@ def get_figure(label_set, df, tile, year1, year2, outname):
 
         t = []
 
-        # iterate through rows of dataframe to retrieve values for class L
+        # iterate through rows of data frame to retrieve values for class L
         for x in df.itertuples():
 
-            if x[1][0] == L and len(x[1]) == 3:
+            if L == '0':
 
-                t.append(x[1:])
+                if len(x[1]) == 1:
+                    t.append(x[1:])
 
-            elif x[1][:2] == L and len(x[1]) == 4:
+            else:
 
-                t.append(x[1:])
+                if x[1][0] == L and len(x[1]) == 3:
+
+                    t.append(x[1:])
+
+                elif x[1][:2] == L and len(x[1]) == 4:
+
+                    t.append(x[1:])
 
         df_temp = DataFrame(t)
 
@@ -220,7 +228,6 @@ def main():
     in_dir = args.input
 
     tile = args.tile
-
 
     if not os.path.exists(out_dir):
 
