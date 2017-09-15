@@ -60,17 +60,9 @@ def read_data(cl):
     # these are valid for the NLCD recoded classes, use np.unique below
     # to ignore empty classes if desired
 
-    classes_ = [i * 100 + j for i in range(0, 10) for ind, j in enumerate(range(0, 10))]
+    c = [1, 2, 3, 4, 5, 6, 7, 8, 9, 81]
 
-    class81 = [8100 + i for i in range(0, 10)]
-
-    classes = classes_ + class81
-
-    for i in range(0, 10):
-
-        classes.insert(i * 10 + 10 + i, i * 100 + 81)
-
-    classes.append(8181)
+    classes = [i * 100 + j for i in c for j in c]
 
     """
     classes_recode = [101, 102, 105, 106, 107, 108, 109, 111, 181, 201, 202, 205, 206,
@@ -90,27 +82,13 @@ def read_data(cl):
 
         mask_cl = np.copy(cl_data)
 
-        if c == 0:
+        mask_cl[mask_cl != c] = 0
 
-            mask_cl[mask_cl == c] = 999
+        mask_cl[mask_cl == c] = 1
 
-            mask_cl[mask_cl != c] = 0
+        holder = np.sum(mask_cl)
 
-            mask_cl[mask_cl == 999] = 1
-
-            holder = np.sum(mask_cl)
-
-            masked_sum.append(holder)
-
-        else:
-
-            mask_cl[mask_cl != c] = 0
-
-            mask_cl[mask_cl == c] = 1
-
-            holder = np.sum(mask_cl)
-
-            masked_sum.append(holder)
+        masked_sum.append(holder)
 
         # gives an idea of progress for the user
         print(c, " ", holder)
@@ -251,4 +229,5 @@ def main():
 
 
 if __name__ == "__main__":
+
     main()

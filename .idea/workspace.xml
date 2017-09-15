@@ -29,8 +29,8 @@
       <file leaf-file-name="7_graph_nlcd_lcchange.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/7_graph_nlcd_lcchange.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="125">
-              <caret line="217" column="0" lean-forward="true" selection-start-line="217" selection-start-column="0" selection-end-line="217" selection-end-column="0" />
+            <state relative-caret-position="448">
+              <caret line="126" column="0" lean-forward="true" selection-start-line="126" selection-start-column="0" selection-end-line="126" selection-end-column="0" />
               <folding>
                 <element signature="e#177#192#0" expanded="true" />
               </folding>
@@ -445,7 +445,14 @@
       <option name="project" value="LOCAL" />
       <updated>1505496561584</updated>
     </task>
-    <option name="localTasksCounter" value="34" />
+    <task id="LOCAL-00034" summary="fixed some minor issues">
+      <created>1505499133087</created>
+      <option name="number" value="00034" />
+      <option name="presentableId" value="LOCAL-00034" />
+      <option name="project" value="LOCAL" />
+      <updated>1505499133087</updated>
+    </task>
+    <option name="localTasksCounter" value="35" />
     <servers />
   </component>
   <component name="ToolWindowManager">
@@ -493,7 +500,8 @@
     <MESSAGE value="Created notebook for testing" />
     <MESSAGE value="Fixed 0 class sum" />
     <MESSAGE value="New script for recoding NLCD values" />
-    <option name="LAST_COMMIT_MESSAGE" value="New script for recoding NLCD values" />
+    <MESSAGE value="fixed some minor issues" />
+    <option name="LAST_COMMIT_MESSAGE" value="fixed some minor issues" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
@@ -701,8 +709,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/7_graph_nlcd_lcchange.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="125">
-          <caret line="217" column="0" lean-forward="true" selection-start-line="217" selection-start-column="0" selection-end-line="217" selection-end-column="0" />
+        <state relative-caret-position="448">
+          <caret line="126" column="0" lean-forward="true" selection-start-line="126" selection-start-column="0" selection-end-line="126" selection-end-column="0" />
           <folding>
             <element signature="e#177#192#0" expanded="true" />
           </folding>
