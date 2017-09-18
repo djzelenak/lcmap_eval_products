@@ -11,11 +11,25 @@ import datetime
 import glob
 import os
 import pprint
-import re
 import subprocess
 import sys
+import argparse
+import re
+from collections import namedtuple
 
 from osgeo import gdal
+import numpy as np
+
+print(sys.version)
+
+WKT = "ard_srs.wkt"
+
+GeoExtent = namedtuple('GeoExtent', ['x_min', 'y_max', 'x_max', 'y_min'])
+
+CONUS_EXTENT = GeoExtent(x_min=-2565585,
+                         y_min=14805,
+                         x_max=2384415,
+                         y_max=3314805)
 
 print(sys.version)
 
@@ -23,85 +37,26 @@ t1 = datetime.datetime.now()
 
 print(t1.strftime("%Y-%m-%d %H:%M:%S"))
 
-gdal.UseExceptions()
-gdal.AllRegister()
 
-def GetExtent(gt, cols, rows):
-    """ Return list of corner coordinates from a geotransform
+def geospatial_hv(h, v, loc=CONUS_EXTENT):
+    """
+    Geospatial extent and 30m affine for a given ARD grid location.
 
-        @type gt:   C{tuple/list}
-        @param gt: geotransform
-        @type cols:   C{int}
-        @param cols: number of columns in the dataset
-        @type rows:   C{int}
-        @param rows: number of rows in the dataset
-        @rtype:    C{[float,...,float]}
-        @return:   coordinates of each corner
-    
+    :param h:
+    :param v:
+    :param loc:
+    :return:
     """
 
-    ext = []
-    xarr = [0, cols]
-    yarr = [0, rows]
+    xmin = loc.x_min + h * 5000 * 30
+    xmax = loc.x_min + h * 5000 * 30 + 5000 * 30
+    ymax = loc.y_max - v * 5000 * 30
+    ymin = loc.y_max - v * 5000 * 30 - 5000 * 30
 
-    for px in xarr:
+    return GeoExtent(x_min=xmin, x_max=xmax, y_max=ymax, y_min=ymin)
 
-        for py in yarr:
-            x = gt[0] + (px * gt[1]) + (py * gt[2])
 
-            y = gt[3] + (px * gt[4]) + (py * gt[5])
-
-            ext.append([x, y])
-
-            # print x,y
-
-        yarr.reverse()
-
-    return ext
-
-def GetGeoInfo(SourceDS):
-    """Obtain information about the transformation, projection, and size
-    of the raster dataset
-    
-    Args:
-        SourceDS = gdal raster object
-        
-    Returns:
-        cols = 
-        rows = 
-        bands = 
-        GeoT = 
-        proj = 
-        extent = 
-    """
-
-    print('running GetGeoInfo function')
-    # NDV         = SourceDS.GetRasterBand(1).GetNoDataValue()
-    cols = SourceDS.RasterXSize
-    rows = SourceDS.RasterYSize
-    bands = SourceDS.RasterCount
-    GeoT = SourceDS.GetGeoTransform()
-    proj = SourceDS.GetProjection()
-    extent = GetExtent(GeoT, cols, rows)
-
-    return cols, rows, GeoT, proj, bands, extent
-
-def ComputMask(inputD, ProjRaster, W, S, E, N, cSize, DestiProj):
-    """
-    """
-
-    print('\n running ComputMask function')
-    inMSSFile = gdal.Open(inputD)
-    InXsize, InYsize, InGeoT, InProj, bands, extent = GetGeoInfo(inMSSFile)
-
-    runwarp = "gdalwarp -of HFA -s_srs %s -overwrite -t_srs %s -te %s %s %s %s -tr %s %s -dstnodata 0 -q -r near %s %s" % \
-              (InProj, DestiProj, W, S, E, N, cSize, cSize, inputD, ProjRaster)  ## -dstnodata 0
-
-    subprocess.call(runwarp, shell=True)
-
-    return None
-
-def RemoveEmpty(raster):
+def remove_empty(raster):
     """Open the clipped Trends rasters and delete those that are entirely
     no data.
     
@@ -111,8 +66,6 @@ def RemoveEmpty(raster):
     Returns:
         None
     """
-    import numpy as np
-
     test = gdal.Open(raster, gdal.GA_ReadOnly)
 
     testband = test.GetRasterBand(1)
@@ -135,110 +88,81 @@ def RemoveEmpty(raster):
     allfiles = glob.glob(raster + "*")
 
     for anc in allfiles:
-
         anc_ = re.sub("era", "", anc)
 
         os.rename(anc, anc_)
 
     return None
 
-def usage():
-    print('\n\n \
-    [-i Input File Directory] \n \
-    [-ref Input reference file Directory (used for clipping NLCD)]\n \
-    [-o Output Folder with complete path]\n\n')
-
-    return None
 
 def main():
-    argv = sys.argv
+    parser = argparse.ArgumentParser()
 
-    if argv is None:
-        print("try -help")
-        sys.exit(0)
-    ## Parse command line arguments.
-    i = 1
-    while i < len(argv):
-        arg = argv[i]
+    parser.add_argument("-i", "--input", type=str, required=True,
+                        help="Full path to the directory containing the ancillary data products")
 
-        if arg == '-i':
-            i = i + 1
-            inputDir = argv[i]
+    parser.add_argument("-o", "--output", type=str, required=True,
+                        help="Full path to the output location")
 
-        elif arg == '-o':
-            i = i + 1
-            outputDir = argv[i]
+    parser.add_argument('-hv', nargs=2, type=str, required=False, metavar=('HH (0-32)', 'VV (0-21)'),
+                        help='Horizontal and vertical ARD grid identifiers.')
 
-        elif arg == '-ref':
-            i = i + 1
-            RefFile = argv[i]
+    args = parser.parse_args()
 
-        elif arg[:1] == ':':
-            print('Unrecognized command option: %s' % arg)
-            usage()
-            sys.exit(1)
+    file_list = sorted(glob.glob(args.input + os.sep + '*.img'))
 
-        elif arg == '-help':
-            usage()
-            sys.exit(1)
+    if len(file_list) == 0:
+        file_list = sorted(glob.glob(args.input + os.sep + '*.tif'))
 
-        i += 1
-
-    inputList = sorted(glob.glob(inputDir + os.sep + '*.img'))
-
-    if len(inputList) == 0:
-        inputList = sorted(glob.glob(inputDir + os.sep + "*.tif"))
-
-    if len(inputList) == 0:
-        print("Couldn't locate Trends files in:\n{}".format(inputDir))
+    if len(file_list) == 0:
+        print("Couldn't find any .img or .tif files in the specified input folder")
 
         sys.exit(0)
 
-    print('Input File List:\n')
-    pprint.pprint(inputList)
+    print('Input Ref File List:\n')
 
-    for inputD in inputList:
-        # RefFile = '%s/ChangeMap_2000.tif' %(RefFolder) #arbitrary selection for reference file
-        print('\n\tWorking on', inputD.split('/')[-1])
-        if not os.path.exists(outputDir):
-            os.makedirs(outputDir)
+    pprint.pprint(file_list)
 
-        # tifDriver = gdal.GetDriverByName('GTiff')
-        # tifDriver.Register()
-        ref = gdal.Open(RefFile, gdal.GA_ReadOnly)
-        Desxsize, Desysize, DesGeoT, DestiProj, desbands, dExt = GetGeoInfo(ref)
+    for file in file_list:
+
+        print('\tWorking on {}'.format(os.path.basename(file)))
+
+        if not os.path.exists(args.output):
+            os.makedirs(args.output)
+
+        clip_extent = geospatial_hv(h=int(args.hv[0]), v=int(args.hv[1]))
 
         print('\n------------------------')
-        print('Extent of the out layer:\n\t\t\t', dExt[3][1], '\n\n\t', dExt[0][0],
-              '\t\t\t', dExt[2][0], '\n\n\t\t\t', dExt[1][1])
+
+        print('Extent of the out layer:\n\t\t\t', clip_extent.y_max,
+              '\n\n\t', clip_extent.x_min, '\t\t\t', clip_extent.y_min, '\n\n\t\t\t', clip_extent.x_max)
+
         print('------------------------\n')
 
-        W = str(dExt[0][0])
-        S = str(dExt[1][1])
-        E = str(dExt[2][0])
-        N = str(dExt[3][1])
+        in_file = os.path.basename(file)
+        out_name = os.path.splitext(in_file)[0]
+        out_file = args.output + os.sep + out_name + ".tif"
 
-        cSize = DesGeoT[1]
+        print('\tProducing output {}'.format(out_file))
 
-        if not os.path.exists(outputDir):
-            os.makedirs(outputDir)
+        run_trans = "gdal_translate -projwin {ulx} {uly} {lrx} {lry} -a_srs {wkt} {src} {dst}".format(
+            ulx=clip_extent.x_min, uly=clip_extent.y_max,
+            lrx=clip_extent.x_max, lry=clip_extent.y_min,
+            wkt=WKT,
+            src=file,
+            dst=out_file)
 
-        ProjRaster = outputDir + os.sep + os.path.basename(inputD).split('.')[0] + '.tif'
+        subprocess.call(run_trans, shell=True)
 
-        if not os.path.exists(ProjRaster):
-            ComputMask(inputD, ProjRaster, W, S, E, N, cSize, DestiProj)
-            RemoveEmpty(ProjRaster)  # check if empty dataset
-
-        else:
-            print('%s already exists' % (os.path.basename(ProjRaster)))
-            RemoveEmpty(ProjRaster)  # check if empty dataset
+        # check if dataset is empty
+        remove_empty(out_file)
 
     print("\nAll done")
 
     return None
 
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     main()
 
 t2 = datetime.datetime.now()
