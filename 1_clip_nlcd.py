@@ -62,6 +62,16 @@ def main():
 
     file_list = sorted(glob.glob(args.input + os.sep + '*.img'))
 
+    if len(file_list) == 0:
+
+        file_list = sorted(glob.glob(args.input + os.sep + '*.tif'))
+
+    if len(file_list) == 0:
+
+        print("Couldn't find any .img or .tif files in the specified input folder")
+
+        sys.exit(0)
+
     print('Input Ref File List:\n')
 
     pprint.pprint(file_list)
