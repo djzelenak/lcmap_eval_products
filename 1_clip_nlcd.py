@@ -15,6 +15,8 @@ from collections import namedtuple
 
 print(sys.version)
 
+WKT = "ard_srs.wkt"
+
 GeoExtent = namedtuple('GeoExtent', ['x_min', 'y_max', 'x_max', 'y_min'])
 
 CONUS_EXTENT = GeoExtent(x_min=-2565585,
@@ -86,9 +88,10 @@ def main():
 
         print('\tProducing output {}'.format(out_file))
 
-        run_trans = "gdal_translate -projwin {ulx} {uly} {lrx} {lry} {src} {dst}".format(
+        run_trans = "gdal_translate -projwin {ulx} {uly} {lrx} {lry} -a_srs {wkt} {src} {dst}".format(
             ulx=clip_extent.x_min, uly=clip_extent.y_max,
             lrx=clip_extent.x_max, lry=clip_extent.y_min,
+            wkt=WKT,
             src=file,
             dst=out_file)
 
