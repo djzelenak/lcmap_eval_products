@@ -73,7 +73,7 @@ def main():
         if not os.path.exists(args.output):
             os.makedirs(args.output)
 
-        clip_extent = geospatial_hv(h=args.hv[0], v=args.hv[1])
+        clip_extent = geospatial_hv(h=int(args.hv[0]), v=int(args.hv[1]))
 
         print('\n------------------------')
 
