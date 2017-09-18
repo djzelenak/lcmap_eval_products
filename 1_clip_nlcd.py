@@ -1,176 +1,109 @@
-'''
+"""
 Description: Take CONUS NLCD layers and clip them to the extent of a given reference layer.
 Based on script "RasterMask_reproject_resample_GDAL.py" by Devendra Dahal written on 5/12/2015
-Last Updated: 1/10/2017, 2/2/2017 by Dan Zelenak
-'''
+Last Updated: 1/10/2017, 2/2/2017, 9/18/2017 by Dan Zelenak
+"""
 
-import os, sys, traceback, datetime, glob, subprocess, pprint
-print (sys.version)
+import datetime
+import glob
+import os
+import pprint
+import subprocess
+import sys
+import argparse
+from collections import namedtuple
 
-#GDALpath = '/usr/bin'
+print(sys.version)
 
-try:
-	from osgeo import gdal
-	#from osgeo.gdalconst import *
-except ImportError:
-	import gdal	
-	
+GeoExtent = namedtuple('GeoExtent', ['x_min', 'y_max', 'x_max', 'y_min'])
+
+CONUS_EXTENT = GeoExtent(x_min=-2565585,
+                         y_min=14805,
+                         x_max=2384415,
+                         y_max=3314805)
+
 t1 = datetime.datetime.now()
-print (t1.strftime("%Y-%m-%d %H:%M:%S"))
+print(t1.strftime("%Y-%m-%d %H:%M:%S"))
 
-def GetExtent(gt,cols,rows):
-    ''' Return list of corner coordinates from a geotransform
 
-        @type gt:   C{tuple/list}
-        @param gt: geotransform
-        @type cols:   C{int}
-        @param cols: number of columns in the dataset
-        @type rows:   C{int}
-        @param rows: number of rows in the dataset
-        @rtype:    C{[float,...,float]}
-        @return:   coordinates of each corner
-    '''
-    ext=[]
-    xarr=[0,cols]
-    yarr=[0,rows]
+def geospatial_hv(h, v, loc=CONUS_EXTENT):
+    """
+    Geospatial extent and 30m affine for a given ARD grid location.
 
-    for px in xarr:
-        for py in yarr:
-            x=gt[0]+(px*gt[1])+(py*gt[2])
-            y=gt[3]+(px*gt[4])+(py*gt[5])
-            ext.append([x,y])
-            # print x,y
-        yarr.reverse()
-    return ext
+    :param h:
+    :param v:
+    :param loc:
+    :return:
+    """
 
-def GetGeoInfo(SourceDS):
-	print ('running GetGeoInfo function')
-	# NDV 		= SourceDS.GetRasterBand(1).GetNoDataValue()
-	cols 		= SourceDS.RasterXSize
-	rows 		= SourceDS.RasterYSize
-	bands	 	= SourceDS.RasterCount
-	GeoT 		= SourceDS.GetGeoTransform()
-	proj 		= SourceDS.GetProjection()
-	extent		= GetExtent(GeoT, cols, rows)
-	
-	return cols, rows, GeoT, proj, bands, extent
+    xmin = loc.x_min + h * 5000 * 30
+    xmax = loc.x_min + h * 5000 * 30 + 5000 * 30
+    ymax = loc.y_max - v * 5000 * 30
+    ymin = loc.y_max - v * 5000 * 30 - 5000 * 30
 
-"""
-def NewRasterID(inFile,cols, rows,GeoTras, Projs, Value,OutFile):
-	print '\n running NewRasterID function'
-	band1 = inFile.GetRasterBand(1)
-	Array1 = band1.ReadAsArray(0, 0, cols, rows)
-	
-	dsFile = rastDriver.Create(OutFile, cols, rows, 1, gdal.GDT_Byte)
-	dsFile.SetGeoTransform(GeoTras)
-	dsFile.SetProjection(Projs)
-	NewArray = numpy.zeros(shape=(rows,cols)).astype(int)
-	NewArray[numpy.where((Array1 >= 1))] = Value
-
-	dsFile.GetRasterBand(1).WriteArray(NewArray) 
-		
-	dsFile = None
-	inFile = None
-"""
-	
-def ComputMask(inputD, ProjRaster,W,S,E,N, cSize, DestiProj):
-	print ('\n running ComputMask function')
-	inMSSFile = gdal.Open(inputD)
-	InXsize, InYsize, InGeoT, InProj, bands, extent = GetGeoInfo(inMSSFile)
-	
-	runwarp = "gdalwarp -of HFA -s_srs %s -overwrite -t_srs EPSG:5070 -te %s %s %s %s -tr %s %s -dstnodata 0 -q -r near %s %s" % \
-	(InProj,W, S, E, N, cSize,cSize, inputD, ProjRaster) ## -dstnodata 0
-	subprocess.call(runwarp, shell=True)
-
-def usage():
-
-	print('Usage: python 2_clip_refdata.py\n\n \
-	[-i Input File Directory] \n \
-	[-ref Input reference file(used for clipping)]\n \
-	[-o Output Folder with complete path]\n\n')
+    return GeoExtent(x_min=xmin, x_max=xmax, y_max=ymax, y_min=ymin)
 
 
 def main():
-	#RefFolder = None
-	try:
-		
-		argv = sys.argv
-			
-		if argv is None:
-			print ("try -help")
-			sys.exit(0)
-		## Parse command line arguments.
-		i = 1
-		while i < len(argv):
-			arg = argv[i]
+    parser = argparse.ArgumentParser()
 
-			if arg == '-i':
-				i           = i + 1
-				inputDir    = argv[i]        
-		
-			elif arg == '-o':
-				i           = i + 1
-				outputDir   = argv[i] 
-		
-			elif arg == '-ref':
-				i           = i + 1
-				RefFile     = argv[i] 	
-		
-			elif arg[:1] == ':':
-				print('Unrecognized command option: %s' % arg)
-				usage()
-				sys.exit(1)
-		
-			elif arg == '-help':
-				usage()
-				sys.exit(1) 
-		
-			i += 1
+    parser.add_argument("-i", "--input", type=str, required=True,
+                        help="Full path to the directory containing the ancillary data products")
 
-		inputList = sorted(glob.glob(inputDir + os.sep + '*.img'))	
-		print ('Input Ref File List:\n')
-		pprint.pprint(inputList)
-		
-		for inputD in inputList:
-			
-			#RefFile = '%s/ChangeMap_2000.tif' %(RefFolder) #arbitrary selection for reference file
-			print ('The reference file used for clipping is: {}\n'.format(os.path.basename(RefFile)))
-		
-			print ('\tWorking on {}'.format(os.path.basename(inputD)))
-			if not os.path.exists(outputDir):
-				os.makedirs(outputDir)
+    parser.add_argument("-o", "--output", type=str, required=True,
+                        help="Full path to the output location")
 
-			tifDriver = gdal.GetDriverByName('GTiff')
-			tifDriver.Register()
-			tifMSSFile = gdal.Open(RefFile)
-			Desxsize, Desysize, DesGeoT, DestiProj, desbands, dExt = GetGeoInfo(tifMSSFile)
-			
-			print ('\n------------------------')
-			print ('Extent of the out layer:\n\t\t\t',dExt[3][1],
-            '\n\n\t',dExt[0][0],'\t\t\t',dExt[2][0],'\n\n\t\t\t',dExt[1][1])
-			print ('------------------------\n')
-			W = str(dExt[0][0])
-			S = str(dExt[1][1])
-			E = str(dExt[2][0])
-			N = str(dExt[3][1])
+    parser.add_argument('-hv', nargs=2, type=str, required=False, metavar=('HH (0-32)', 'VV (0-21)'),
+                        help='Horizontal and vertical ARD grid identifiers.')
 
-			cSize = DesGeoT[1]
-	
-			if not os.path.exists(outputDir):
-				os.makedirs(outputDir )
-			ProjRaster = outputDir + os.sep + os.path.basename(inputD).split('.')[0]+ '.tif'
-			ComputMask(inputD, ProjRaster, W, S, E, N, cSize, DestiProj)
-			tifMSSFile = None
-		
-	
-		print ("\nAll done")
-	except:
-		print ("Processed halted on the way.")
-		print (traceback.format_exc())
+    args = parser.parse_args()
+
+    file_list = sorted(glob.glob(args.input + os.sep + '*.img'))
+
+    print('Input Ref File List:\n')
+
+    pprint.pprint(file_list)
+
+    for file in file_list:
+
+        print('\tWorking on {}'.format(os.path.basename(file)))
+
+        if not os.path.exists(args.output):
+            os.makedirs(args.output)
+
+        clip_extent = geospatial_hv(h=args.hv[0], v=args.hv[1])
+
+        print('\n------------------------')
+
+        print('Extent of the out layer:\n\t\t\t', clip_extent.y_max,
+              '\n\n\t', clip_extent.x_min, '\t\t\t', clip_extent.y_min, '\n\n\t\t\t', clip_extent.x_max)
+
+        print('------------------------\n')
+
+        in_file = os.path.basename(file)
+        out_name = os.path.splitext(in_file)[0]
+        out_file = args.output + os.sep + out_name + ".tif"
+
+        print('\tProducing output {}'.format(out_file))
+
+        run_trans = "gdal_translate -projwin {ulx} {uly} {lrx} {lry} {src} {dst}".format(
+            ulx=clip_extent.x_min, uly=clip_extent.y_max,
+            lrx=clip_extent.x_max, lry=clip_extent.y_min,
+            src=file,
+            dst=out_file)
+
+        subprocess.call(run_trans, shell=True)
+
+    print("\nAll done")
+
 
 if __name__ == '__main__':
-	main()
+    main()
+
 t2 = datetime.datetime.now()
-print (t2.strftime("%Y-%m-%d %H:%M:%S"))
+
+print(t2.strftime("%Y-%m-%d %H:%M:%S"))
+
 tt = t2 - t1
-print ("\nProcessing time: " + str(tt) )
+
+print("\nProcessing time: " + str(tt))
