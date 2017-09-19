@@ -88,7 +88,7 @@ def main():
         print('\n------------------------')
 
         print('Extent of the out layer:\n\t\t\t', clip_extent.y_max,
-              '\n\n\t', clip_extent.x_min, '\t\t\t', clip_extent.y_min, '\n\n\t\t\t', clip_extent.x_max)
+              '\n\n\t', clip_extent.x_min, '\t\t\t', clip_extent.x_max, '\n\n\t\t\t', clip_extent.y_min)
 
         print('------------------------\n')
 
