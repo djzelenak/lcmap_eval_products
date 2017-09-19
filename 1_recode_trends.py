@@ -31,9 +31,6 @@ t1 = datetime.datetime.now()
 
 print (t1.strftime("%Y-%m-%d %H:%M:%S\n")    )
 
-gdal.UseExceptions()
-gdal.AllRegister()
-
 
 def recode_trends(indir, outdir=None):
 
@@ -116,11 +113,7 @@ def main():
                         help='Full path to the output location')
     
     args = parser.parse_args()
-    
-    # in_trends_dir = r"Z:\working\ReferenceLayers\Reference_Data\TrendsMosaics\Era"
 
-    # out_trends_dir = r"Z:\working\ReferenceLayers\Reference_Data\TrendsMosaics\Era\PyCCD_class"
-    
     in_trends_dir = args.input
     
     out_trends_dir = args.output

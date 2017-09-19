@@ -114,7 +114,7 @@ if len(imagefolders) != len(imagenames):
     print("Length of image folders doesn't equal length of image names!")
     sys.exit(1)
 
-f = open(outputDir + os.sep + 'h05v03_images.csv', 'w')
+f = open(outputDir + os.sep + 'images.csv', 'w')
 f.write('date,sensor,filename\n')
 for l in range(0, len(imagefolders)):
     # f.write(imagedates[l] + ',' + imagesensor[l] + ',' + images[l] + os.sep + imagenames[l]+ '\n')
