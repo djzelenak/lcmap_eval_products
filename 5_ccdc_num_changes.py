@@ -185,7 +185,7 @@ def do_calc(out_r, in_r1, in_r2):
         outband.WriteArray(sumdata, 0, 0)
 
         outband.FlushCache()
-        outband.SetNoDataValue(255)
+        # outband.SetNoDataValue(255)
 
         outfile.SetGeoTransform(src2.GetGeoTransform())
         outfile.SetProjection(src2.GetProjection())
