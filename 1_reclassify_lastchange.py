@@ -76,7 +76,7 @@ def get_array(inrast):
         outarray = the written numpy array
     """
 
-    tempsrc = gdal.Open(inrast)
+    tempsrc = gdal.Open(inrast, gdal.GA_ReadOnly)
 
     if tempsrc is None:
 
@@ -190,7 +190,7 @@ def write_raster(raster, srcarray, outfile):
     # =======================================================================
     # Do some initial gdal stuff=============================================
 
-    src = gdal.Open(raster)
+    src = gdal.Open(raster, gdal.GA_ReadOnly)
 
     if src is None:
 
@@ -223,7 +223,7 @@ def write_raster(raster, srcarray, outfile):
     #=======================================================================
     #save data to the disk and set the nodata value=========================
     outband.FlushCache()
-    outband.SetNoDataValue(255)
+    # outband.SetNoDataValue(255)
 
     #=======================================================================
     #georeference the image and set the projection==========================
@@ -295,7 +295,7 @@ def main():
 
         array = get_array(r)
 
-        array = array_calc(array)
+        array_ = array_calc(array)
 
         # pprint.pprint(array)
 
@@ -305,9 +305,9 @@ def main():
             
             print ("Processing image ", r, "\n")
 
-            write_raster(r, array, output)
+            write_raster(r, array_, output)
 
-        array = None
+        array, array_ = None, None
         
     return None
 
