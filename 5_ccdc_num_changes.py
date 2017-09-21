@@ -116,8 +116,16 @@ def do_calc(out_r, in_r1, in_r2):
 
         srcdata2 = src2.GetRasterBand(1).ReadAsArray()
 
-        srcdata2[srcdata2 > 0] = 1
+        if np.any(srcdata2):
+        
+            srcdata2[srcdata2 > 0] = 1
+            
+        else:
+            
+            srcdata2 = np.zeros_like(srcdata2)
 
+        srcdata2 = srcdata2.astype("uint8")
+        
         outfile = driver.Create(out_r, cols, rows, 1, gdal.GDT_Byte)
 
         if outfile is None:
@@ -151,10 +159,20 @@ def do_calc(out_r, in_r1, in_r2):
         srcdata1 = src1.GetRasterBand(1).ReadAsArray()
         srcdata2 = src2.GetRasterBand(1).ReadAsArray()
 
+        if not np.any(srcdata1):
+            
+            srcdata1 = np.zeros_like(srcdata1)
+            
+        if not np.any(srcdata2):
+            
+            srcdata2 = np.zeros_like(srcdata2)
+            
         srcdata2[srcdata2 > 0] = 1
 
         sumdata = np.add(srcdata1, srcdata2)
 
+        sumdata = sumdata.astype("uint8")
+        
         outfile = driver.Create(out_r, cols, rows, 1, gdal.GDT_Byte)
 
         if outfile is None:
@@ -270,7 +288,7 @@ def add_color(outdir, raster):
 
     out_vrt = add_color_table(temp_vrt, clr_table, 'Byte')
 
-    runCom = "gdal_translate -of %s -ot Byte -q -stats -a_srs EPSG:5070 %s %s" % ("GTiff", out_vrt, outfile)
+    runCom = "gdal_translate -of %s -ot Byte -q %s %s" % ("GTiff", out_vrt, outfile)
     subprocess.call(runCom, shell=True)
 
     # remove the temp files used for adding the color tables
