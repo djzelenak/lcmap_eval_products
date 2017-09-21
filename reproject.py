@@ -19,9 +19,13 @@ for dir, dirs, files in os.walk(args.input):
 
         for f in file_list:
 
-            src = gdal.Open(f, gdal.GA_Update)
-
-            src.SetProjection(wkt)
-
-            src = None
-
+            try:
+            
+                src = gdal.Open(f, gdal.GA_Update)
+    
+                src.SetProjection(wkt)
+    
+                src = None
+                
+            except: AttributeError
+            
