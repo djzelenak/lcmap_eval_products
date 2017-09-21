@@ -135,10 +135,10 @@ def do_calc(out_r, in_r1, in_r2):
             sys.exit(1)
 
         outband = outfile.GetRasterBand(1)
-        outband.WriteArray(srcdata2, 0, 0)
+        outband.WriteArray(srcdata2)
 
         outband.FlushCache()
-        outband.SetNoDataValue(255)
+        # outband.SetNoDataValue(255)
 
         outfile.SetGeoTransform(src2.GetGeoTransform())
         outfile.SetProjection(src2.GetProjection())
@@ -182,7 +182,7 @@ def do_calc(out_r, in_r1, in_r2):
             sys.exit(1)
 
         outband = outfile.GetRasterBand(1)
-        outband.WriteArray(sumdata, 0, 0)
+        outband.WriteArray(sumdata)
 
         outband.FlushCache()
         # outband.SetNoDataValue(255)
