@@ -140,7 +140,7 @@ def do_calc(out_r, in_r1, in_r2):
         outband.WriteArray(srcdata2, 0, 0)
 
         outband.FlushCache()
-        outband.SetNoDataValue(255)
+        # outband.SetNoDataValue(255)
 
         outfile.SetGeoTransform(src2.GetGeoTransform())
         outfile.SetProjection(src2.GetProjection())
@@ -177,7 +177,7 @@ def do_calc(out_r, in_r1, in_r2):
         outband.WriteArray(sumdata, 0, 0)
 
         outband.FlushCache()
-        outband.SetNoDataValue(255)
+        # outband.SetNoDataValue(255)
 
         outfile.SetGeoTransform(src2.GetGeoTransform())
         outfile.SetProjection(src2.GetProjection())
@@ -283,9 +283,7 @@ def add_color(outdir, raster):
 
     out_vrt = add_color_table(temp_vrt, clr_table, 'Byte')
 
-    runCom = "gdal_translate -of %s -ot Byte -q" \
-             " -stats -a_srs EPSG:5070 %s %s" \
-             % ("GTiff", out_vrt, outfile)
+    runCom = "gdal_translate -of %s -ot Byte -q %s %s"%("GTiff", out_vrt, outfile)
     subprocess.call(runCom, shell=True)
 
     # remove the temp files used for adding the color tables
