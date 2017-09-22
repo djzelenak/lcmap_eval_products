@@ -245,12 +245,7 @@ def main():
 
     args = parser.parse_args()
 
-    out_dir = args.output
-
-    ref_dir = args.reference
-
-    pred_dir = args.prediction
-
+    
     if not os.path.exists(args.output):
 
         os.makedirs(args.output)

@@ -12,7 +12,8 @@ import glob
 import os
 import re
 import sys
-
+import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from osgeo import gdal
@@ -186,7 +187,9 @@ def main():
 
         i += 1
 
-    if not os.path.exists(outfolder): os.mkdir(outfolder)
+    if not os.path.exists(outfolder): 
+        
+        os.makedirs(outfolder)
 
     rasters, years = get_rasters(infolder, fromyear, toyear)
 

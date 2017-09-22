@@ -12,6 +12,8 @@ for specific years.
 import os, sys, glob, pprint
 from osgeo import gdal
 import numpy as np
+import matplotlib
+matplotlib.use("agg")
 import matplotlib.pyplot as plt
 from pandas import DataFrame
 
@@ -210,7 +212,9 @@ def main():
         
         i += 1
     
-    if not os.path.exists(out_dir): os.mkdir(out_dir)
+    if not os.path.exists(out_dir): 
+        
+        os.makedirs(out_dir)
 
     in_files = get_rasters(in_dir)
     

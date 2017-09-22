@@ -185,7 +185,7 @@ def main():
     tile = args.tile
 
     if not os.path.exists(out_dir):
-        os.mkdir(out_dir)
+        os.makedirs(out_dir)
 
     in_files = get_rasters(in_dir)
 
