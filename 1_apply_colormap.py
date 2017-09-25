@@ -9,29 +9,22 @@ Author: Dan Zelenak
 Last Updated: 8/4/2017 by Dan Zelenak
 """
 
-#%%
-import os, sys, datetime, glob, subprocess
+# %%
+import os
+import sys
+import datetime
+import glob
+import subprocess
 
-try:
-    from osgeo import gdal
-except ImportError:
-    import gdal
+from osgeo import gdal
 
-print (sys.version)
+print(sys.version)
 
 t1 = datetime.datetime.now()
-print ("\n", t1.strftime("%Y-%m-%d %H:%M:%S"))
-
-# GDALpath = "/usr/bin"
-# GDALpath = "C:/LCMAP_Tools/dist"
+print("\n", t1.strftime("%Y-%m-%d %H:%M:%S"))
 
 
-gdal.UseExceptions()
-gdal.AllRegister()
-
-#%%
 def add_color_table(in_file, clr_table, dtype):
-
     """Open the .txt file which contains the color table information and
     insert it into the xml code of the .vrt file
 
@@ -75,16 +68,14 @@ def add_color_table(in_file, clr_table, dtype):
             color_read = color_table.readlines()
 
             for ln in color_read:
-
                 out_txt.write(ln)
 
     out_txt.close()
 
     return out_vrt
 
-#%%
-def allCalc(infile, outputdir, outfile, clrtable, dtype):
 
+def allCalc(infile, outputdir, outfile, clrtable, dtype):
     """Primary function that runs gdal executables.  Takes in a single input
     raster file, a specified output directory including the full path, output 
     file name with full path, as well as the appropriate color table and data 
@@ -100,55 +91,50 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
         None
     """
 
-    outcsv_file = r"%s%szzzz_%s_list.csv" \
-                    % (outputdir, os.sep, os.path.basename(infile))
+    outcsv_file = r"%s%szzzz_%s_list.csv" % (outputdir, os.sep, os.path.basename(infile))
 
     if os.path.isfile(outcsv_file):
-
         os.remove(outcsv_file)
 
     open_csv = open(outcsv_file, "wb")
 
-    #-----------------------------------------------------------------------
-    #Generate a temporary output raster file--------------------------------
-    tempoutfile = outputdir + os.sep + "zzzz_" + \
-                   os.path.basename(infile) + ".tif"
-    
-    runsubset   = "gdal_translate -of %s -b %s -q %s %s"\
-                   % ("GTiff", "1", infile, tempoutfile)
-    
+    # -----------------------------------------------------------------------
+    # Generate a temporary output raster file--------------------------------
+    tempoutfile = outputdir + os.sep + "zzzz_" + os.path.basename(infile) + ".tif"
+
+    runsubset = "gdal_translate -of %s -b %s -q %s %s" \
+                % ("GTiff", "1", infile, tempoutfile)
+
     subprocess.call(runsubset, shell=True)
 
-    #write temporary raster file path to this .csv file (required for VRT)
+    # write temporary raster file path to this .csv file (required for VRT)
     if sys.version[0] == '3':
-        
+
         open_csv.write(tempoutfile.encode("utf-8") + "\r\n".encode("utf-8"))
-    
+
     else:
-    
+
         open_csv.write(tempoutfile + "\r\n")
 
     open_csv.close()
 
-    #-----------------------------------------------------------------------
-    #Genereate temporary VRT file based on temp raster listed in .csv file
-    temp_VRT =  outputdir + os.sep +  "zzzz_" + \
-                os.path.basename(infile) + ".vrt"
-    
-    com      = "gdalbuildvrt -q -input_file_list %s %s"\
-                % (outcsv_file, temp_VRT)
-    
+    # -----------------------------------------------------------------------
+    # Genereate temporary VRT file based on temp raster listed in .csv file
+    temp_VRT = outputdir + os.sep + "zzzz_" + os.path.basename(infile) + ".vrt"
+
+    com = "gdalbuildvrt -q -input_file_list %s %s" % (outcsv_file, temp_VRT)
+
     subprocess.call(com, shell=True)
 
     # subprocess.call(com, shell=True)
 
     color_VRT = add_color_table(temp_VRT, clrtable, dtype)
 
-    #-----------------------------------------------------------------------
-    #Write the VRT w/ color table added to the output raster file
-    runCom  = "gdal_translate -of %s -q %s %s"\
-               % ("GTiff", color_VRT, outfile)
-    
+    # -----------------------------------------------------------------------
+    # Write the VRT w/ color table added to the output raster file
+    runCom = "gdal_translate -of %s -q %s %s" \
+             % ("GTiff", color_VRT, outfile)
+
     subprocess.call(runCom, shell=True)
 
     """
@@ -158,21 +144,17 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
                %(GDALpath, outfile)
     subprocess.call(runEdit, shell=True)
     """
-    
-    get_srs(infile, outfile)
-        
-        
-    
-    #Remove temporary files (1 each of a .csv, .vrt, and .tif)
-    for v in glob.glob(outputdir + os.sep + "zzz*"):
 
+    get_srs(infile, outfile)
+
+    # Remove temporary files (1 each of a .csv, .vrt, and .tif)
+    for v in glob.glob(outputdir + os.sep + "zzz*"):
         os.remove(v)
 
     return None
 
-#%%
+
 def get_srs(inraster, outraster):
-    
     """Apply a spatial reference system to the new raster file based on the
     SRS of the original raster
     
@@ -182,41 +164,37 @@ def get_srs(inraster, outraster):
     Returns:
         None
     """
-    
+
     in_src = gdal.Open(inraster, gdal.GA_ReadOnly)
     out_src = gdal.Open(outraster, gdal.GA_Update)
-    
-    out_src.SetGeoTransform( in_src.GetGeoTransform() )
-    out_src.SetProjection( in_src.GetProjection() )
-    
+
+    out_src.SetGeoTransform(in_src.GetGeoTransform())
+    out_src.SetProjection(in_src.GetProjection())
+
     in_src = None
     out_src = None
-    
+
     return None
-    
-#%%
+
+
 def usage():
+    print("\n\t[-i Input File Directory]\n"
+          "\t[-name Input File Name (root only, e.g. ChangeMap)]\n"
+          "\n\tValid file names:\n"
+          "\tChangeMap, CoverPrim, CoverSec, CoverConfPrim, CoverConfSec, \n"
+          "\tLastChange, QAMap, SegLength, ChangeMagMap\n"
+          "\n\t[-o Output Folder with complete path]\n\n")
 
-    print("\n\t[-i Input File Directory]\n" \
-    "\t[-name Input File Name (root only, e.g. ChangeMap)]\n" \
-    "\n\tValid file names:\n" \
-    "\tChangeMap, CoverPrim, CoverSec, CoverConfPrim, CoverConfSec, \n"\
-    "\tLastChange, QAMap, SegLength, ChangeMagMap\n" \
-    "\n\t[-o Output Folder with complete path]\n\n")
-
-    print("\n\tExample: 1_apply_colormap.py -i C:/.../CCDCMap -name " + \
-          "ChangeMap -o C:/.../OutputFolder\n\n")
+    print("\n\tExample: 1_apply_colormap.py -i C:/.../CCDCMap -name ChangeMap -o C:/.../OutputFolder\n\n")
 
     return None
 
-#%%
-def main():
 
+def main():
     argv = sys.argv
 
     if argv is None:
-
-        print ("try -help")
+        print("try -help")
 
         sys.exit(1)
 
@@ -254,13 +232,12 @@ def main():
     filelist = sorted(glob.glob("{}{}{}*.tif".format(indir, os.sep, name)))
 
     if not os.path.exists(outputdir):
-
         os.makedirs(outputdir)
 
-    print ("\nFiles are saving in", outputdir, "\n")
+    print("\nFiles are saving in", outputdir, "\n")
 
     names = ["CoverPrim", "CoverSec", "CoverConfPrim", "CoverConfSec",
-             "ChangeMap", "LastChange","SegLength", "QAMap", "ChangeMagMap"]
+             "ChangeMap", "LastChange", "SegLength", "QAMap", "ChangeMagMap"]
 
     colortables = ["color_covermap.txt", "color_covermap.txt",
                    "color_coverconf.txt", "color_coverconf.txt",
@@ -279,29 +256,27 @@ def main():
 
     dtype = lookuptype[name]
 
-    print ("\nFiles saving to {}\n".format(outputdir))
-    
+    print("\nFiles saving to {}\n".format(outputdir))
+
     for r in filelist:
 
         outfile = outputdir + os.sep + os.path.basename(r)
 
         if os.path.exists(outfile):
-            
             os.remove(outfile)
-            
-        print ("Processing file ", r, "\n")
+
+        print("Processing file ", r, "\n")
+
         # Call the primary function
         allCalc(r, outputdir, outfile, clrtable, dtype)
 
     return None
 
-#%%
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     main()
 
-#%%
 t2 = datetime.datetime.now()
-print (t2.strftime("%Y-%m-%d %H:%M:%S"))
+print(t2.strftime("%Y-%m-%d %H:%M:%S"))
 tt = t2 - t1
-print ("\nProcessing time: " + str(tt))
+print("\nProcessing time: " + str(tt))
