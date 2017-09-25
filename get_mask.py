@@ -20,7 +20,7 @@ def get_data(input):
     return src_data
 
 
-def get_raster(input, output, value, mask)
+def get_raster(input, output, value, mask):
 
     driver = gdal.GetDriverByName("GTiff")
 
@@ -31,7 +31,7 @@ def get_raster(input, output, value, mask)
     cols = src0.RasterXSize
     rows = src0.RasterYSize
 
-    outfile = driver.create(outname, cols, rows, 1, gdal.GDT_Byte)
+    outfile = driver.Create(outname, cols, rows, 1, gdal.GDT_Byte)
 
     outband = outfile.GetRasterBand(1)
     outband.WriteArray(mask, 0, 0)
@@ -52,8 +52,8 @@ def main():
 
     parser.add_argument("-r", "--ref", required=True, help="Full path to the Trends/NLCD land cover .tif")
 
-    parser.add_argument("-v", "--value", nargs=2, metavar="PyClass[0-9] Ref[NLCD/Trends class]",required=True, type=str,
-                        help="Values representing the input "
+    parser.add_argument("-v", "--value", nargs=2, metavar=("PyClass[0-9]", "Ref[NLCD/Trends class]"),required=True,
+                        type=str, help="Values representing the input "
                         "PyClass and Trends/NLCD target classes.  Use PyClass"
                         "value first, followed by the reference class")
 
@@ -65,11 +65,17 @@ def main():
 
     ref_set = get_data(args.ref)
 
-    combine_value = args.value[0] + args.value[1]
+    conc_value = int(args.value[0]) * 100 + int(args.value[1])
 
     combined_set = np.add(ccd_set * 100.0, ref_set)
 
-    mask_set = combined_set[combined_set == int(combine_value)]
+    mask_set = np.zeros_like(combined_set)
 
-    get_raster(args.ccdc, args.output, args.value, mask_set)
+    mask_set[combined_set == int(conc_value)] = 1
+
+    get_raster(args.ccdc, args.output, str(conc_value), mask_set)
+
+if __name__ == "__main__":
+
+    main()
 
