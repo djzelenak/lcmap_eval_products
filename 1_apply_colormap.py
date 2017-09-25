@@ -9,7 +9,6 @@ Author: Dan Zelenak
 Last Updated: 8/4/2017 by Dan Zelenak
 """
 
-# %%
 import os
 import sys
 import datetime
