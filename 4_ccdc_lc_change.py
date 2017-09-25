@@ -24,7 +24,7 @@ print("\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 gdal.AllRegister()
 gdal.UseExceptions()
 
-#%%
+
 def get_inlayers(infolder, name, y1, y2, inty):
 
     """Generate a list of the input change map layers with full paths
@@ -58,7 +58,7 @@ def get_inlayers(infolder, name, y1, y2, inty):
         
         return flist
 
-#%%
+
 def get_outlayers(inrasters, outfolder):
 
     """Generate a list of output rasters containing full paths
@@ -86,7 +86,7 @@ def get_outlayers(inrasters, outfolder):
     
     return outlist, years
 
-#%%
+
 def do_calc(in_files, out_files):
 
     """Generate the output layers containing the from/to class comparisons
@@ -118,6 +118,7 @@ def do_calc(in_files, out_files):
             
                 print("processing input files {} and {}".format(os.path.basename(infile), 
                       os.path.basename(in_files[index+1])))
+
                 print("\tgenerating output file {}".format(os.path.basename(out_files[index])))
                 
                 src1 = gdal.Open(infile, gdal.GA_ReadOnly)
@@ -143,7 +144,7 @@ def do_calc(in_files, out_files):
                 outband.WriteArray(from_to, 0, 0)
             
                 outband.FlushCache()
-                outband.SetNoDataValue(255)
+                # outband.SetNoDataValue(255)
             
                 outfile.SetGeoTransform( src0.GetGeoTransform() )
                 outfile.SetProjection( src0.GetProjection() )
@@ -155,26 +156,26 @@ def do_calc(in_files, out_files):
 
     return None
 
-#%%
+
 def usage():
 
-    print("\t[-i Full path to the directory where annual CCDC "\
-              "cover map layers are saved]\n" \
-     "\t[-from The start year]\n" \
-     "\t[-to The end year]\n" \
+    print("\t[-i Full path to the directory where annual CCDC "
+              "cover map layers are saved]\n"
+     "\t[-from The start year]\n"
+     "\t[-to The end year]\n"
      "\t[-int the year interval]\n"
-     "\t[-name the cover map product name]\n" \
-     "\t**CoverPrim or CoverSec are valid names**\n" \
-     "\t[-o Full path to the output folder]\n" \
-     "\n\t*Output raster will be saved in the same format "\
+     "\t[-name the cover map product name]\n"
+     "\t**CoverPrim or CoverSec are valid names**\n"
+     "\t[-o Full path to the output folder]\n"
+     "\n\t*Output raster will be saved in the same format "
      "as input raster (GTiff).\n\n"
 
-     "\tExample: 4_ccdc_lc_change.py -i /.../CoverMaps -from 1984 -to 2015"\
+     "\tExample: 4_ccdc_lc_change.py -i /.../CoverMaps -from 1984 -to 2015"
      " int 1 -o /.../OutputFolder -name CoverPrim")
 
     return None
 
-#%%
+
 def main():
 
     fromY, toY = None, None
@@ -230,7 +231,9 @@ def main():
 
         i += 1
 
-    if not os.path.exists(outputdir): os.mkdir(outputdir)
+    if not os.path.exists(outputdir):
+
+        os.mkdir(outputdir)
 
     # create a new subdirectory based on the "from" and "to" years
     # to keep the output from/to sets organized
@@ -246,12 +249,12 @@ def main():
 
     return None
 
-#%%
+
 if __name__ == '__main__':
 
     main()
 
-#%%
+
 t2 = datetime.datetime.now()
 print("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
 

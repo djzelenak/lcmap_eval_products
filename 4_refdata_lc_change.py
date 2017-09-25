@@ -24,7 +24,6 @@ gdal.AllRegister()
 gdal.UseExceptions()
 
 
-# %%
 def get_inlayers(infolder, name, y1, y2):
     """Generate a list of the input change map layers with full paths
 
@@ -45,13 +44,29 @@ def get_inlayers(infolder, name, y1, y2):
 
     if name == "trends":
 
-        name = "Trendsblock"
+        name = "Trends"
 
-    filelist = glob.glob("{}{}{}*.tif".format(infolder, os.sep, name))
+    filelist = glob.glob("{}{}*.tif".format(infolder, os.sep))
 
     filelist.sort()
 
-    yearlist = [os.path.basename(y).split("_")[1][:4] for y in filelist]
+    print(filelist)
+
+    if filelist is None:
+
+        print("Could not locate any {} data in location\n\t".format(name, infolder))
+
+        sys.exit(0)
+
+    if name == "nlcd":
+
+        yearlist = [os.path.basename(y).split("_")[1][:4] for y in filelist]
+
+    else:
+
+        yearlist = [os.path.basename(y).split("_")[0][-4:] for y in filelist]
+
+    print(yearlist)
 
     if y1 is None or y2 is None:
 
@@ -71,7 +86,7 @@ def get_inlayers(infolder, name, y1, y2):
 
     return infile1, infile2
 
-# %%
+
 def do_calc(name, file1, file2, outdir):
     """Generate the output layers containing the from/to class comparisons
 
