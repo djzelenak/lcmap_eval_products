@@ -256,7 +256,7 @@ def main():
 
     print("\n", cnf_mat, "\n")
 
-    names = ['nlcd', 'NLCD', 'trends', 'Trendsblock']
+    names = ['nlcd', 'NLCD', 'trends', 'Trendsblock', 'Trends']
 
     for n in names:
 
