@@ -87,7 +87,7 @@ def get_inlayers(infolder, name, y1, y2):
     return infile1, infile2
 
 
-def do_calc(name, file1, file2, outdir):
+def do_calc(name, file1, file2, outdir, y1, y2):
     """Generate the output layers containing the from/to class comparisons
 
     Args:
@@ -97,9 +97,6 @@ def do_calc(name, file1, file2, outdir):
     Returns:
         None
     """
-
-    y1 = os.path.basename(file1).split("_")[1][:4]
-    y2 = os.path.basename(file2).split("_")[1][:4]
 
     ofile = outdir + os.sep + "{}{}to{}cl.tif".format(name, y1, y2)
 
@@ -185,7 +182,7 @@ def main():
 
     file1, file2 = get_inlayers(inputdir, name, fromY, toY)
 
-    do_calc(name, file1, file2, outputdir)
+    do_calc(name, file1, file2, outputdir, fromY, toY)
 
     return None
 
