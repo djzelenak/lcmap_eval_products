@@ -20,6 +20,8 @@ import pprint
 
 import numpy as np
 
+import pandas as pd
+
 from osgeo import gdal
 
 import argparse
@@ -193,6 +195,28 @@ def compute_confusion_matrix(truth, predicted, classes):
     return confusion_matrix
 
 
+def get_fname(ref, y):
+
+    names = ["nlcd", "NLCD", "trends", "Trendsblock", "Trends"]
+
+    for n in names:
+
+        if n in os.path.basename(ref):
+
+            name = n
+
+            if name == "Trendsblock" or name == "Trends":
+                name = "trends"
+
+            break
+
+    # Create a name for the confusion matrix .csv file
+
+    f_name = "{name}_pyccdc_{year}_cnfmatrix".format(name=name, year=y)
+
+    return f_name
+
+
 def write_to_csv(matrix, outdir, name):
 
     lookfor = '99999999'
@@ -227,6 +251,97 @@ def write_to_csv(matrix, outdir, name):
     return None
 
 
+def array_to_dataframe(matrix):
+
+    # Create a copy of the original numpy array to preserve it
+
+    holder = np.copy(matrix)
+
+    # Remove empty rows
+
+    cnf_mat1 = np.copy(holder)
+
+    for row in range(np.shape(matrix)[0] - 1, -1, -1):
+
+        try:
+
+            test_row = matrix[row, 1:]
+
+            if np.all(test_row == 0):
+                cnf_mat_ = np.delete(cnf_mat1, row, axis=0)
+
+                cnf_mat1 = np.copy(cnf_mat_)
+
+        except:
+            IndexError
+
+    # Remove empty columns
+
+    cnf_mat2 = np.copy(cnf_mat1)
+
+    for c in range(np.shape(cnf_mat1)[1] - 1, -1, -1):
+
+        try:
+
+            test_col = cnf_mat1[1:, c]
+
+            if np.all(test_col == 0):
+                cnf_mat_ = np.delete(cnf_mat2, c, axis=1)
+
+                cnf_mat2 = np.copy(cnf_mat_)
+
+        except:
+            IndexError
+
+    # Dataframe with empty rows and columns removed
+
+    df = pd.DataFrame(cnf_mat2[1:, 1:], index=cnf_mat2[1:, 0], columns=cnf_mat2[0, 1:])
+
+    # Find and replace 99999999 with "Total"
+
+    try:
+
+        # Find in dataframe index
+
+        ind_list = df.index.tolist()
+
+        idx = ind_list.index(99999999)
+
+        ind_list[idx] = "Total"
+
+        df.index = ind_list
+
+        # Find in dataframe columns
+
+        col_list = df.columns.tolist()
+
+        idx = col_list.index(99999999)
+
+        col_list[idx] = "Total"
+
+        df.columns = col_list
+
+    except:
+        ValueError
+
+    return df
+
+
+def write_to_excel(loc, df, basename, y):
+
+    # Create a Pandas Excel writer using XlsxWriter as the engine
+    writer = pd.ExcelWriter(loc + os.sep + "{name}.xlsx".format(name=basename),
+                            engine="xlsxwriter")
+
+    # Convert the dataframe to an XLsxWriter Excel object
+    df.to_excel(writer, sheet_name="{year}".format(year=y))
+
+    # Close the Pandas Excel writer and output the Excel file
+    writer.save()
+
+    return None
+
+
 def main():
 
     parser = argparse.ArgumentParser()
@@ -254,29 +369,17 @@ def main():
 
     cnf_mat = compute_confusion_matrix(refData, predData, Classes)
 
-    print("\n", cnf_mat, "\n")
-
-    names = ['nlcd', 'NLCD', 'trends', 'Trendsblock', 'Trends']
-
-    for n in names:
-
-        if n in os.path.basename(ref_file):
-
-            name = n
-
-            if name == 'Trendsblock':
-
-                name = 'trends'
-
-            break
-
-
-    # create a name for the confusion matrix .csv file
-    fname = '{}_{}_{}_cnfmatrix'.format(name, "ccdc", args.year)
+    fname = get_fname(ref_file, args.year)
 
     write_to_csv(cnf_mat, args.output, fname)
 
-    print("All done")
+    df = array_to_dataframe(cnf_mat)
+
+    write_to_excel(args.output, df, fname, args.year)
+
+    print(df)
+
+    print("\nAll done")
 
     return None
 
