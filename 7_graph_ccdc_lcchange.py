@@ -107,6 +107,7 @@ def get_figure(label_set, df, tile, year1, year2, outname):
     """
     
     # RGB colors taken from Arc colormap and rescaled from 0-255 to 0-1
+    """
     colors = {"0" : (0.0, 0.0, 0.0),
           "1" : (1.0, 0.0, 0.0),
           "2" : (1.0, 0.64705, 0.0),
@@ -117,7 +118,8 @@ def get_figure(label_set, df, tile, year1, year2, outname):
           "7" : (0.75, 0.75, 0.75),
           "8" : (0.3922, 0.3922, 0.3922),
           "9" : (1.0, 0.0, 1.0)}
-       
+    """
+
     # Generate figure with length(label_set) rows and 2 columns
     fig, axes = plt.subplots(nrows = len(label_set), ncols = 2, 
                                   figsize=(16, 50))
@@ -144,7 +146,7 @@ def get_figure(label_set, df, tile, year1, year2, outname):
         df_temp.columns = ["Name", "Count", "Percent of Tile"]
         
         # generate bar charts in first column for class L in row i
-        axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8, facecolor=colors[L])
+        axes[i, 0].bar(df_temp.index, df_temp.Count, width=0.8)
         axes[i, 0].set_title('"From" Class ' + L + " Bar Chart")
         axes[i, 0].set_xticks(df_temp.index)
         axes[i, 0].set_xticklabels(df_temp.Name)
@@ -164,14 +166,12 @@ def get_figure(label_set, df, tile, year1, year2, outname):
 
 #%%
 def usage():
-    print("\n\t[-i the full path to the input raster file]\n"\
-    "\t[-o the full path to the output graph image (.png)]\n"\
-    "\t[-tile the tile name (used for graph title)]\n"\
-    "\t[-frm the from year]\n"\
-    "\t[-to the to year]\n"\
+    print("\n\t[-i the full path to the input raster file]\n"
+    "\t[-o the full path to the output graph image (.png)]\n"
+    "\t[-tile the tile name (used for graph title)]\n"
     "\t[-help display this message]\n")
 
-    print("Example: python graph_ccdc_lcchange.py -i C:\... -o C:\... -tile h05v02 "\
+    print("Example: python graph_ccdc_lcchange.py -i C:\... -o C:\... -tile h05v02 "
           "-frm 1992 -to 2011")
 
 #%%

@@ -60,9 +60,9 @@ def read_data(cl):
     # these are valid for the NLCD recoded classes, use np.unique below
     # to ignore empty classes if desired
 
-    c = [1, 2, 3, 4, 5, 6, 7, 8, 9, 81]
+    class_list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 81]
 
-    classes = [i * 100 + j for i in c for j in c]
+    classes = [i * 100 + j for i in class_list for j in class_list]
 
     """
     classes_recode = [101, 102, 105, 106, 107, 108, 109, 111, 181, 201, 202, 205, 206,
