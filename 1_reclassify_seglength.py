@@ -212,7 +212,7 @@ def write_raster(raster, srcarray, outfile):
     #=======================================================================
     #save data to the disk and set the nodata value=========================
     outband.FlushCache()
-    outband.SetNoDataValue(255)
+    # outband.SetNoDataValue(255)
 
     #=======================================================================
     #georeference the image and set the projection==========================
