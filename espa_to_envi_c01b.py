@@ -274,7 +274,8 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("-i", "--input", type=str, required=True, help="Full path to the tarball inputs")
     parser.add_argument("-o", "--output", type=str, required=True, help="Full path to the output folder")
-    parser.add_argument("-n", "--workers", type=int, required=False, default=20)
+    parser.add_argument("-n", "--workers", type=int, required=False, default=20,
+                        help="The number of consecutive processes, default is 20")
 
     args = parser.parse_args()
 
