@@ -216,14 +216,14 @@ def all_calc_numpy(in_dir, out_dir, year1, year2):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.addargument("-i", "--input", required=True, type=str,
+    parser.add_argument("-i", "--input", required=True, type=str,
                        help="Full path to the folder containing CCDC DOY change layers")
 
-    parser.addargument("-frm", "-from", "--year1", required=False, type=str, help="The start year")
+    parser.add_argument("-frm", "-from", "--year1", required=False, type=str, help="The start year")
 
-    parser.addargument("-to", "-to", "--year2", required=False, type=str, help="The end year")
+    parser.add_argument("-to", "-to", "--year2", required=False, type=str, help="The end year")
 
-    parser.addargument("-o", "--output", required=True, type=str, help="The full path to the output folder")
+    parser.add_argument("-o", "--output", required=True, type=str, help="The full path to the output folder")
 
     args = parser.parse_args()
 

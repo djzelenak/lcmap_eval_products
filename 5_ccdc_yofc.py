@@ -262,14 +262,14 @@ def add_color(outdir, raster):
 def main():
     parser = argparse.ArgumentParser()
 
-    parser.addargument("-i", "--input", type=str, required=True,
+    parser.add_argument("-i", "--input", type=str, required=True,
                        help="Full path to the input directory containing annual CCDC DOY change layers")
 
-    parser.addargument("-frm", "-from", "--year1", type=str, required=False, help="Beginning year")
+    parser.add_argument("-frm", "-from", "--year1", type=str, required=False, help="Beginning year")
 
-    parser.addargument("-to", "--year2", type=str, required=False, help="End Year")
+    parser.add_argument("-to", "--year2", type=str, required=False, help="End Year")
 
-    parser.addargument("-o", "--output", type=str, required=True, help="Full path to the output folder")
+    parser.add_argument("-o", "--output", type=str, required=True, help="Full path to the output folder")
 
     args = parser.parse_args()
 
