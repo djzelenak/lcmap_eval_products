@@ -187,7 +187,7 @@ def all_calc_numpy(in_dir, out_dir, year1, year2):
     out_file = f'{out_dir}{os.sep}ccdc{y1[-2:]}to{y2[-2:]}yolc.tif'
 
     # temporary output raster
-    temp_out = f'{out_dir}{os.sep}zzzz{y1[-2:]}to{y2[-2:]}yolc.tif'
+    temp_file = f'{out_dir}{os.sep}zzzz{y1[-2:]}to{y2[-2:]}yolc.tif'
 
     src_0_data = load_data(r_list_[0])
 
@@ -201,14 +201,14 @@ def all_calc_numpy(in_dir, out_dir, year1, year2):
         final_data[mask == 1] = int(year)
 
     if np.any(final_data):
-        make_raster(final_data, r_list_[0], out_file)
+        make_raster(final_data, r_list_[0], temp_file)
 
     else:
         print(traceback.format_exc())
 
         print("Resulting array is all zeros:", sys.exc_info()[0])
 
-    colorize(out_dir, temp_out, out_file, y1, y2)
+    colorize(out_dir, temp_file, out_file, y1, y2)
 
     return None
 
