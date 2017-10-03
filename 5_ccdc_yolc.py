@@ -114,9 +114,9 @@ def get_years(r_list):
     return sorted([re.split('[ _ .]', os.path.split(r_file)[1])[1][-4:] for r_file in r_list])
 
 
-def clip_lists(r_list, y_list, year1, year2):
+def clip_lists(r_list, y_list, year1=None, year2=None):
     if year1 is None and year2 is None:
-        return r_list, y_list
+        return r_list, y_list, y_list[0], y_list[-1]
 
     if year1 is None:
         year1 = y_list[0]
@@ -173,7 +173,7 @@ def make_raster(in_data, in_file, out_r):
     return None
 
 
-def all_calc_numpy(in_dir, out_dir, year1, year2):
+def all_calc_numpy(in_dir, out_dir, year1=None, year2=None):
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
