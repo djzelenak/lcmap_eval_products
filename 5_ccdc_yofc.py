@@ -189,10 +189,10 @@ def all_calc_numpy(in_dir, out_dir, year1=None, year2=None):
     r_list_, y_list_, y1, y2 = clip_lists(r_list, y_list, year1, year2)
 
     # final output raster**
-    out_file = f'{out_dir}{os.sep}ccdc{y1[-2:]}to{y2[-2:]}yolc.tif'
+    out_file = f'{out_dir}{os.sep}ccdc{y1[-2:]}to{y2[-2:]}yofc.tif'
 
     # temporary output raster
-    temp_file = f'{out_dir}{os.sep}zzzz{y1[-2:]}to{y2[-2:]}yolc.tif'
+    temp_file = f'{out_dir}{os.sep}zzzz{y1[-2:]}to{y2[-2:]}yofc.tif'
 
     src_0_data = load_data(r_list_[0])
 
