@@ -70,7 +70,8 @@ def add_color_table(in_vrt, clr_table, dtype):
     return out_vrt
 
 
-def colorize(out_dir, out_file, from_y, to_y):
+def colorize(out_dir, temp_file, out_file, from_y, to_y):
+
     try:
         # ##--------color_pallette---------------------
         clr_table = 'color_yolc.txt'
@@ -81,7 +82,7 @@ def colorize(out_dir, out_file, from_y, to_y):
             os.remove(outcsv_file)
 
         with open(outcsv_file, 'wb') as outcsv2_file:
-            outcsv2_file.write(temp_out2.encode('utf-8') + "\r\n".encode('utf-8'))
+            outcsv2_file.write(temp_file.encode('utf-8') + "\r\n".encode('utf-8'))
 
         out_VRT = f'{out_dir}{os.sep}zzzz_{from_y[-2:]}-{to_y[-2:]}.vrt'
 
@@ -134,7 +135,7 @@ def clip_lists(r_list, y_list, year1, year2):
     return r_list, y_list, year1, year2
 
 
-def read_data(raster):
+def load_data(raster):
     # Load raster data into array
     print('loading raster {}\n'.format(raster))
 
@@ -173,6 +174,8 @@ def make_raster(in_data, in_file, out_r):
 
 
 def all_calc_numpy(in_dir, out_dir, year1, year2):
+    if not os.path.exists(out_dir):
+        os.makedirs(out_dir)
 
     r_list = get_files(in_dir=in_dir)
 
@@ -183,11 +186,8 @@ def all_calc_numpy(in_dir, out_dir, year1, year2):
     # final output raster**
     out_file = f'{out_dir}{os.sep}ccdc{y1[-2:]}to{y2[-2:]}yolc.tif'
 
-    # temp output of change calculations
+    # temporary output raster
     temp_out = f'{out_dir}{os.sep}zzzz{y1[-2:]}to{y2[-2:]}yolc.tif'
-
-    # temp out for color table
-    temp_out2 = f'{out_dir}{os.sep}zzzz2{y1[-2:]}to{y2[-2:]}yolc.tif'
 
     src_0_data = load_data(r_list_[0])
 
@@ -208,7 +208,7 @@ def all_calc_numpy(in_dir, out_dir, year1, year2):
 
         print("Resulting array is all zeros:", sys.exc_info()[0])
 
-    colorize(out_dir, out_file, y1, y2)
+    colorize(out_dir, temp_out, out_file, y1, y2)
 
     return None
 
@@ -228,7 +228,7 @@ def main():
     args = parser.parse_args()
 
     # call the primary function
-    all_calc(args.input, args.output, args.year1, args.year2)
+    all_calc_numpy(args.input, args.output, args.year1, args.year2)
 
 
 if __name__ == '__main__':
