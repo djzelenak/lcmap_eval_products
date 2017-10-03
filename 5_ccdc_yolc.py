@@ -137,7 +137,6 @@ def clip_lists(r_list, y_list, year1=None, year2=None):
 
 def load_data(raster):
     # Load raster data into array
-    print('loading raster {}\n'.format(raster))
 
     raster_data = gdal.Open(raster, gdal.GA_ReadOnly).ReadAsArray()
 
@@ -194,6 +193,7 @@ def all_calc_numpy(in_dir, out_dir, year1=None, year2=None):
     final_data = np.zeros_like(src_0_data, dtype=np.uint16)
 
     for file, year in reversed(list(zip(r_list_, y_list_))):
+        print(f'loading raster {file}\n')
         raster = load_data(file)
 
         mask = np.logical_and(raster > 0, final_data == 0)
