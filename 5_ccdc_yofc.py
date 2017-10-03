@@ -259,18 +259,6 @@ def add_color(outdir, raster):
     return None
 
 
-def usage():
-    print('\nUsage:python 5_ccdc_yofc.py\n\n \
-    [\t-i Full path to the directory containing the CCDC annual change layers] \n\
-    [\t-frm From Year]\n \
-    [\t-to To Year]\n \
-    [\t-o Output Folderpath] \n \
-    [\t-if input File Format (only 3 format supported: GTiff, HFA, and GRID)] \n \
-    \tOutput raster will be saved in the same format as input raster.\n\n')
-
-    return None
-
-
 def main():
     parser = argparse.ArgumentParser()
 
