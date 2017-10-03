@@ -1,9 +1,12 @@
 """
 Author: Dan Zelenak
-Date: 3/7/2017
-Description:  Go through ChangeMap layers in reverse (ie start at 2016 and work back to 1985)
-and flag each pixel when the first change is detected going back through time.  The result is a single raster
-that shows in which year the last detected change occurred.
+Date: 3/7/2017, updated 10/3/2017
+Description:  Generate a raster that shows spatially the final year in which a change occurred based on the input
+CCDC annual DOY change layers.  The output raster is unsigned 16-bit integer; each pixel contain 4 digits representing
+the year in which the final change in the time-series occurred at that location.  0-value pixels signify that no change
+occurred in the time series at that location.  Optionally, arguments can be passed for a beginning and/or end year to
+generate the last year of change for a specific segment of the time series.  A color map is automatically applied to
+the output raster.
 """
 
 import datetime
