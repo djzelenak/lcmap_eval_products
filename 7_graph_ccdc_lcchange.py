@@ -12,6 +12,7 @@ for specific years.
 import os
 import sys
 import argparse
+# import glob
 
 import matplotlib
 import numpy as np
@@ -23,20 +24,21 @@ from pandas import DataFrame
 
 
 def get_rasters(indir):
+    """
+
+    :param indir:
+    :return:
+    """
     in_cl = []
 
-    # in_cl = glob.glob(indir + os.sep + "*.tif")
+    print("looking in ", indir)
 
     for root, folders, files in os.walk(indir):
+        for file in files:
+            if file[-4:] == ".tif":
+                in_cl.append(os.path.join(root, file))
 
-        for folder in folders:
-
-            for file in files:
-
-                if file[-4:] == ".tif":
-                    in_cl.append(os.path.join(root, folder) + os.sep + file)
-
-    if in_cl is None:
+    if len(in_cl) == 0:
         print("\n**Could not locate input LC Change files**\n")
 
         sys.exit(1)
@@ -171,17 +173,10 @@ def get_figure(label_set, df, tile, year1, year2, outname):
     # save the figure as a .png file
     plt.savefig(outname, bbox_inches="tight", dpi=150)
 
+    # allow figure to be garbage collected after it is saved to an image file
+    plt.close(fig)
+
     return None
-
-
-def usage():
-    print("\n\t[-i the full path to the input raster file]\n"
-          "\t[-o the full path to the output graph image (.png)]\n"
-          "\t[-tile the tile name (used for graph title)]\n"
-          "\t[-help display this message]\n")
-
-    print("Example: python graph_ccdc_lcchange.py -i C:\... -o C:\... -tile h05v02 "
-          "-frm 1992 -to 2011")
 
 
 def main():
@@ -207,6 +202,7 @@ def main():
     if not os.path.exists(out_dir):
         os.makedirs(out_dir)
 
+    print(in_dir)
     in_files = get_rasters(in_dir)
 
     for in_cl in in_files:
