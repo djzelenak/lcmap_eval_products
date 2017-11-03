@@ -8,8 +8,8 @@ into XML as a new .txt file to be used by GDAL.
 #ffile = r'C:\Users\dzelenak\Workspace\Sample_Data\CCDC_ChangeAccum\values0-32.clr'
 #newfile = r'C:\Users\dzelenak\Workspace\Sample_Data\CCDC_ChangeAccum\change_accum_color_table.txt'
 
-ffile = raw_input("Enter full path to the .clr table: ")
-newfile = raw_input("Enter full path for the output .txt XML color table: ")
+ffile = input("Enter full path to the .clr table: ")
+newfile = input("Enter full path for the output .txt XML color table: ")
 
 with open(ffile, 'r') as x, open(newfile, 'w') as y:
     y.write('   <ColorInterp>Palette</ColorInterp>\n'\

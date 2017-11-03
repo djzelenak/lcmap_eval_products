@@ -118,18 +118,18 @@ def compute_confusion_matrix(truth, predicted, classes):
 
     print("generating %s by %s confusion matrix" % (len(classes), len(classes)))
 
-    # iterate through the unique classes
+
     counter = 1.0
-
-    for c in classes:  # iterate through columns
-
-        for r in classes:  # iterate through rows
+    # loop through columns
+    for c in classes:
+        # loop through rows
+        for r in classes:
 
             current = counter / total * 100.0  # as percent
 
             if c == r:  # TP case
 
-                # print 'column: ', c, '\trow: ', r
+                # print('column: ', c, '\trow: ', r)
 
                 np.logical_and(truth == r, predicted == c, TP)
 
@@ -137,7 +137,7 @@ def compute_confusion_matrix(truth, predicted, classes):
 
             elif classes.index(r) > classes.index(c):
 
-                # print 'column: ', c, '\trow: ', r
+                # print('column: ', c, '\trow: ', r)
 
                 np.logical_and(truth == r, predicted == c, FP)
 
@@ -145,7 +145,7 @@ def compute_confusion_matrix(truth, predicted, classes):
 
             elif classes.index(r) < classes.index(c):
 
-                # print 'column: ', c, '\trow: ', r
+                # print('column: ', c, '\trow: ', r)
 
                 np.logical_and(truth == r, predicted == c, FN)
 
@@ -197,7 +197,9 @@ def compute_confusion_matrix(truth, predicted, classes):
 
 def get_fname(ref, y):
 
-    names = ["nlcd", "NLCD", "trends", "Trendsblock", "Trends"]
+    names = ["nlcd", "NLCD", "trends", "Trendsblock", "Trends", "QA", "CoverPrim", "CoverSec"]
+
+    name = None
 
     for n in names:
 
@@ -211,7 +213,6 @@ def get_fname(ref, y):
             break
 
     # Create a name for the confusion matrix .csv file
-
     f_name = "{name}_pyccdc_{year}_cnfmatrix".format(name=name, year=y)
 
     return f_name
@@ -254,11 +255,9 @@ def write_to_csv(matrix, outdir, name):
 def array_to_dataframe(matrix):
 
     # Create a copy of the original numpy array to preserve it
-
     holder = np.copy(matrix)
 
     # Remove empty rows
-
     cnf_mat1 = np.copy(holder)
 
     for row in range(np.shape(matrix)[0] - 1, -1, -1):
@@ -272,11 +271,10 @@ def array_to_dataframe(matrix):
 
                 cnf_mat1 = np.copy(cnf_mat_)
 
-        except:
-            IndexError
+        except IndexError:
+            pass
 
     # Remove empty columns
-
     cnf_mat2 = np.copy(cnf_mat1)
 
     for c in range(np.shape(cnf_mat1)[1] - 1, -1, -1):
@@ -290,19 +288,16 @@ def array_to_dataframe(matrix):
 
                 cnf_mat2 = np.copy(cnf_mat_)
 
-        except:
-            IndexError
+        except IndexError:
+            pass
 
     # Dataframe with empty rows and columns removed
-
     df = pd.DataFrame(cnf_mat2[1:, 1:], index=cnf_mat2[1:, 0], columns=cnf_mat2[0, 1:])
 
     # Find and replace 99999999 with "Total"
-
     try:
 
         # Find in dataframe index
-
         ind_list = df.index.tolist()
 
         idx = ind_list.index(99999999)
@@ -312,7 +307,6 @@ def array_to_dataframe(matrix):
         df.index = ind_list
 
         # Find in dataframe columns
-
         col_list = df.columns.tolist()
 
         idx = col_list.index(99999999)
@@ -321,8 +315,8 @@ def array_to_dataframe(matrix):
 
         df.columns = col_list
 
-    except:
-        ValueError
+    except ValueError:
+        pass
 
     return df
 
@@ -362,7 +356,6 @@ def main():
 
     
     if not os.path.exists(args.output):
-
         os.makedirs(args.output)
 
     refData, predData, Classes, ref_file, pred_file = readData(args.reference, args.prediction, args.year)

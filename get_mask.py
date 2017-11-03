@@ -24,7 +24,7 @@ def get_raster(input, output, value, mask):
 
     driver = gdal.GetDriverByName("GTiff")
 
-    outname = output + os.sep + value + ".tif"
+    outname = f"{output}{os.sep}cover_ref_{value}_{input[-8:-4]}.tif"
 
     src0 = gdal.Open(input, gdal.GA_ReadOnly)
 
@@ -50,9 +50,10 @@ def main():
 
     parser.add_argument("-c", "--ccdc", required=True, help="Full path to the PyClass land cover .tif")
 
-    parser.add_argument("-r", "--ref", required=True, help="Full path to the Trends/NLCD land cover .tif")
+    parser.add_argument("-r", "--ref", required=True, help="Full path to the reference .tif")
 
-    parser.add_argument("-v", "--value", nargs=2, metavar=("PyClass[0-9]", "Ref[NLCD/Trends class]"),required=True,
+    parser.add_argument("-v", "--value", nargs=2, metavar=("PyClass[0-9]", "Ref[any value present in the ref dataset]"),
+                        required=True,
                         type=str, help="Values representing the input "
                         "PyClass and Trends/NLCD target classes.  Use PyClass"
                         "value first, followed by the reference class")
