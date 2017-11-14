@@ -15,6 +15,7 @@ Last Updated: 8/4/2017, 9/7/2017
 import datetime
 import os
 import sys
+import argparse
 import glob
 import pprint
 
@@ -23,8 +24,6 @@ import numpy as np
 import pandas as pd
 
 from osgeo import gdal
-
-import argparse
 
 gdal.UseExceptions()
 gdal.AllRegister()
@@ -38,7 +37,6 @@ def get_file(path, year):
 
     :param path: Location to search for the appropriate input file based on year
     :type path: str
-    :param name:
     :param year:
     :return: Item from templist based on the matching year
     """
@@ -57,7 +55,7 @@ def get_file(path, year):
 
         pprint.pprint(filelist)
 
-        sys.exit(0)
+        sys.exit(1)
 
     elif len(templist) == 1:
 
@@ -65,11 +63,11 @@ def get_file(path, year):
 
     else:
 
+        # Because NLCD files have 2 years in their filenames
         return templist[-1]
 
 
 def readData(refdir, preddir, y):
-
     reffile = get_file(refdir, y)
 
     predfile = get_file(preddir, y)
@@ -103,7 +101,6 @@ def readData(refdir, preddir, y):
 
 
 def compute_confusion_matrix(truth, predicted, classes):
-
     total = float(len(classes) ** 2)
 
     # create boolean arrays of all zeros
@@ -117,7 +114,6 @@ def compute_confusion_matrix(truth, predicted, classes):
     confusion_matrix = np.zeros((len(classes), len(classes)), np.int32)
 
     print("generating %s by %s confusion matrix" % (len(classes), len(classes)))
-
 
     counter = 1.0
     # loop through columns
@@ -196,7 +192,6 @@ def compute_confusion_matrix(truth, predicted, classes):
 
 
 def get_fname(ref, y):
-
     names = ["nlcd", "NLCD", "trends", "Trendsblock", "Trends", "QA", "CoverPrim", "CoverSec"]
 
     name = None
@@ -219,7 +214,6 @@ def get_fname(ref, y):
 
 
 def write_to_csv(matrix, outdir, name):
-
     lookfor = '99999999'
 
     if os.path.exists('%s/%s.csv' % (outdir, lookfor)):
@@ -253,7 +247,6 @@ def write_to_csv(matrix, outdir, name):
 
 
 def array_to_dataframe(matrix):
-
     # Create a copy of the original numpy array to preserve it
     holder = np.copy(matrix)
 
@@ -322,7 +315,6 @@ def array_to_dataframe(matrix):
 
 
 def write_to_excel(loc, df, basename, y):
-
     # Create a Pandas Excel writer using XlsxWriter as the engine
     writer = pd.ExcelWriter(loc + os.sep + "{name}.xlsx".format(name=basename),
                             engine="xlsxwriter")
@@ -337,7 +329,6 @@ def write_to_excel(loc, df, basename, y):
 
 
 def main():
-
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-r', '-ref', '--reference', type=str, required=True,
@@ -354,7 +345,6 @@ def main():
 
     args = parser.parse_args()
 
-    
     if not os.path.exists(args.output):
         os.makedirs(args.output)
 
@@ -378,7 +368,6 @@ def main():
 
 
 if __name__ == '__main__':
-
     main()
 
 t2 = datetime.datetime.now()
