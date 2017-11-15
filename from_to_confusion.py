@@ -17,6 +17,8 @@ import glob
 import os
 import sys
 import traceback
+import matplotlib
+import matplotlib.pyplot as plt
 
 import numpy as np
 import pandas as pd
@@ -236,20 +238,71 @@ def write_to_excel(loc, df, basename):
     return None
 
 
+def get_plot(matrix, table):
+    """
+
+    :param matrix:
+    :param table:
+    :return:
+    """
+    pass
+    counts = matrix[1:9, 1:9]
+
+    percents = np.zeros_like(counts, dtype=np.float)
+
+    nrows = np.shape(percents)[0]
+
+    for n in range(nrows):
+        for ind, i in enumerate(counts[n]):
+            if i:
+                temp = i / np.sum(counts[n]) * 100.0
+                percents[n, ind] = temp
+
+    segment_total = matrix[1:9, -1]
+
+    segment_total = np.sum(segment_total)
+
+    segment_percent = segment_total / 25000000.0 * 100.0
+
+    marker = [0, 1, 2, 3, 4, 5, 6, 7]
+
+    tile_counts = []
+
+    for ind, i in enumerate(counts):
+        temp = list(i)
+
+        # Use marker to identify counts associated with static class across segment, delete this from the temp list
+        # so that it is not included in the sum
+        del(temp[marker[ind]])
+
+
 def main_work(indir, outdir, year=None):
+    """
+
+    :param indir:
+    :param outdir:
+    :param year:
+    :return:
+    """
+    froms, tos = [1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8]
+
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
     files = get_files(path=indir, year=year)
 
     for f in files:
-        print(f"Working on file: {f}")
+        fname = get_fname(f)
+
+        # Skip file "f" if the excel file associated with f exists
+        if os.path.exists(outdir + os.sep + fname + ".xlsx"):
+            continue
+
+        print(f"\nWorking on file: {f}")
 
         in_data = read_data(f)
 
         try:
-            froms, tos =[1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8]
-
             cnf_mat = compute_confusion_matrix(fromto=in_data, from_vals=froms, to_vals=tos)
 
         except IndexError:
@@ -260,13 +313,13 @@ def main_work(indir, outdir, year=None):
             traceback.print_tb(sys.exc_info()[2])
             continue
 
-        fname = get_fname(f)
-
         write_to_csv(cnf_mat, outdir, fname)
 
         df = array_to_dataframe(cnf_mat)
 
         write_to_excel(outdir, df, fname)
+
+        get_plot(matrix=cnf_mat, table=df)
 
 
 def main():
