@@ -35,20 +35,20 @@ print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 def get_file(path, year):
     """
 
-    :param path: Location to search for the appropriate input file based on year
-    :type path: str
-    :param year:
-    :return: Item from templist based on the matching year
+    :param path: <str>
+    :param year: <str>
+    :return:
     """
 
+    # All files in path ending in .tif
     filelist = glob.glob("{p}{sep}*.tif".format(p=path, sep=os.sep))
 
     filelist.sort()
 
+    # All files in path containing year string
     templist = [item for item in filelist if year in os.path.basename(item)]
 
     if len(templist) == 0:
-
         print("\nCould not locate a file for year {} in the given path {}\n".format(year, path))
 
         print("Available files in path are:\n")
@@ -58,16 +58,22 @@ def get_file(path, year):
         sys.exit(1)
 
     elif len(templist) == 1:
-
         return templist[0]
 
     else:
-
         # Because NLCD files have 2 years in their filenames
+
         return templist[-1]
 
 
-def readData(refdir, preddir, y):
+def read_data(refdir, preddir, y):
+    """
+
+    :param refdir: <str> Full path to the directory containing the reference land cover
+    :param preddir: <str> Full path to the directory containing the predicted land cover
+    :param y: <str> The target year
+    :return:
+    """
     reffile = get_file(refdir, y)
 
     predfile = get_file(preddir, y)
@@ -254,9 +260,7 @@ def array_to_dataframe(matrix):
     cnf_mat1 = np.copy(holder)
 
     for row in range(np.shape(matrix)[0] - 1, -1, -1):
-
         try:
-
             test_row = matrix[row, 1:]
 
             if np.all(test_row == 0):
@@ -271,9 +275,7 @@ def array_to_dataframe(matrix):
     cnf_mat2 = np.copy(cnf_mat1)
 
     for c in range(np.shape(cnf_mat1)[1] - 1, -1, -1):
-
         try:
-
             test_col = cnf_mat1[1:, c]
 
             if np.all(test_col == 0):
@@ -348,7 +350,7 @@ def main():
     if not os.path.exists(args.output):
         os.makedirs(args.output)
 
-    refData, predData, Classes, ref_file, pred_file = readData(args.reference, args.prediction, args.year)
+    refData, predData, Classes, ref_file, pred_file = read_data(args.reference, args.prediction, args.year)
 
     cnf_mat = compute_confusion_matrix(refData, predData, Classes)
 
@@ -360,7 +362,7 @@ def main():
 
     write_to_excel(args.output, df, fname, args.year)
 
-    print(df)
+    pprint.pprint(df)
 
     print("\nAll done")
 
