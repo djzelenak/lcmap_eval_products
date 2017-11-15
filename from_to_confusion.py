@@ -60,16 +60,18 @@ def read_data(infile):
     :param infile:
     :return:
     """
-
-    print(f"Working on file: {infile}")
-
     # Load raster data into an array
     data = gdal.Open(infile, gdal.GA_ReadOnly).ReadAsArray()
 
     # Obtain unique class values from the array
     vals = np.unique(data)
 
-    return data, vals
+    return data
+
+def get_fname(infile):
+    basename = os.path.splitext(os.path.basename(infile))[0]
+
+    return f"{basename}_cnf"
 
 
 def compute_confusion_matrix(fromto, from_vals, to_vals):
@@ -82,10 +84,12 @@ def compute_confusion_matrix(fromto, from_vals, to_vals):
     """
     total = float(len(from_vals) * len(to_vals))
 
+    check_vals = np.unique(fromto)
+
     # create the confusion matrix, for now containing all zeros
     confusion_matrix = np.zeros((len(from_vals), len(to_vals)), np.int32)
 
-    print("generating %s by %s confusion matrix" % (len(from_vals), len(to_vals)))
+    print("generating %s by %s confusion matrix" % (len(to_vals), len(from_vals)))
 
     counter = 1.0
 
@@ -94,11 +98,16 @@ def compute_confusion_matrix(fromto, from_vals, to_vals):
 
         # loop through rows
         for r in from_vals:
-            val = int(c + r)
+            val = int(str(c) + str(r))
             current = counter / total * 100.0  # as percent
 
-            # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
-            confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
+            if val in check_vals:
+                # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
+                confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
+
+            else:
+                confusion_matrix[to_vals.index(c), from_vals.index(r)] = 0
+
             # show the percent complete
             sys.stdout.write("\r%s%% Done " % str(current)[:5])
 
@@ -112,26 +121,27 @@ def compute_confusion_matrix(fromto, from_vals, to_vals):
     # add row totals in a new column at the end
     x_sum = confusion_matrix.sum(axis=1)
 
-    x_sum = np.reshape(x_sum, (len(to_vals), 1))
+    x_sum = np.reshape(x_sum, (len(from_vals), 1))
 
     confusion_matrix = np.append(arr=confusion_matrix, values=x_sum, axis=1)
 
     # add column totals in a new row at the end
     y_sum = confusion_matrix.sum(axis=0)
 
-    y_sum = np.reshape(y_sum, (1, len(from_vals) + 1))
+    y_sum = np.reshape(y_sum, (1, len(to_vals) + 1))
 
     confusion_matrix = np.append(arr=confusion_matrix, values=y_sum, axis=0)
 
     # insert a blank row and column at the top/left to contain class values
-    confusion_matrix = np.insert(arr=confusion_matrix, obj=0, axis=0, values=0)
+    confusion_matrix = np.insert(arr=confusion_matrix, obj=0, values=0, axis=0)
 
-    confusion_matrix = np.insert(arr=confusion_matrix, obj=0, axis=1, values=0)
+    confusion_matrix = np.insert(arr=confusion_matrix, obj=0, values=0, axis=1)
 
-    # so len(classes) matches row/column shape of confusion matrix
+    # Append 0's so len(classes) matches the new shape of the confusion matrix
     from_vals.insert(0, 0)
     to_vals.insert(0, 0)
-    # 99999999 instead of 'total' because can't have strings in array of numbers
+
+    # Append 99999999 instead of 'total' because can't have strings in array of numbers
     from_vals.append(99999999)
     to_vals.append(99999999)
 
@@ -139,40 +149,9 @@ def compute_confusion_matrix(fromto, from_vals, to_vals):
     for c in range(len(from_vals)):
         confusion_matrix[c, 0] = from_vals[c]
 
-    for c in range(len(to_vals)):
         confusion_matrix[0, c] = to_vals[c]
 
     return confusion_matrix
-
-
-def get_fname(infile):
-    basename = os.path.splitext(os.path.basename(infile))[0]
-
-    return f"{basename}_cnf"
-
-
-def get_fromto_vals(vals):
-    """
-    Split the from-to values
-    :param vals: <list>
-    :return from_vals: <list>
-    :return to_vals: <list>
-    """
-    from_vals, to_vals = [], []
-
-    for v in vals:
-        if v != 0:
-            if len(str(v)) == 1:
-                from_vals.append("0")
-
-                to_vals.append(str(v))
-
-            else:
-                from_vals.append(str(v)[0])
-
-                to_vals.append(str(v)[1])
-
-    return from_vals, to_vals
 
 
 def write_to_csv(matrix, outdir, name):
@@ -209,41 +188,12 @@ def write_to_csv(matrix, outdir, name):
 
 
 def array_to_dataframe(matrix):
-    # Create a copy of the original numpy array to preserve it
-    holder = np.copy(matrix)
+    """
 
-    # Remove empty rows
-    cnf_mat1 = np.copy(holder)
-
-    for row in range(np.shape(matrix)[0] - 1, -1, -1):
-        try:
-            test_row = matrix[row, 1:]
-
-            if np.all(test_row == 0):
-                cnf_mat_ = np.delete(cnf_mat1, row, axis=0)
-
-                cnf_mat1 = np.copy(cnf_mat_)
-
-        except IndexError:
-            pass
-
-    # Remove empty columns
-    cnf_mat2 = np.copy(cnf_mat1)
-
-    for c in range(np.shape(cnf_mat1)[1] - 1, -1, -1):
-        try:
-            test_col = cnf_mat1[1:, c]
-
-            if np.all(test_col == 0):
-                cnf_mat_ = np.delete(cnf_mat2, c, axis=1)
-
-                cnf_mat2 = np.copy(cnf_mat_)
-
-        except IndexError:
-            pass
-
-    # Dataframe with empty rows and columns removed
-    df = pd.DataFrame(cnf_mat2[1:, 1:], index=cnf_mat2[1:, 0], columns=cnf_mat2[0, 1:])
+    :param matrix:
+    :return:
+    """
+    df = pd.DataFrame(matrix[1:, 1:], index=matrix[1:, 0], columns=matrix[0, 1:])
 
     # Find and replace 99999999 with "Total"
     try:
@@ -293,12 +243,14 @@ def main_work(indir, outdir, year=None):
     files = get_files(path=indir, year=year)
 
     for f in files:
-        in_data, classes = read_data(f)
+        print(f"Working on file: {f}")
+
+        in_data = read_data(f)
 
         try:
-            froms, tos = get_fromto_vals(classes)
+            froms, tos =[1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8]
 
-            cnf_mat = compute_confusion_matrix(in_data, from_vals=froms, to_vals=tos)
+            cnf_mat = compute_confusion_matrix(fromto=in_data, from_vals=froms, to_vals=tos)
 
         except IndexError:
             print(f"Skipping file {f}")
