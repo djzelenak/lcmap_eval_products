@@ -18,6 +18,7 @@ import os
 import sys
 import traceback
 import matplotlib
+import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
 import numpy as np
@@ -31,13 +32,33 @@ t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
 
-def get_files(path, year=None, lookfor="CoverFromTo"):
+def error_message(file):
     """
-
-    :param path:
-    :param year:
-    :param lookfor:
+    Print information about the error without raising an exception
+    :param file: The current file being worked on
+    :type file: str
     :return:
+    """
+    print(f"\nSkipping file {file}")
+    print("\nType of Exception: ", sys.exc_info()[0])
+    print("\nException Value: ", sys.exc_info()[1])
+    print("\nTraceback Info: \n")
+    traceback.print_tb(sys.exc_info()[2])
+
+    return None
+
+
+def get_files(path, years=None, lookfor="CoverFromTo"):
+    """
+    Use glob to generate a list of all matching files in the specified path
+    :param path: Full path to the location of the From-To layers
+    :type path: str
+    :param year: Year to look for in the file names
+    :type year: str
+    :param lookfor: Layer type to look for
+    :type lookfor: str
+    :return: List of paths
+    :rtype: list
     """
     # All files in path ending in .tif
     filelist = glob.glob(f"{path}{os.sep}{lookfor}*.tif")
@@ -49,41 +70,71 @@ def get_files(path, year=None, lookfor="CoverFromTo"):
 
         sys.exit(1)
 
-    if year is None:
+    if years is None:
         return filelist
 
     else:
-        return [f for f in filelist if year in f]
+        return [f for f in filelist for y in years if y in f]
 
 
 def read_data(infile):
     """
-
-    :param infile:
-    :return:
+    Load raster data into an array
+    :param infile: The full path to the input raster
+    :type infile: str
+    :return: Array object
+    :rtype: numpy.ndarray
     """
-    # Load raster data into an array
-    data = gdal.Open(infile, gdal.GA_ReadOnly).ReadAsArray()
+    return gdal.Open(infile, gdal.GA_ReadOnly).ReadAsArray()
 
-    # Obtain unique class values from the array
-    vals = np.unique(data)
 
-    return data
+def get_tile(infile):
+    """
+    Get the name of the H-V tile by looking at one of the files in the file list
+    :param infile: The file to look at
+    :type infile: str
+    :return: The tile name (e.g. H25V42)
+    :rtype: str
+    """
+    looking = infile.split(sep=os.sep)
+
+    L = ""
+
+    for l in looking:
+        if ("h" in l or "H" in l) and ("v" in l or "V" in l):
+            L = l
+
+    try:
+        tile = L.split(sep="_")[1]
+    except IndexError:
+        tile = L
+
+    return tile.upper()
+
 
 def get_fname(infile):
+    """
+    Generate a string representing the output base file name
+    :param infile: Full path to the input raster
+    :type infile: str
+    :return: Output base name, the current year, and the tile name
+    :rtype: str, str, str
+    """
     basename = os.path.splitext(os.path.basename(infile))[0]
 
-    return f"{basename}_cnf"
+    return basename, basename.split(sep="_")[1][:4]
 
 
-def compute_confusion_matrix(fromto, from_vals, to_vals):
+def compute_confusion_matrix(fromto):
     """
-
-    :param fromto: <np.ndarray>
-    :param from_vals: <list>
-    :param to_vals: <list>
+    Calculate the confusion matrix for the current from-to data set
+    :param fromto: An array object containing the from-to data
+    :type fromto: numpy.ndarray
     :return:
     """
+    from_vals = [1, 2, 3, 4, 5, 6, 7, 8]
+    to_vals = [1, 2, 3, 4, 5, 6, 7, 8]
+
     total = float(len(from_vals) * len(to_vals))
 
     check_vals = np.unique(fromto)
@@ -156,35 +207,36 @@ def compute_confusion_matrix(fromto, from_vals, to_vals):
     return confusion_matrix
 
 
-def write_to_csv(matrix, outdir, name):
-    lookfor = '99999999'
+def write_to_csv(matrix, outdir, name, lookfor="99999999"):
+    """
 
+    :param matrix:
+    :param outdir:
+    :param name:
+    :param lookfor:
+    :return:
+    """
+
+    # If for some reason the temporary .csv already exists, remove it
     if os.path.exists('%s/%s.csv' % (outdir, lookfor)):
         os.remove('%s/%s.csv' % (outdir, lookfor))
-
-    if os.path.exists('%s/%s.csv' % (outdir, name)):
-        os.remove('%s/%s.csv' % (outdir, name))
 
     # save the confusion matrix to a temporary .csv file named 999999.csv
     np.savetxt('%s/%s.csv' % (outdir, lookfor), matrix, fmt='%d')
 
     # open the temp .csv file and a new final output csv file named with the fname variable
     with open('%s/%s.csv' % (outdir, lookfor), 'r') as f:
-
         text = f.read()
 
         text = text.replace(lookfor, 'Total')
 
     with open('%s/%s.csv' % (outdir, name), 'w') as out:
-
         out.write(text)
 
-    for dirpath, folders, files in os.walk(outdir):
-
+    for root, folders, files in os.walk(outdir):
         for x in files:
-
             if x == '99999999.csv':
-                os.remove(os.path.join(dirpath, x))
+                os.remove(os.path.join(root, x))
 
     return None
 
@@ -224,59 +276,212 @@ def array_to_dataframe(matrix):
     return df
 
 
-def write_to_excel(loc, df, basename):
-    # Create a Pandas Excel writer using XlsxWriter as the engine
-    writer = pd.ExcelWriter(loc + os.sep + "{name}.xlsx".format(name=basename),
-                            engine="xlsxwriter")
+def write_to_excel(writer, df, year):
 
     # Convert the dataframe to an XLsxWriter Excel object
-    df.to_excel(writer, sheet_name=f"{basename}")
+    df.to_excel(writer, sheet_name=year)
 
     # Close the Pandas Excel writer and output the Excel file
-    writer.save()
+    # writer.save()
 
     return None
 
 
-def get_plot(matrix, table):
+def get_fromclass_percents(table):
     """
+    Create a pandas DataFrame from the table that contains the percent of each value within a
+    given row (i.e. originating class)
+    :param table: <pandas.core.frame.DataFrame>
+    :return: <pandas.core.frame.DataFrame>
+    """
+    percents = table.iloc[table.index != "Total"]
 
-    :param matrix:
-    :param table:
-    :return:
+    percents = table[[1, 2, 3, 4, 5, 6, 7, 8, ]].copy()
+
+    return percents.div(percents.sum(1)/100, 0)
+
+
+def get_class_totals(matrix):
     """
-    pass
+    First slice the matrix to get all rows of the last column.  Then, remove the first row from this slice because
+    it is just a column header value.
+    :param matrix: The from-to counts array
+    :return: The column from the from-to array containing class totals
+    :rtype: numpy.ndarray
+    """
+    return matrix[:,-1][1:-1]
+
+
+def get_segments_total(matrix):
+    """
+    Get the total number of segment changes for the current year from the from-to array.  This value is already
+    stored in the from-to array in the last row and column which represent the totals
+    :param matrix: The from-to data array
+    :return: The sum of all segment changes for the current year
+    :rtype: int
+    """
+    return matrix[-1, -1]
+
+
+def get_thematic_change_percent(matrix):
+    """
+    Calculate the percent of the tile that underwent thematic change for the given year.  This means that there was
+    a segment change and that the originating class ended up as a different class in the new segment.
+    :param matrix: The from-to data array
+    :type matrix: numpy.ndarray
+    :return: The percentage of the tile that underwent thematic change
+    :rtype: float
+    """
+    # Slice out the from-to counts from the array removing the row/column names and row/column totals
     counts = matrix[1:9, 1:9]
 
-    percents = np.zeros_like(counts, dtype=np.float)
-
-    nrows = np.shape(percents)[0]
-
-    for n in range(nrows):
-        for ind, i in enumerate(counts[n]):
-            if i:
-                temp = i / np.sum(counts[n]) * 100.0
-                percents[n, ind] = temp
-
-    segment_total = matrix[1:9, -1]
-
-    segment_total = np.sum(segment_total)
-
-    segment_percent = segment_total / 25000000.0 * 100.0
-
-    marker = [0, 1, 2, 3, 4, 5, 6, 7]
-
-    tile_counts = []
+    # Create an array of zeros that will contain each row's total of thematic change
+    thematic_count = np.zeros(8, dtype=np.int)
 
     for ind, i in enumerate(counts):
-        temp = list(i)
+        # Create a copy of the ith row of counts
+        temp = np.copy(i)
 
-        # Use marker to identify counts associated with static class across segment, delete this from the temp list
+        # Use ind to identify counts associated with static class across segment, set this element to equal 0
         # so that it is not included in the sum
-        del(temp[marker[ind]])
+        temp[ind] = 0
+
+        # Store the sum of the thematic changes in row i in the thematic_count array
+        thematic_count[ind] = np.sum(temp)
+
+    # Calculate the sum of all row totals
+    total_count = np.sum(thematic_count)
+
+    return total_count / 25000000.0 * 100.0
 
 
-def main_work(indir, outdir, year=None):
+def get_plot(matrix, table, tile, year, out_img):
+    """
+
+    :param matrix: <numpy.ndarray>
+    :param table: <pandas.core.frame.DataFrame>
+    :return: None
+    """
+    def autolabel(rects, ax, totals):
+        """
+        Generate labels for the horizontal bar plot.  Use the class totals as the label values
+        :param rects:
+        :param ax:
+        :return:
+        """
+
+        for ind, rect in enumerate(rects):
+            width = int(rect.get_width())
+
+            if width < 15:
+                xloc = width + 5
+                clr="k"
+                align = "right"
+            else:
+                xloc=0.98 * width
+                clr="k"
+                align="left"
+
+            yloc = rect.get_y() + rect.get_height()/2.0
+
+            label = ax.text(xloc, yloc, "{:02.2f} $km^2$".format(totals[ind]), ha=align, va="center",
+                            color=clr, weight="bold", clip_on=True, fontsize=10)
+
+        return None
+
+
+    df_class_percents = get_fromclass_percents(table)
+
+    class_totals = get_class_totals(matrix)
+
+    class_areas = [class_total * 900 * .0009 for class_total in class_totals]
+
+    segments_total = get_segments_total(matrix)
+
+    class_segment_proportions = [class_total / segments_total * 100.0 for class_total in class_totals]
+
+    total_thematic_percent = get_thematic_change_percent(matrix)
+
+    total_segment_percent = segments_total / 25000000.0 * 100.0
+
+    matplotlib.style.use("ggplot")
+
+    colors = [(1.0, 0.0, 0.0),
+              (1.0, 0.6470588235294118, 0.0),
+              (1.0, 1.0, 0.0),
+              (0.0, 0.5490196078431373, 0.0),
+              (0.0, 0.0, 1.0),
+              (0.0, 1.0, 1.0),
+              (0.9607843137254902, 0.9607843137254902, 0.9607843137254902),
+              (0.39215686274509803, 0.39215686274509803, 0.39215686274509803)]
+
+    # Create the figure with two subplots that share a y-axis
+    fig, (ax1, ax2) = plt.subplots(figsize=(15, 5), dpi=200, nrows=1, ncols=2, sharex=False, sharey=True)
+
+    # Use the DataFrame class_percents to plot the proportion of change in each originating class on the right axis
+    df_class_percents[:-1].plot.barh(stacked=True, color=colors, ax=ax2, edgecolor="k", width=0.5, legend=False)
+
+    # Use array class_segment_proportions to plot the proportion of each class to the segments total
+    rects = ax1.barh(np.arange(len(class_segment_proportions)), class_segment_proportions,
+                     color=colors, height=0.5, edgecolor="k")
+
+    # Add class total labels to the horizontal bars
+    autolabel(rects=rects, ax=ax1, totals=class_areas)
+
+    # Plot the first class at the top, this inverts the y-axis for both subplots because they share y
+    ax1.invert_yaxis()
+
+    # Invert the x-axis on the left subplot so that it matches the origin of the right subplot
+    ax1.invert_xaxis()
+
+    # Add figure title and subtitles
+    fig.suptitle(f"{tile} {year}", fontsize=18, y=1.10)
+    plt.figtext(0.5, 0.99, f"Segment Change in {round(total_segment_percent, 2)}% of Tile", fontsize=12, ha="center")
+    plt.figtext(0.5, 0.93, f"Cover Change in {round(total_thematic_percent, 2)}% of Tile", fontsize=12, ha="center")
+
+    # Add subplot titles
+    ax1.set_title("Percent of Origin Class in All Segment Changes", fontsize=12)
+    ax2.set_title("Percent of Class Destination from Origin Class", fontsize=12)
+
+    # Add axes labels and titles
+    ax1.set_xlabel("Percent", fontsize=12)
+    ax2.set_xlabel("Percent", fontsize=12)
+    ax1.set_yticklabels([""]*len(np.arange(8)))
+    ax2.get_yaxis().set_visible(False)
+
+    # Set x-limit on the left subplot so that all figures have the same window scale
+    ax1.set_xlim(right=0, left=105)
+
+    # Create the legend manually
+    dev_label = mpatches.Patch(color=colors[0], label="1 - Developed")
+    ag_label = mpatches.Patch(color=colors[1], label="2 - Agriculture")
+    grass_label = mpatches.Patch(color=colors[2], label="3 - Grassland/Shrubland")
+    tree_label = mpatches.Patch(color=colors[3], label="4 - Tree Cover")
+    water_label = mpatches.Patch(color=colors[4], label="5 - Water")
+    wet_label = mpatches.Patch(color=colors[5], label="6 - Wetland")
+    ice_label = mpatches.Patch(color=colors[6], label="7 - Ice/Snow")
+    bar_label = mpatches.Patch(color=colors[7], label="8 - Barren")
+
+    handles = [dev_label, ag_label, grass_label, tree_label, water_label, wet_label, ice_label, bar_label]
+
+    # Display the legend to the left subplot and mimic the lef subplot y-axis with its placement
+    ax1.legend(handles=handles, loc="upper right", bbox_to_anchor=(0, 0.99), ncol=1, labelspacing=2.32,
+               markerfirst=False, facecolor="w", frameon=False)
+
+    # Adjust subplots to make enough room at the top for figure titles
+    fig.subplots_adjust(top=0.85)
+
+    # Adjust subplots so that there is no space between the y-axes
+    fig.subplots_adjust(wspace=0)
+
+    plt.savefig(out_img, dpi=200, bbox_inches="tight")
+
+    plt.close()
+
+    return None
+
+
+def main_work(indir, outdir, years=None):
     """
 
     :param indir:
@@ -284,18 +489,36 @@ def main_work(indir, outdir, year=None):
     :param year:
     :return:
     """
-    froms, tos = [1, 2, 3, 4, 5, 6, 7, 8], [1, 2, 3, 4, 5, 6, 7, 8]
-
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    files = get_files(path=indir, year=year)
+    files = get_files(path=indir, years=years)
+
+    # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
+    # directory are associated with the same H-V tile.
+    tile = get_tile(files[0])
+
+    # Create an XlsxWriter object to create a workbook with multiple sheets, make sure not to overwrite an existing
+    # workbook by checking os.path.exists(xlsx_name)
+    xlsx_name = outdir + os.sep + tile + "_cnfmat.xlsx"
+
+    if not os.path.exists(xlsx_name):
+        writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
+
+    else:
+        xlsx_name = os.path.splitext(xlsx_name)[0]
+
+        xlsx_name = xlsx_name + "_1.xlsx"
+
+        writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
 
     for f in files:
-        fname = get_fname(f)
+        fname, current_year = get_fname(f)
+
+        img_name = outdir + os.sep + fname + "_fig.png"
 
         # Skip file "f" if the excel file associated with f exists
-        if os.path.exists(outdir + os.sep + fname + ".xlsx"):
+        if os.path.exists(img_name):
             continue
 
         print(f"\nWorking on file: {f}")
@@ -303,23 +526,30 @@ def main_work(indir, outdir, year=None):
         in_data = read_data(f)
 
         try:
-            cnf_mat = compute_confusion_matrix(fromto=in_data, from_vals=froms, to_vals=tos)
+            cnf_mat = compute_confusion_matrix(fromto=in_data)
 
         except IndexError:
-            print(f"Skipping file {f}")
-            print("Type of Exception: ", sys.exc_info()[0])
-            print("Exception Value: ", sys.exc_info()[1])
-            print("Traceback Info: ")
-            traceback.print_tb(sys.exc_info()[2])
+            error_message(f)
+
             continue
 
         write_to_csv(cnf_mat, outdir, fname)
 
         df = array_to_dataframe(cnf_mat)
 
-        write_to_excel(outdir, df, fname)
+        write_to_excel(writer=writer, df=df, year=current_year)
 
-        get_plot(matrix=cnf_mat, table=df)
+        get_plot(matrix=cnf_mat, table=df, tile=tile, year=current_year, out_img=img_name)
+
+    writer.save()
+
+    # Clean up the output directory by removing the .csv files
+    for root, folders, files in os.walk(outdir):
+        for f in files:
+            if f[-4:] == ".csv":
+                os.remove(os.path.join(root, f))
+
+    return None
 
 
 def main():
@@ -331,8 +561,8 @@ def main():
     parser.add_argument('-o', '--output', dest="outdir", type=str, required=True,
                         help='Full path to the output folder')
 
-    parser.add_argument('-y', '--year', type=str, required=False,
-                        help='The year used to identify matching layers for comparing in the matrix')
+    parser.add_argument('-y', '--years', type=str, required=False, nargs="*", default=None,
+                        help='Optionally specify a from-to year.  Otherwise process all available years')
 
     args = parser.parse_args()
 
