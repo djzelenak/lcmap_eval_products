@@ -6,8 +6,8 @@ Created on Fri Jun 16 14:05:09 2017
 
 Purpose: Generate confusion matrix comparing pyccd and trends/nlcd land cover agreement
 
-Horizontal Axis = Pyccd classes
-Vertical Axis = Trends/NLCD classes
+Horizontal Axis = To classes
+Vertical Axis = From classes
 
 """
 
@@ -291,8 +291,17 @@ def array_to_dataframe(matrix):
 def write_to_excel(writer, df, year):
 
     # Convert the dataframe to an XLsxWriter Excel object
-    df.to_excel(writer, sheet_name=year)
+    df.to_excel(writer, sheet_name=year, startrow=1, startcol=1)
 
+    workbook = writer.book
+
+    worksheet = writer.sheets[year]
+
+    format = workbook.add_format({"bold": True})
+    format90 = workbook.add_format({"bold": True, "rotation": 90, "text_wrap": True})
+
+    worksheet.write(0, 6, "Destination", format)
+    worksheet.write(6, 0, "Origin", format)
     # Close the Pandas Excel writer and output the Excel file
     # writer.save()
 
@@ -316,7 +325,7 @@ def get_fromclass_percents(table):
 def get_class_totals(matrix):
     """
     First slice the matrix to get all rows of the last column.  Then, remove the first row from this slice because
-    it is just a column header value.
+    it is just a column header value.  Also, don't include the last element because this is the overall total
     :param matrix: The from-to counts array
     :return: The column from the from-to array containing class totals
     :rtype: numpy.ndarray
@@ -327,7 +336,7 @@ def get_class_totals(matrix):
 def get_segments_total(matrix):
     """
     Get the total number of segment changes for the current year from the from-to array.  This value is already
-    stored in the from-to array in the last row and column which represent the totals
+    stored in the from-to array in the last row and column which represent the overall total
     :param matrix: The from-to data array
     :return: The sum of all segment changes for the current year
     :rtype: int
@@ -354,12 +363,13 @@ def get_thematic_change_percent(matrix):
         # Create a copy of the ith row of counts
         temp = np.copy(i)
 
-        # Use ind to identify counts associated with static class across segment, set this element to equal 0
+        # Use ind to identify counts associated with static class across segment change, set this element to equal 0
         # so that it is not included in the sum
         temp[ind] = 0
 
-        # Store the sum of the thematic changes in row i in the thematic_count array
-        thematic_count[ind] = np.sum(temp)
+        # Store the sum of the thematic changes in row i in the thematic_count array, but don't include counts for a
+        # class -> 0 as cover change.
+        thematic_count[ind] = np.sum(temp[1:])
 
     # Calculate the sum of all row totals
     total_count = np.sum(thematic_count)
@@ -385,7 +395,7 @@ def get_plot(matrix, table, tile, year, out_img):
         for ind, rect in enumerate(rects):
             width = int(rect.get_width())
 
-            if width < 15:
+            if width < 20:
                 xloc = width + 5
                 clr="k"
                 align = "right"
@@ -404,9 +414,9 @@ def get_plot(matrix, table, tile, year, out_img):
 
     df_class_percents = get_fromclass_percents(table)
 
-    class_totals = get_class_totals(matrix)
+    class_totals = (get_class_totals(matrix)).astype(np.int64)
 
-    class_areas = [class_total * 900 * .0009 for class_total in class_totals]
+    class_areas = [round(class_total * 900 * .0009, 2) for class_total in class_totals]
 
     segments_total = get_segments_total(matrix)
 
@@ -425,7 +435,7 @@ def get_plot(matrix, table, tile, year, out_img):
               (0.0, 0.5490196078431373, 0.0),
               (0.0, 0.0, 1.0),
               (0.0, 1.0, 1.0),
-              (0.9607843137254902, 0.9607843137254902, 0.9607843137254902),
+              (0.9, 0.9, 0.9),
               (0.39215686274509803, 0.39215686274509803, 0.39215686274509803)]
 
     # Create the figure with two subplots that share a y-axis
@@ -464,6 +474,7 @@ def get_plot(matrix, table, tile, year, out_img):
 
     # Set x-limit on the left subplot so that all figures have the same window scale
     ax1.set_xlim(right=0, left=105)
+    ax2.set_xlim(left=0, right=105)
 
     # Create the legend manually
     no_label = mpatches.Patch(color=colors[0], label="0 - Insufficient Data")
@@ -471,7 +482,7 @@ def get_plot(matrix, table, tile, year, out_img):
     ag_label = mpatches.Patch(color=colors[2], label="2 - Agriculture")
     grass_label = mpatches.Patch(color=colors[3], label="3 - Grassland/Shrubland")
     tree_label = mpatches.Patch(color=colors[4], label="4 - Tree Cover")
-    water_label = mpatches.Patch(color=colors[4], label="5 - Water")
+    water_label = mpatches.Patch(color=colors[5], label="5 - Water")
     wet_label = mpatches.Patch(color=colors[6], label="6 - Wetland")
     ice_label = mpatches.Patch(color=colors[7], label="7 - Ice/Snow")
     bar_label = mpatches.Patch(color=colors[8], label="8 - Barren")
@@ -479,7 +490,7 @@ def get_plot(matrix, table, tile, year, out_img):
     handles = [no_label, dev_label, ag_label, grass_label, tree_label, water_label, wet_label, ice_label, bar_label]
 
     # Display the legend to the left subplot and mimic the lef subplot y-axis with its placement
-    ax1.legend(handles=handles, loc="upper right", bbox_to_anchor=(0, 0.99), ncol=1, labelspacing=2.32,
+    ax1.legend(handles=handles, loc="upper right", bbox_to_anchor=(0, 0.99), ncol=1, labelspacing=1.94,
                markerfirst=False, facecolor="w", frameon=False)
 
     # Adjust subplots to make enough room at the top for figure titles
