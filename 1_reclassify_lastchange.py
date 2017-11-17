@@ -49,7 +49,7 @@ def get_layers(infolder, pattern, y1, y2):
         rlist = the clipped list of change map raster files based on y1, y2
     """
 
-    templist = glob.glob("{a}{b}{c}*.tif".format
+    templist = glob.glob("{a}{b}*{c}*.tif".format
                          ( a=infolder, b=os.sep, c=pattern ))
 
     if y1==None or y2==None:

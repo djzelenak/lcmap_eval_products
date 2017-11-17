@@ -228,7 +228,7 @@ def main():
 
     outputdir = "%s%s%s_color" % (outdir, os.sep, name)
 
-    filelist = sorted(glob.glob("{}{}{}*.tif".format(indir, os.sep, name)))
+    filelist = sorted(glob.glob("{}{}*{}*.tif".format(indir, os.sep, name)))
 
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
