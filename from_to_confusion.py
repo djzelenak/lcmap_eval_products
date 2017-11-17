@@ -48,7 +48,7 @@ def error_message(file):
     return None
 
 
-def get_files(path, years=None, lookfor="CoverFromTo"):
+def get_files(path, years=None, lookfor="SegChange"):
     """
     Use glob to generate a list of all matching files in the specified path
     :param path: Full path to the location of the From-To layers
@@ -61,7 +61,7 @@ def get_files(path, years=None, lookfor="CoverFromTo"):
     :rtype: list
     """
     # All files in path ending in .tif
-    filelist = glob.glob(f"{path}{os.sep}{lookfor}*.tif")
+    filelist = glob.glob(f"{path}{os.sep}*{lookfor}*.tif")
 
     filelist.sort()
 
@@ -103,6 +103,7 @@ def get_tile(infile):
     for l in looking:
         if ("h" in l or "H" in l) and ("v" in l or "V" in l):
             L = l
+            break
 
     try:
         tile = L.split(sep="_")[1]
@@ -122,7 +123,7 @@ def get_fname(infile):
     """
     basename = os.path.splitext(os.path.basename(infile))[0]
 
-    return basename, basename.split(sep="_")[1][:4]
+    return basename, basename[-4:]
 
 
 def compute_confusion_matrix(fromto):
@@ -132,12 +133,18 @@ def compute_confusion_matrix(fromto):
     :type fromto: numpy.ndarray
     :return:
     """
-    from_vals = [1, 2, 3, 4, 5, 6, 7, 8]
-    to_vals = [1, 2, 3, 4, 5, 6, 7, 8]
+    from_vals = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    to_vals = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
     total = float(len(from_vals) * len(to_vals))
 
     check_vals = np.unique(fromto)
+
+    # Temporary gross fix
+    for ind, v in enumerate(check_vals):
+        if len(str(v)) == 1:
+            check_vals[ind] = v * 10
+
 
     # create the confusion matrix, for now containing all zeros
     confusion_matrix = np.zeros((len(from_vals), len(to_vals)), np.int32)
@@ -154,9 +161,14 @@ def compute_confusion_matrix(fromto):
             val = int(str(c) + str(r))
             current = counter / total * 100.0  # as percent
 
-            if val in check_vals:
+            if val in check_vals and val != 0:
                 # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
-                confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
+
+                if str(val)[1] != "0":
+                    confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
+
+                else:
+                    confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[int(str(val)[0])]
 
             else:
                 confusion_matrix[to_vals.index(c), from_vals.index(r)] = 0
@@ -296,7 +308,7 @@ def get_fromclass_percents(table):
     """
     percents = table.iloc[table.index != "Total"]
 
-    percents = table[[1, 2, 3, 4, 5, 6, 7, 8, ]].copy()
+    percents = table[[0, 1, 2, 3, 4, 5, 6, 7, 8]].copy()
 
     return percents.div(percents.sum(1)/100, 0)
 
@@ -333,10 +345,10 @@ def get_thematic_change_percent(matrix):
     :rtype: float
     """
     # Slice out the from-to counts from the array removing the row/column names and row/column totals
-    counts = matrix[1:9, 1:9]
+    counts = matrix[1:10, 1:10]
 
     # Create an array of zeros that will contain each row's total of thematic change
-    thematic_count = np.zeros(8, dtype=np.int)
+    thematic_count = np.zeros(9, dtype=np.int)
 
     for ind, i in enumerate(counts):
         # Create a copy of the ith row of counts
@@ -406,7 +418,8 @@ def get_plot(matrix, table, tile, year, out_img):
 
     matplotlib.style.use("ggplot")
 
-    colors = [(1.0, 0.0, 0.0),
+    colors = [(0.0, 0.0, 0.0),
+              (1.0, 0.0, 0.0),
               (1.0, 0.6470588235294118, 0.0),
               (1.0, 1.0, 0.0),
               (0.0, 0.5490196078431373, 0.0),
@@ -446,23 +459,24 @@ def get_plot(matrix, table, tile, year, out_img):
     # Add axes labels and titles
     ax1.set_xlabel("Percent", fontsize=12)
     ax2.set_xlabel("Percent", fontsize=12)
-    ax1.set_yticklabels([""]*len(np.arange(8)))
+    ax1.set_yticklabels([""]*len(np.arange(9)))
     ax2.get_yaxis().set_visible(False)
 
     # Set x-limit on the left subplot so that all figures have the same window scale
     ax1.set_xlim(right=0, left=105)
 
     # Create the legend manually
-    dev_label = mpatches.Patch(color=colors[0], label="1 - Developed")
-    ag_label = mpatches.Patch(color=colors[1], label="2 - Agriculture")
-    grass_label = mpatches.Patch(color=colors[2], label="3 - Grassland/Shrubland")
-    tree_label = mpatches.Patch(color=colors[3], label="4 - Tree Cover")
+    no_label = mpatches.Patch(color=colors[0], label="0 - Insufficient Data")
+    dev_label = mpatches.Patch(color=colors[1], label="1 - Developed")
+    ag_label = mpatches.Patch(color=colors[2], label="2 - Agriculture")
+    grass_label = mpatches.Patch(color=colors[3], label="3 - Grassland/Shrubland")
+    tree_label = mpatches.Patch(color=colors[4], label="4 - Tree Cover")
     water_label = mpatches.Patch(color=colors[4], label="5 - Water")
-    wet_label = mpatches.Patch(color=colors[5], label="6 - Wetland")
-    ice_label = mpatches.Patch(color=colors[6], label="7 - Ice/Snow")
-    bar_label = mpatches.Patch(color=colors[7], label="8 - Barren")
+    wet_label = mpatches.Patch(color=colors[6], label="6 - Wetland")
+    ice_label = mpatches.Patch(color=colors[7], label="7 - Ice/Snow")
+    bar_label = mpatches.Patch(color=colors[8], label="8 - Barren")
 
-    handles = [dev_label, ag_label, grass_label, tree_label, water_label, wet_label, ice_label, bar_label]
+    handles = [no_label, dev_label, ag_label, grass_label, tree_label, water_label, wet_label, ice_label, bar_label]
 
     # Display the legend to the left subplot and mimic the lef subplot y-axis with its placement
     ax1.legend(handles=handles, loc="upper right", bbox_to_anchor=(0, 0.99), ncol=1, labelspacing=2.32,
