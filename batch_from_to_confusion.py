@@ -32,7 +32,7 @@ def main(rootdir, outdir, tile=None, years=None):
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         
-        subprocess.call(f"python from_to_confusion.py -i {f} -o {outfolder} -y {years}", shell=True)
+        subprocess.call(f"python from_to_confusion.py -i {f}{os.sep}maps -o {outfolder} -y {years}", shell=True)
 
 
 if __name__=="__main__":
