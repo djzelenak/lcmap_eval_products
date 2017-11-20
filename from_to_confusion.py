@@ -140,12 +140,6 @@ def compute_confusion_matrix(fromto):
 
     check_vals = np.unique(fromto)
 
-    # Temporary gross fix
-    for ind, v in enumerate(check_vals):
-        if len(str(v)) == 1:
-            check_vals[ind] = v * 10
-
-
     # create the confusion matrix, for now containing all zeros
     confusion_matrix = np.zeros((len(from_vals), len(to_vals)), np.int32)
 
@@ -164,11 +158,7 @@ def compute_confusion_matrix(fromto):
             if val in check_vals and val != 0:
                 # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
 
-                if str(val)[1] != "0":
-                    confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
-
-                else:
-                    confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[int(str(val)[0])]
+                confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
 
             else:
                 confusion_matrix[to_vals.index(c), from_vals.index(r)] = 0
@@ -431,14 +421,14 @@ def get_plot(matrix, table, tile, year, out_img):
     matplotlib.style.use("ggplot")
 
     colors = [(0.0, 0.0, 0.0),
-              (1.0, 0.0, 0.0),
-              (1.0, 0.6470588235294118, 0.0),
-              (1.0, 1.0, 0.0),
-              (0.0, 0.5490196078431373, 0.0),
-              (0.0, 0.0, 1.0),
-              (0.0, 1.0, 1.0),
-              (0.9, 0.9, 0.9),
-              (0.39215686274509803, 0.39215686274509803, 0.39215686274509803)]
+              (1.0, .188235, 0.078431),
+              (0.980392,	0.588235, 0.180392),
+              (0.941176,	0.960784, 0.34902),
+              (0.0, 0.560784314, 0.0),
+              (0.211765, 0.290196, 1.0),
+              (0.2, 0.803922, 0.588235),
+              (0.882353, 0.882353, 0.882353),
+              (0.509804, 0.509804, 0.509804)]
 
     # Create the figure with two subplots that share a y-axis
     fig, (ax1, ax2) = plt.subplots(figsize=(15, 5), dpi=200, nrows=1, ncols=2, sharex=False, sharey=True)
