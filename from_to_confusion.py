@@ -6,8 +6,8 @@ Created on Fri Jun 16 14:05:09 2017
 
 Purpose: Generate confusion matrix comparing pyccd and trends/nlcd land cover agreement
 
-Horizontal Axis = To classes
-Vertical Axis = From classes
+Horizontal Axis = Destination classes
+Vertical Axis = Origin classes
 
 """
 
