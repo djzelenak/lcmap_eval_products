@@ -298,12 +298,13 @@ def write_to_excel(writer, df, year):
     worksheet = writer.sheets[year]
 
     format = workbook.add_format({"bold": True})
-    format90 = workbook.add_format({"bold": True, "rotation": 90, "text_wrap": True})
+    format2 = workbook.add_format({"bold": True, "bg_color": "#C0C0C0" })
 
     worksheet.write(0, 6, "Destination", format)
     worksheet.write(6, 0, "Origin", format)
-    # Close the Pandas Excel writer and output the Excel file
-    # writer.save()
+
+    # TODO Change background color of diagonal cells
+    # worksheet.write("C3, D4, E5, F6, G7, H8, I9, J10, K11, L12", format2)
 
     return None
 
