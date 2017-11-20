@@ -17,7 +17,8 @@ def main(rootdir, outdir, tile=None, years=None):
     for root, folders, files in os.walk(rootdir):
         if tile is None:
             for folder in folders:
-                input_list.append(os.path.join(root, folder))
+                if folder[0] == "h" or folder[0] == "H":
+                    input_list.append(os.path.join(root, folder))
                 
         else:
             for folder in folders:
