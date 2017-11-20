@@ -543,7 +543,7 @@ def main_work(indir, outdir, years=None):
 
         img_name = outdir + os.sep + fname + "_fig.png"
 
-        # Skip file "f" if the excel file associated with f exists
+        # Skip file "f" if the .png file associated with f exists
         if os.path.exists(img_name):
             continue
 
@@ -588,7 +588,7 @@ def main():
                         help='Full path to the output folder')
 
     parser.add_argument('-y', '--years', type=str, required=False, nargs="*", default=None,
-                        help='Optionally specify a from-to year.  Otherwise process all available years')
+                        help='Optionally specify a from-to year or years.  Otherwise process all available years')
 
     args = parser.parse_args()
 
