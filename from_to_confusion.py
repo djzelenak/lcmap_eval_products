@@ -415,6 +415,7 @@ def get_plot(matrix, table, tile, year, out_img):
 
     df_class_percents = get_fromclass_percents(table)
 
+    # Needed to use the .astype(np.int64) to avoid value overflow warning
     class_totals = (get_class_totals(matrix)).astype(np.int64)
 
     class_areas = [round(class_total * 900 * .0009, 2) for class_total in class_totals]
