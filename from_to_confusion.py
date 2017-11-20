@@ -66,7 +66,7 @@ def get_files(path, years=None, lookfor="SegChange"):
     filelist.sort()
 
     if len(filelist) == 0:
-        print("\nCould not locate a files {}\n".format(path))
+        print("\nCould not locate any files {}\n".format(path))
 
         sys.exit(1)
 

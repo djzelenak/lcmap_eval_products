@@ -32,7 +32,11 @@ def main(rootdir, outdir, tile=None, years=None):
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         
-        subprocess.call(f"python from_to_confusion.py -i {f}{os.sep}maps -o {outfolder} -y {years}", shell=True)
+        if years is not None:
+            subprocess.call(f"python from_to_confusion.py -i {f}{os.sep}maps -o {outfolder} -y {years}", shell=True)
+
+        else:
+            subprocess.call(f"python from_to_confusion.py -i {f}{os.sep}maps -o {outfolder}", shell=True)
 
 
 if __name__=="__main__":
@@ -47,7 +51,7 @@ if __name__=="__main__":
     parser.add_argument("-t", dest="tile", type=str, required=False,
                         help="Optionally specify a tile to process")
     
-    parser.add_argument("-y", dest="years", type=str, required=False, nargs="*",
+    parser.add_argument("-y", dest="years", type=str, required=False, default=None, nargs="*",
                         help="Optionally specify one or more years to process")
     
     args = parser.parse_args()
