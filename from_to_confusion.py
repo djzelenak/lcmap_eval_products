@@ -18,6 +18,7 @@ import os
 import sys
 import traceback
 import matplotlib
+matplotlib.use("agg")
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
 
