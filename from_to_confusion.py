@@ -6,8 +6,8 @@ Created on Fri Jun 16 14:05:09 2017
 
 Purpose: Generate confusion matrix comparing pyccd and trends/nlcd land cover agreement
 
-Horizontal Axis = Pyccd classes
-Vertical Axis = Trends/NLCD classes
+Horizontal Axis = Destination classes
+Vertical Axis = Origin classes
 
 """
 
@@ -18,8 +18,11 @@ import os
 import sys
 import traceback
 import matplotlib
+
+matplotlib.use("agg")
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
+from matplotlib import colors as clr
 
 import numpy as np
 import pandas as pd
@@ -48,7 +51,7 @@ def error_message(file):
     return None
 
 
-def get_files(path, years=None, lookfor="CoverFromTo"):
+def get_files(path, years=None, lookfor="SegChange"):
     """
     Use glob to generate a list of all matching files in the specified path
     :param path: Full path to the location of the From-To layers
@@ -61,12 +64,12 @@ def get_files(path, years=None, lookfor="CoverFromTo"):
     :rtype: list
     """
     # All files in path ending in .tif
-    filelist = glob.glob(f"{path}{os.sep}{lookfor}*.tif")
+    filelist = glob.glob(f"{path}{os.sep}*{lookfor}*.tif")
 
     filelist.sort()
 
     if len(filelist) == 0:
-        print("\nCould not locate a files {}\n".format(path))
+        print("\nCould not locate any files {}\n".format(path))
 
         sys.exit(1)
 
@@ -103,6 +106,7 @@ def get_tile(infile):
     for l in looking:
         if ("h" in l or "H" in l) and ("v" in l or "V" in l):
             L = l
+            break
 
     try:
         tile = L.split(sep="_")[1]
@@ -122,7 +126,29 @@ def get_fname(infile):
     """
     basename = os.path.splitext(os.path.basename(infile))[0]
 
-    return basename, basename.split(sep="_")[1][:4]
+    return basename, basename[-4:]
+
+
+def get_cover_table(indata):
+    """
+    Create pandas DataFrames from the thematic land cover product
+    :param indata:
+    :return:
+    """
+    val_counts = np.bincount(indata.flatten())
+
+    total = np.sum(val_counts)
+
+    val_percents = np.zeros_like(val_counts, dtype=np.float)
+
+    for ind, v in enumerate(val_counts):
+        val_percents[ind] = v / total * 100.0
+
+    df_count = pd.DataFrame(val_counts, columns=["Count"])
+
+    df_perc = pd.DataFrame(val_percents, columns=["Percent"])
+
+    return df_count, df_perc
 
 
 def compute_confusion_matrix(fromto):
@@ -132,8 +158,8 @@ def compute_confusion_matrix(fromto):
     :type fromto: numpy.ndarray
     :return:
     """
-    from_vals = [1, 2, 3, 4, 5, 6, 7, 8]
-    to_vals = [1, 2, 3, 4, 5, 6, 7, 8]
+    from_vals = [0, 1, 2, 3, 4, 5, 6, 7, 8]
+    to_vals = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
     total = float(len(from_vals) * len(to_vals))
 
@@ -154,8 +180,9 @@ def compute_confusion_matrix(fromto):
             val = int(str(c) + str(r))
             current = counter / total * 100.0  # as percent
 
-            if val in check_vals:
+            if val in check_vals and val != 0:
                 # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
+
                 confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
 
             else:
@@ -276,13 +303,28 @@ def array_to_dataframe(matrix):
     return df
 
 
-def write_to_excel(writer, df, year):
-
+def write_to_excel(writer, df_seg, df_cover, df_cover_perc, year):
     # Convert the dataframe to an XLsxWriter Excel object
-    df.to_excel(writer, sheet_name=year)
+    df_seg.to_excel(writer, sheet_name=year, startrow=2, startcol=1)
 
-    # Close the Pandas Excel writer and output the Excel file
-    # writer.save()
+    df_cover.to_excel(writer, sheet_name=year, startrow=16, startcol=1)
+
+    df_cover_perc.to_excel(writer, index=False, sheet_name=year, startrow=16, startcol=3)
+
+    workbook = writer.book
+
+    worksheet = writer.sheets[year]
+
+    format = workbook.add_format({"bold": True})
+    format2 = workbook.add_format({"bold": True, "bg_color": "#C0C0C0"})
+
+    worksheet.write(0, 6, "Segment Change Class Distribution", format)
+    worksheet.write(1, 6, "Destination", format)
+    worksheet.write(6, 0, "Origin", format)
+    worksheet.write(15, 2, "Total Class Distribution", format)
+
+    # TODO Change background color of diagonal cells
+    # worksheet.write("C3, D4, E5, F6, G7, H8, I9, J10, K11, L12", format2)
 
     return None
 
@@ -296,26 +338,26 @@ def get_fromclass_percents(table):
     """
     percents = table.iloc[table.index != "Total"]
 
-    percents = table[[1, 2, 3, 4, 5, 6, 7, 8, ]].copy()
+    percents = table[[0, 1, 2, 3, 4, 5, 6, 7, 8]].copy()
 
-    return percents.div(percents.sum(1)/100, 0)
+    return percents.div(percents.sum(1) / 100, 0)
 
 
 def get_class_totals(matrix):
     """
     First slice the matrix to get all rows of the last column.  Then, remove the first row from this slice because
-    it is just a column header value.
+    it is just a column header value.  Also, don't include the last element because this is the overall total
     :param matrix: The from-to counts array
     :return: The column from the from-to array containing class totals
     :rtype: numpy.ndarray
     """
-    return matrix[:,-1][1:-1]
+    return matrix[:, -1][1:-1]
 
 
 def get_segments_total(matrix):
     """
     Get the total number of segment changes for the current year from the from-to array.  This value is already
-    stored in the from-to array in the last row and column which represent the totals
+    stored in the from-to array in the last row and column which represent the overall total
     :param matrix: The from-to data array
     :return: The sum of all segment changes for the current year
     :rtype: int
@@ -333,21 +375,22 @@ def get_thematic_change_percent(matrix):
     :rtype: float
     """
     # Slice out the from-to counts from the array removing the row/column names and row/column totals
-    counts = matrix[1:9, 1:9]
+    counts = matrix[1:10, 1:10]
 
     # Create an array of zeros that will contain each row's total of thematic change
-    thematic_count = np.zeros(8, dtype=np.int)
+    thematic_count = np.zeros(9, dtype=np.int)
 
     for ind, i in enumerate(counts):
         # Create a copy of the ith row of counts
         temp = np.copy(i)
 
-        # Use ind to identify counts associated with static class across segment, set this element to equal 0
+        # Use ind to identify counts associated with static class across segment change, set this element to equal 0
         # so that it is not included in the sum
         temp[ind] = 0
 
-        # Store the sum of the thematic changes in row i in the thematic_count array
-        thematic_count[ind] = np.sum(temp)
+        # Store the sum of the thematic changes in row i in the thematic_count array, but don't include counts for a
+        # class -> 0 as cover change.
+        thematic_count[ind] = np.sum(temp[1:])
 
     # Calculate the sum of all row totals
     total_count = np.sum(thematic_count)
@@ -355,78 +398,110 @@ def get_thematic_change_percent(matrix):
     return total_count / 25000000.0 * 100.0
 
 
-def get_plot(matrix, table, tile, year, out_img):
+def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     """
 
-    :param matrix: <numpy.ndarray>
-    :param table: <pandas.core.frame.DataFrame>
+    :param seg_matrix: <numpy.ndarray>
+    :param seg_table: <pandas.core.frame.DataFrame>
     :return: None
     """
+
     def autolabel(rects, ax, totals):
         """
         Generate labels for the horizontal bar plot.  Use the class totals as the label values
         :param rects:
         :param ax:
+        :param totals:
         :return:
         """
 
         for ind, rect in enumerate(rects):
             width = int(rect.get_width())
 
-            if width < 15:
+            if width < 50:
                 xloc = width + 5
-                clr="k"
+                clr = "k"
                 align = "right"
             else:
-                xloc=0.98 * width
-                clr="k"
-                align="left"
+                xloc = 0.98 * width
+                clr = "k"
+                align = "left"
 
-            yloc = rect.get_y() + rect.get_height()/2.0
+            yloc = rect.get_y() + rect.get_height() / 2.0
 
-            label = ax.text(xloc, yloc, "{:02.2f} $km^2$".format(totals[ind]), ha=align, va="center",
-                            color=clr, weight="bold", clip_on=True, fontsize=10)
+            label = ax.text(xloc, yloc, "{:02.2f} $km^2$ | {:02.2f} $km^2$".format(totals[0][ind], totals[1][ind]),
+                            ha=align, va="center",
+                            color=clr, weight="bold",
+                            clip_on=True, fontsize=10)
 
         return None
 
+    df_class_percents = get_fromclass_percents(seg_table)
 
-    df_class_percents = get_fromclass_percents(table)
+    # Needed to use the .astype(np.int64) to avoid value overflow warning
+    seg_class_totals = (get_class_totals(seg_matrix)).astype(np.int64)
 
-    class_totals = get_class_totals(matrix)
+    seg_class_areas = [round(class_total * 900 * .0009, 2) for class_total in seg_class_totals]
 
-    class_areas = [class_total * 900 * .0009 for class_total in class_totals]
+    segments_total = get_segments_total(seg_matrix)
 
-    segments_total = get_segments_total(matrix)
+    class_segment_proportions = [class_total / segments_total * 100.0 for class_total in seg_class_totals]
 
-    class_segment_proportions = [class_total / segments_total * 100.0 for class_total in class_totals]
-
-    total_thematic_percent = get_thematic_change_percent(matrix)
+    total_thematic_percent = get_thematic_change_percent(seg_matrix)
 
     total_segment_percent = segments_total / 25000000.0 * 100.0
 
+    cover_percents = [round(cover / 25000000 * 100, 2) for cover in cover_matrix]
+
+    cover_areas = [round(cover * 900 * .0009, 2) for cover in cover_matrix]
+
     matplotlib.style.use("ggplot")
 
-    colors = [(1.0, 0.0, 0.0),
-              (1.0, 0.6470588235294118, 0.0),
-              (1.0, 1.0, 0.0),
-              (0.0, 0.5490196078431373, 0.0),
-              (0.0, 0.0, 1.0),
-              (0.0, 1.0, 1.0),
-              (0.9607843137254902, 0.9607843137254902, 0.9607843137254902),
-              (0.39215686274509803, 0.39215686274509803, 0.39215686274509803)]
+    colors = [(0.0, 0.0, 0.0),
+              (1.0, .188235, 0.078431),
+              (0.980392, 0.588235, 0.180392),
+              (0.941176, 0.960784, 0.34902),
+              (0.0, 0.560784314, 0.0),
+              (0.211765, 0.290196, 1.0),
+              (0.2, 0.803922, 0.588235),
+              (0.882353, 0.882353, 0.882353),
+              (0.509804, 0.509804, 0.509804),
+              (0.494, 0.0784, 1.0)]
+
+    # Used for the total class distribution pie chart
+    names = ["Insufficient-Data", "Developed", "Agriculture", "Grassland/Shrubland", "Tree Cover", "Water", "Wetland",
+             "Ice/Snow", "Barren", "No Model/Transitional"]
 
     # Create the figure with two subplots that share a y-axis
-    fig, (ax1, ax2) = plt.subplots(figsize=(15, 5), dpi=200, nrows=1, ncols=2, sharex=False, sharey=True)
+    fig, (ax1, ax2, ax3) = plt.subplots(figsize=(24, 5), dpi=200, nrows=1, ncols=3, sharex=False, sharey=False)
+
 
     # Use the DataFrame class_percents to plot the proportion of change in each originating class on the right axis
-    df_class_percents[:-1].plot.barh(stacked=True, color=colors, ax=ax2, edgecolor="k", width=0.5, legend=False)
+    df_class_percents[:-1].plot.barh(stacked=True, color=colors[:-1], ax=ax2, edgecolor="k", width=0.5, legend=False)
+
+    # Plot the total land cover class distribution
+    #cover_rects = ax1.barh(np.arange(len(class_segment_proportions)), cover_percents[0:-1],
+    #                       color=[clr.to_rgba(c, alpha=0.5) for c in colors], height=0.5, edgecolor="k", alpha=0.8)
+    wedges, labels = ax3.pie(cover_percents, colors=colors)
+
+    wedge_labels = [f"{L}: {p}%" for L, p in zip(names, cover_percents)]
+
+    wedges, wedge_labels, dummy = zip(*sorted(zip(wedges, wedge_labels, cover_percents),
+                                        key=lambda x: x[2],
+                                        reverse=True))
+
+    ax3.legend(wedges, wedge_labels, loc='center left', bbox_to_anchor=(0.93, 0.5),
+               fontsize=8)
+
+    # Share the y-axis between ax1 and ax2, but not ax3
+    ax1.get_shared_y_axes().join(ax1, ax2)
 
     # Use array class_segment_proportions to plot the proportion of each class to the segments total
-    rects = ax1.barh(np.arange(len(class_segment_proportions)), class_segment_proportions,
-                     color=colors, height=0.5, edgecolor="k")
+    seg_rects = ax1.barh(np.arange(len(class_segment_proportions)), class_segment_proportions,
+                     color=colors[:-1], height=0.5, edgecolor="k")
 
     # Add class total labels to the horizontal bars
-    autolabel(rects=rects, ax=ax1, totals=class_areas)
+    autolabel(rects=seg_rects, ax=ax1, totals=(seg_class_areas, cover_areas))
 
     # Plot the first class at the top, this inverts the y-axis for both subplots because they share y
     ax1.invert_yaxis()
@@ -440,32 +515,37 @@ def get_plot(matrix, table, tile, year, out_img):
     plt.figtext(0.5, 0.93, f"Cover Change in {round(total_thematic_percent, 2)}% of Tile", fontsize=12, ha="center")
 
     # Add subplot titles
-    ax1.set_title("Percent of Origin Class in All Segment Changes", fontsize=12)
+    ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile",
+                  fontsize=12)
     ax2.set_title("Percent of Class Destination from Origin Class", fontsize=12)
+    ax3.set_title("Overall Class Distribution", fontsize=12)
 
     # Add axes labels and titles
     ax1.set_xlabel("Percent", fontsize=12)
     ax2.set_xlabel("Percent", fontsize=12)
-    ax1.set_yticklabels([""]*len(np.arange(8)))
+    ax1.set_yticklabels([""] * len(np.arange(9)))
+    ax1.set_yticks(np.arange(len(class_segment_proportions)))
     ax2.get_yaxis().set_visible(False)
 
     # Set x-limit on the left subplot so that all figures have the same window scale
     ax1.set_xlim(right=0, left=105)
+    ax2.set_xlim(left=0, right=105)
 
     # Create the legend manually
-    dev_label = mpatches.Patch(color=colors[0], label="1 - Developed")
-    ag_label = mpatches.Patch(color=colors[1], label="2 - Agriculture")
-    grass_label = mpatches.Patch(color=colors[2], label="3 - Grassland/Shrubland")
-    tree_label = mpatches.Patch(color=colors[3], label="4 - Tree Cover")
-    water_label = mpatches.Patch(color=colors[4], label="5 - Water")
-    wet_label = mpatches.Patch(color=colors[5], label="6 - Wetland")
-    ice_label = mpatches.Patch(color=colors[6], label="7 - Ice/Snow")
-    bar_label = mpatches.Patch(color=colors[7], label="8 - Barren")
+    no_label = mpatches.Patch(color=colors[0], label="0 - Insufficient Data")
+    dev_label = mpatches.Patch(color=colors[1], label="1 - Developed")
+    ag_label = mpatches.Patch(color=colors[2], label="2 - Agriculture")
+    grass_label = mpatches.Patch(color=colors[3], label="3 - Grassland/Shrubland")
+    tree_label = mpatches.Patch(color=colors[4], label="4 - Tree Cover")
+    water_label = mpatches.Patch(color=colors[5], label="5 - Water")
+    wet_label = mpatches.Patch(color=colors[6], label="6 - Wetland")
+    ice_label = mpatches.Patch(color=colors[7], label="7 - Ice/Snow")
+    bar_label = mpatches.Patch(color=colors[8], label="8 - Barren")
 
-    handles = [dev_label, ag_label, grass_label, tree_label, water_label, wet_label, ice_label, bar_label]
+    handles = [no_label, dev_label, ag_label, grass_label, tree_label, water_label, wet_label, ice_label, bar_label]
 
     # Display the legend to the left subplot and mimic the lef subplot y-axis with its placement
-    ax1.legend(handles=handles, loc="upper right", bbox_to_anchor=(0, 0.99), ncol=1, labelspacing=2.32,
+    ax1.legend(handles=handles, loc="upper right", bbox_to_anchor=(0, 0.98), ncol=1, labelspacing=1.83,
                markerfirst=False, facecolor="w", frameon=False)
 
     # Adjust subplots to make enough room at the top for figure titles
@@ -486,17 +566,21 @@ def main_work(indir, outdir, years=None):
 
     :param indir:
     :param outdir:
-    :param year:
+    :param years:
     :return:
     """
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
-    files = get_files(path=indir, years=years)
+    # Get list of the segment change files
+    seg_files = get_files(path=indir, years=years)
+
+    # Get list of the primary cover files
+    cover_files = get_files(path=indir, years=years, lookfor="CoverPrim")
 
     # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
     # directory are associated with the same H-V tile.
-    tile = get_tile(files[0])
+    tile = get_tile(seg_files[0])
 
     # Create an XlsxWriter object to create a workbook with multiple sheets, make sure not to overwrite an existing
     # workbook by checking os.path.exists(xlsx_name)
@@ -512,21 +596,25 @@ def main_work(indir, outdir, years=None):
 
         writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
 
-    for f in files:
+    for ind, f in enumerate(seg_files):
         fname, current_year = get_fname(f)
 
         img_name = outdir + os.sep + fname + "_fig.png"
 
-        # Skip file "f" if the excel file associated with f exists
+        # Skip file "f" if the .png file associated with f exists
         if os.path.exists(img_name):
             continue
 
         print(f"\nWorking on file: {f}")
 
-        in_data = read_data(f)
+        # Get the segment change data as a numpy array
+        seg_data = read_data(f)
+
+        # Get the cover data as a numpy array
+        cover_data = read_data(cover_files[ind])
 
         try:
-            cnf_mat = compute_confusion_matrix(fromto=in_data)
+            cnf_mat = compute_confusion_matrix(fromto=seg_data)
 
         except IndexError:
             error_message(f)
@@ -535,12 +623,17 @@ def main_work(indir, outdir, years=None):
 
         write_to_csv(cnf_mat, outdir, fname)
 
-        df = array_to_dataframe(cnf_mat)
+        seg_df = array_to_dataframe(cnf_mat)
 
-        write_to_excel(writer=writer, df=df, year=current_year)
+        cover_table, cover_perc_table = get_cover_table(indata=cover_data)
 
-        get_plot(matrix=cnf_mat, table=df, tile=tile, year=current_year, out_img=img_name)
+        write_to_excel(writer=writer, df_seg=seg_df, df_cover=cover_table, df_cover_perc=cover_perc_table,
+                       year=current_year)
 
+        get_plot(seg_matrix=cnf_mat, seg_table=seg_df, cover_matrix=np.bincount(cover_data.flatten()),
+                 tile=tile, year=current_year, out_img=img_name)
+
+    # Close and save the excel workbook
     writer.save()
 
     # Clean up the output directory by removing the .csv files
@@ -562,7 +655,7 @@ def main():
                         help='Full path to the output folder')
 
     parser.add_argument('-y', '--years', type=str, required=False, nargs="*", default=None,
-                        help='Optionally specify a from-to year.  Otherwise process all available years')
+                        help='Optionally specify a from-to year or years.  Otherwise process all available years')
 
     args = parser.parse_args()
 
