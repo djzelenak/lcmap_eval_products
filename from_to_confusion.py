@@ -468,6 +468,7 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
               (0.509804, 0.509804, 0.509804),
               (0.494, 0.0784, 1.0)]
 
+    # Used for the total class distribution pie chart
     names = ["Insufficient-Data", "Developed", "Agriculture", "Grassland/Shrubland", "Tree Cover", "Water", "Wetland",
              "Ice/Snow", "Barren", "No Model/Transitional"]
 
@@ -481,9 +482,18 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     # Plot the total land cover class distribution
     #cover_rects = ax1.barh(np.arange(len(class_segment_proportions)), cover_percents[0:-1],
     #                       color=[clr.to_rgba(c, alpha=0.5) for c in colors], height=0.5, edgecolor="k", alpha=0.8)
+    wedges, labels = ax3.pie(cover_percents, colors=colors)
 
-    ax3.pie(cover_percents, labels=names, colors=colors)
+    wedge_labels = [f"{L}: {p}%" for L, p in zip(names, cover_percents)]
 
+    wedges, wedge_labels, dummy = zip(*sorted(zip(wedges, wedge_labels, cover_percents),
+                                        key=lambda x: x[2],
+                                        reverse=True))
+
+    ax3.legend(wedges, wedge_labels, loc='center left', bbox_to_anchor=(0.93, 0.5),
+               fontsize=8)
+
+    # Share the y-axis between ax1 and ax2, but not ax3
     ax1.get_shared_y_axes().join(ax1, ax2)
 
     # Use array class_segment_proportions to plot the proportion of each class to the segments total
@@ -492,8 +502,6 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
 
     # Add class total labels to the horizontal bars
     autolabel(rects=seg_rects, ax=ax1, totals=(seg_class_areas, cover_areas))
-
-    # autolabel(rects=cover_rects, ax=ax1, totals=cover_areas)
 
     # Plot the first class at the top, this inverts the y-axis for both subplots because they share y
     ax1.invert_yaxis()
@@ -507,13 +515,16 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     plt.figtext(0.5, 0.93, f"Cover Change in {round(total_thematic_percent, 2)}% of Tile", fontsize=12, ha="center")
 
     # Add subplot titles
-    ax1.set_title("Percent of Origin Class in All Segment Breaks", fontsize=12)
+    ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile",
+                  fontsize=12)
     ax2.set_title("Percent of Class Destination from Origin Class", fontsize=12)
+    ax3.set_title("Overall Class Distribution", fontsize=12)
 
     # Add axes labels and titles
     ax1.set_xlabel("Percent", fontsize=12)
     ax2.set_xlabel("Percent", fontsize=12)
     ax1.set_yticklabels([""] * len(np.arange(9)))
+    ax1.set_yticks(np.arange(len(class_segment_proportions)))
     ax2.get_yaxis().set_visible(False)
 
     # Set x-limit on the left subplot so that all figures have the same window scale
@@ -534,7 +545,7 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     handles = [no_label, dev_label, ag_label, grass_label, tree_label, water_label, wet_label, ice_label, bar_label]
 
     # Display the legend to the left subplot and mimic the lef subplot y-axis with its placement
-    ax1.legend(handles=handles, loc="upper right", bbox_to_anchor=(0, 0.99), ncol=1, labelspacing=1.94,
+    ax1.legend(handles=handles, loc="upper right", bbox_to_anchor=(0, 0.98), ncol=1, labelspacing=1.83,
                markerfirst=False, facecolor="w", frameon=False)
 
     # Adjust subplots to make enough room at the top for figure titles
