@@ -316,15 +316,24 @@ def write_to_excel(writer, df_seg, df_cover, df_cover_perc, year):
     worksheet = writer.sheets[year]
 
     format = workbook.add_format({"bold": True})
-    format2 = workbook.add_format({"bold": True, "bg_color": "#C0C0C0"})
+    diag_format = workbook.add_format({"bold": True, "bg_color": "#C0C0C0", "border_color": "#000000"})
+
+    # Format the diagonal cells where from class = to class
+    worksheet.write_blank("C3", format=diag_format)
+    worksheet.write_blank("D4", format=diag_format)
+    worksheet.write_blank("E5", format=diag_format)
+    worksheet.write_blank("F6", format=diag_format)
+    worksheet.write_blank("G7", format=diag_format)
+    worksheet.write_blank("H8", format=diag_format)
+    worksheet.write_blank("I9", format=diag_format)
+    worksheet.write_blank("J10", format=diag_format)
+    worksheet.write_blank("K11", format=diag_format)
+    worksheet.write_blank("L12", format=diag_format)
 
     worksheet.write(0, 6, "Segment Change Class Distribution", format)
     worksheet.write(1, 6, "Destination", format)
     worksheet.write(6, 0, "Origin", format)
     worksheet.write(15, 2, "Total Class Distribution", format)
-
-    # TODO Change background color of diagonal cells
-    # worksheet.write("C3, D4, E5, F6, G7, H8, I9, J10, K11, L12", format2)
 
     return None
 
