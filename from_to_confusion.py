@@ -34,6 +34,17 @@ gdal.AllRegister()
 t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
+colors = [(0.0, 0.0, 0.0),
+          (1.0, .188235, 0.078431),
+          (0.980392, 0.588235, 0.180392),
+          (0.941176, 0.960784, 0.34902),
+          (0.0, 0.560784314, 0.0),
+          (0.211765, 0.290196, 1.0),
+          (0.2, 0.803922, 0.588235),
+          (0.882353, 0.882353, 0.882353),
+          (0.509804, 0.509804, 0.509804),
+          (0.494, 0.0784, 1.0)]
+
 
 def error_message(file):
     """
@@ -178,6 +189,7 @@ def compute_confusion_matrix(fromto):
         # loop through rows
         for r in from_vals:
             val = int(str(c) + str(r))
+
             current = counter / total * 100.0  # as percent
 
             if val in check_vals and val != 0:
@@ -339,7 +351,7 @@ def write_to_excel(writer, df_seg, df_cover, df_cover_perc, year):
     worksheet.write(6, 0, "Origin", format)
     worksheet.write(15, 2, "Total Class Distribution", format)
 
-    # Format the diagonal cells where from class = to class
+    # Format the diagonal cells where from class = to class, write the values to the worksheet
     worksheet.write("C4", diags[0], diag_format)
     worksheet.write("D5", diags[1], diag_format)
     worksheet.write("E6", diags[2], diag_format)
@@ -482,48 +494,22 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
 
     matplotlib.style.use("ggplot")
 
-    colors = [(0.0, 0.0, 0.0),
-              (1.0, .188235, 0.078431),
-              (0.980392, 0.588235, 0.180392),
-              (0.941176, 0.960784, 0.34902),
-              (0.0, 0.560784314, 0.0),
-              (0.211765, 0.290196, 1.0),
-              (0.2, 0.803922, 0.588235),
-              (0.882353, 0.882353, 0.882353),
-              (0.509804, 0.509804, 0.509804),
-              (0.494, 0.0784, 1.0)]
-
     # Used for the total class distribution pie chart
     names = ["Insufficient-Data", "Developed", "Agriculture", "Grassland/Shrubland", "Tree Cover", "Water", "Wetland",
              "Ice/Snow", "Barren", "No Model/Transitional"]
 
     # Create the figure with two subplots that share a y-axis
-    fig, (ax1, ax2, ax3) = plt.subplots(figsize=(24, 5), dpi=200, nrows=1, ncols=3, sharex=False, sharey=False)
-
+    fig, (ax1, ax2) = plt.subplots(figsize=(16, 5), dpi=200, nrows=1, ncols=2, sharex=False, sharey=False)
 
     # Use the DataFrame class_percents to plot the proportion of change in each originating class on the right axis
     df_class_percents[:-1].plot.barh(stacked=True, color=colors[:-1], ax=ax2, edgecolor="k", width=0.5, legend=False)
-
-    # Plot the total land cover class distribution
-    #cover_rects = ax1.barh(np.arange(len(class_segment_proportions)), cover_percents[0:-1],
-    #                       color=[clr.to_rgba(c, alpha=0.5) for c in colors], height=0.5, edgecolor="k", alpha=0.8)
-    wedges, labels = ax3.pie(cover_percents, colors=colors)
-
-    wedge_labels = [f"{L}: {p}%" for L, p in zip(names, cover_percents)]
-
-    wedges, wedge_labels, dummy = zip(*sorted(zip(wedges, wedge_labels, cover_percents),
-                                        key=lambda x: x[2],
-                                        reverse=True))
-
-    ax3.legend(wedges, wedge_labels, loc='center left', bbox_to_anchor=(0.93, 0.5),
-               fontsize=8)
 
     # Share the y-axis between ax1 and ax2, but not ax3
     ax1.get_shared_y_axes().join(ax1, ax2)
 
     # Use array class_segment_proportions to plot the proportion of each class to the segments total
     seg_rects = ax1.barh(np.arange(len(class_segment_proportions)), class_segment_proportions,
-                     color=colors[:-1], height=0.5, edgecolor="k")
+                         color=colors[:-1], height=0.5, edgecolor="k")
 
     # Add class total labels to the horizontal bars
     autolabel(rects=seg_rects, ax=ax1, totals=(seg_class_areas, cover_areas))
@@ -543,7 +529,6 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile",
                   fontsize=12)
     ax2.set_title("Percent of Class Destination from Origin Class", fontsize=12)
-    ax3.set_title("Overall Class Distribution", fontsize=12)
 
     # Add axes labels and titles
     ax1.set_xlabel("Percent", fontsize=12)
@@ -586,6 +571,42 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     return None
 
 
+def get_summary_plot(froms, tos, tile, out_img):
+    """
+
+    :param froms:
+    :param tos:
+    :param tile:
+    :param out_img:
+    :return:
+    """
+    fig, axes = plt.subplots(figsize=(20, 30), dpi=200, nrows=2, ncols=2, sharex=False, sharey=False)
+
+    froms[1].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=False, width=0.8,
+                                      title="Originating Class Percentage Through Time", ax=axes[0, 0], edgecolor="k")
+
+    froms[0].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=True, width=0.8,
+                                      title="Originating Class Quantity Through Time", ax=axes[0, 1], edgecolor="k")
+
+    tos[1].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=False, width=0.8,
+                                    title="Destination Class Percentage Through Time", ax=axes[1, 0], edgecolor="k")
+
+    tos[0].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=True, width=0.8,
+                                    title="Destination Class Quantity Through Time", ax=axes[1, 1], edgecolor="k")
+
+    fig.suptitle(f"Annual Segment Change for Tile {tile}", fontsize=24)
+
+    # Adjust subplots to make enough room at the top for figure titles
+
+    fig.subplots_adjust(top=0.95)
+
+    plt.savefig(out_img, dpi=200, bbox_inches="tight")
+
+    plt.close()
+
+    return None
+
+
 def main_work(indir, outdir, years=None):
     """
 
@@ -597,65 +618,81 @@ def main_work(indir, outdir, years=None):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
+    # Get list of the primary cover files
+    cover_files = get_files(path=indir, years=years, lookfor="CoverPrim")
+
+    # Read in the Cover Data
+    cover_data = {os.path.basename(f): read_data(f) for f in cover_files}
+
     # Get list of the segment change files
     seg_files = get_files(path=indir, years=years)
 
-    # Get list of the primary cover files
-    cover_files = get_files(path=indir, years=years, lookfor="CoverPrim")
+    # Read in the Segment Change data
+    seg_data = {os.path.basename(f): read_data(f) for f in seg_files}
+
+    # Calculate the Segment Change confusion matrices
+    seg_confusion = {f: compute_confusion_matrix(seg_data[f]) for f in seg_data.keys()}
+
+    # Get the Originating Class values
+    seg_from = {f: seg_confusion[f][1:-1, -1:].flatten() for f in seg_confusion.keys()}
+
+    # Get the Destination Class values
+    seg_to = {f: seg_confusion[f][-1:, 1:-1].flatten() for f in seg_confusion.keys()}
+
+    # Turn these into DataFrames
+    seg_from_df = pd.DataFrame(seg_from, index=[0, 1, 2, 3, 4, 5, 6, 7, 8], columns=seg_from.keys())
+
+    seg_to_df = pd.DataFrame(seg_to, index=[0, 1, 2, 3, 4, 5, 6, 7, 8], columns=seg_to.keys())
+
+    # Change the columns to the year from the original column names
+    seg_from_df.columns = [k[-8:-4] for k in seg_from.keys()]
+
+    seg_to_df.columns = [k[-8:-4] for k in seg_to.keys()]
+
+    # Get the Origin Class percentages
+    seg_from_df_perc = seg_from_df.div(seg_from_df.sum(0) / 100, 1)
+
+    # Get the Destination Class percentages
+    seg_to_df_perc = seg_to_df.div(seg_to_df.sum(0) / 100, 1)
 
     # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
     # directory are associated with the same H-V tile.
     tile = get_tile(seg_files[0])
 
+    get_summary_plot(froms=[seg_from_df.iloc[:, seg_from_df.columns != '2015'],
+                            seg_from_df_perc.iloc[:, seg_from_df_perc.columns != '2015']],
+                     tos=[seg_to_df.iloc[:, seg_to_df.columns != '2015'],
+                          seg_to_df_perc.iloc[:, seg_to_df_perc.columns != '2015']], tile=tile,
+                     out_img=outdir + os.sep + tile + "_summary.png")
+
     # Create an XlsxWriter object to create a workbook with multiple sheets, make sure not to overwrite an existing
     # workbook by checking os.path.exists(xlsx_name)
     xlsx_name = outdir + os.sep + tile + "_cnfmat.xlsx"
 
-    if not os.path.exists(xlsx_name):
-        writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
-
-    else:
-        xlsx_name = os.path.splitext(xlsx_name)[0]
-
-        xlsx_name = xlsx_name + "_1.xlsx"
-
-        writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
+    writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
 
     for ind, f in enumerate(seg_files):
+        segkey = os.path.basename(f)
+
+        coverkey = os.path.basename(cover_files[ind])
+
         fname, current_year = get_fname(f)
 
         img_name = outdir + os.sep + fname + "_fig.png"
 
-        # Skip file "f" if the .png file associated with f exists
-        if os.path.exists(img_name):
-            continue
+        print(f"\nWorking on file: {segkey}")
 
-        print(f"\nWorking on file: {f}")
+        write_to_csv(seg_confusion[segkey], outdir, fname)
 
-        # Get the segment change data as a numpy array
-        seg_data = read_data(f)
+        seg_df = array_to_dataframe(seg_confusion[segkey])
 
-        # Get the cover data as a numpy array
-        cover_data = read_data(cover_files[ind])
-
-        try:
-            cnf_mat = compute_confusion_matrix(fromto=seg_data)
-
-        except IndexError:
-            error_message(f)
-
-            continue
-
-        write_to_csv(cnf_mat, outdir, fname)
-
-        seg_df = array_to_dataframe(cnf_mat)
-
-        cover_table, cover_perc_table = get_cover_table(indata=cover_data)
+        cover_table, cover_perc_table = get_cover_table(indata=cover_data[coverkey])
 
         write_to_excel(writer=writer, df_seg=seg_df, df_cover=cover_table, df_cover_perc=cover_perc_table,
                        year=current_year)
 
-        get_plot(seg_matrix=cnf_mat, seg_table=seg_df, cover_matrix=np.bincount(cover_data.flatten()),
+        get_plot(seg_matrix=seg_confusion[segkey], seg_table=seg_df,
+                 cover_matrix=np.bincount(cover_data[coverkey].flatten()),
                  tile=tile, year=current_year, out_img=img_name)
 
     # Close and save the excel workbook
