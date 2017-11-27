@@ -304,36 +304,52 @@ def array_to_dataframe(matrix):
 
 
 def write_to_excel(writer, df_seg, df_cover, df_cover_perc, year):
-    # Convert the dataframe to an XLsxWriter Excel object
+    """
+
+    :param writer:
+    :param df_seg:
+    :param df_cover:
+    :param df_cover_perc:
+    :param year:
+    :return:
+    """
+    # Get a list of the diagonal values from the confusion matrix
+    diags = [df_seg.loc[i[0], j[0]] for i in df_seg.iterrows() for j in df_seg.iteritems() if i[0] == j[0]]
+
+    workbook = writer.book
+
+    worksheet = workbook.add_worksheet(year)
+
+    writer.sheets[year] = worksheet
+
+    # Create some formats to use for writing to the excel worksheet
+    format = workbook.add_format({"bold": True})
+    diag_format = workbook.add_format({"bold": True, "bg_color": "#C0C0C0", "border_color": "#000000"})
+
+    # Convert the dataframes to XLsxWriter Excel objects
     df_seg.to_excel(writer, sheet_name=year, startrow=2, startcol=1)
 
     df_cover.to_excel(writer, sheet_name=year, startrow=16, startcol=1)
 
     df_cover_perc.to_excel(writer, index=False, sheet_name=year, startrow=16, startcol=3)
 
-    workbook = writer.book
-
-    worksheet = writer.sheets[year]
-
-    format = workbook.add_format({"bold": True})
-    diag_format = workbook.add_format({"bold": True, "bg_color": "#C0C0C0", "border_color": "#000000"})
-
-    # Format the diagonal cells where from class = to class
-    worksheet.write_blank("C3", format=diag_format)
-    worksheet.write_blank("D4", format=diag_format)
-    worksheet.write_blank("E5", format=diag_format)
-    worksheet.write_blank("F6", format=diag_format)
-    worksheet.write_blank("G7", format=diag_format)
-    worksheet.write_blank("H8", format=diag_format)
-    worksheet.write_blank("I9", format=diag_format)
-    worksheet.write_blank("J10", format=diag_format)
-    worksheet.write_blank("K11", format=diag_format)
-    worksheet.write_blank("L12", format=diag_format)
-
+    # Add row and column names
     worksheet.write(0, 6, "Segment Change Class Distribution", format)
     worksheet.write(1, 6, "Destination", format)
     worksheet.write(6, 0, "Origin", format)
     worksheet.write(15, 2, "Total Class Distribution", format)
+
+    # Format the diagonal cells where from class = to class
+    worksheet.write("C4", diags[0], diag_format)
+    worksheet.write("D5", diags[1], diag_format)
+    worksheet.write("E6", diags[2], diag_format)
+    worksheet.write("F7", diags[3], diag_format)
+    worksheet.write("G8", diags[4], diag_format)
+    worksheet.write("H9", diags[5], diag_format)
+    worksheet.write("I10", diags[6], diag_format)
+    worksheet.write("J11", diags[7], diag_format)
+    worksheet.write("K12", diags[8], diag_format)
+    worksheet.write("L13", diags[9], diag_format)
 
     return None
 
