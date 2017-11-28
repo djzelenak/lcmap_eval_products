@@ -696,7 +696,7 @@ def main_work(indir, outdir, years=None):
 
     # Create an XlsxWriter object to create a workbook with multiple sheets, make sure not to overwrite an existing
     # workbook by checking os.path.exists(xlsx_name)
-    xlsx_name = outdir + os.sep + tile + "_cnfmat.xlsx"
+    xlsx_name = outdir + os.sep + tile + "_segment_analysis.xlsx"
 
     writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
 
