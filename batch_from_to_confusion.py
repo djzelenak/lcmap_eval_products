@@ -27,7 +27,7 @@ def main(rootdir, outdir, tile=None, years=None):
                     
     for f in input_list:
         
-        outfolder = outdir + os.sep + os.path.basename(f) + "_cnf"
+        outfolder = outdir + os.sep + os.path.basename(f)
         
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
