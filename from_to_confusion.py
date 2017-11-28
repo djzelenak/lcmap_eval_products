@@ -522,8 +522,8 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
 
     # Add figure title and subtitles
     fig.suptitle(f"{tile} {year}", fontsize=18, y=1.10)
-    plt.figtext(0.5, 0.99, f"Segment Change in {round(total_segment_percent, 2)}% of Tile", fontsize=12, ha="center")
-    plt.figtext(0.5, 0.93, f"Cover Change in {round(total_thematic_percent, 2)}% of Tile", fontsize=12, ha="center")
+    plt.figtext(0.5, 1.01, f"Segment Change in {round(total_segment_percent, 2)}% of Tile", fontsize=12, ha="center")
+    plt.figtext(0.5, 0.96, f"Cover Change in {round(total_thematic_percent, 2)}% of Tile", fontsize=12, ha="center")
 
     # Add subplot titles
     ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile",
@@ -580,7 +580,7 @@ def get_summary_plot(froms, tos, tile, out_img):
     :param out_img:
     :return:
     """
-    fig, axes = plt.subplots(figsize=(20, 30), dpi=200, nrows=2, ncols=2, sharex=False, sharey=False)
+    fig, axes = plt.subplots(figsize=(15, 20), dpi=200, nrows=2, ncols=2, sharex=False, sharey=False)
 
     froms[1].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=False, width=0.8,
                                       title="Originating Class Percentage Through Time", ax=axes[0, 0], edgecolor="k")
@@ -598,7 +598,7 @@ def get_summary_plot(froms, tos, tile, out_img):
 
     # Adjust subplots to make enough room at the top for figure titles
 
-    fig.subplots_adjust(top=0.95)
+    fig.subplots_adjust(top=0.92, hspace=0.15, wspace=0.1)
 
     plt.savefig(out_img, dpi=200, bbox_inches="tight")
 
@@ -634,36 +634,40 @@ def main_work(indir, outdir, years=None):
     seg_confusion = {f: compute_confusion_matrix(seg_data[f]) for f in seg_data.keys()}
 
     # Get the Originating Class values
-    seg_from = {f: seg_confusion[f][1:-1, -1:].flatten() for f in seg_confusion.keys()}
+    # seg_from = {f: seg_confusion[f][1:-1, -1:].flatten() for f in seg_confusion.keys()}
 
     # Get the Destination Class values
-    seg_to = {f: seg_confusion[f][-1:, 1:-1].flatten() for f in seg_confusion.keys()}
+    # seg_to = {f: seg_confusion[f][-1:, 1:-1].flatten() for f in seg_confusion.keys()}
 
-    # Turn these into DataFrames
-    seg_from_df = pd.DataFrame(seg_from, index=[0, 1, 2, 3, 4, 5, 6, 7, 8], columns=seg_from.keys())
+    # Get the Originating Class values
+    seg_from = {f: seg_confusion[f][1:, -1:].flatten() for f in seg_confusion.keys()}
 
-    seg_to_df = pd.DataFrame(seg_to, index=[0, 1, 2, 3, 4, 5, 6, 7, 8], columns=seg_to.keys())
+    # Get the Destination Class values
+    seg_to = {f: seg_confusion[f][-1:, 1:].flatten() for f in seg_confusion.keys()}
 
-    # Change the columns to the year from the original column names
+    # Create DataFrame
+    seg_from_df = pd.DataFrame(seg_from, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, "Total"], columns=seg_from.keys())
+
+    # Create DataFrame
+    seg_to_df = pd.DataFrame(seg_to, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, "Total"], columns=seg_to.keys())
+
+    # Make Column names = years
     seg_from_df.columns = [k[-8:-4] for k in seg_from.keys()]
 
+    # Make Column names = years
     seg_to_df.columns = [k[-8:-4] for k in seg_to.keys()]
 
     # Get the Origin Class percentages
-    seg_from_df_perc = seg_from_df.div(seg_from_df.sum(0) / 100, 1)
+    seg_from_df_perc = seg_from_df.iloc[seg_from_df.index != "Total"].div(seg_from_df.iloc[seg_from_df.index
+                                                                                           != "Total"].sum(0) / 100, 1)
 
     # Get the Destination Class percentages
-    seg_to_df_perc = seg_to_df.div(seg_to_df.sum(0) / 100, 1)
+    seg_to_df_perc = seg_to_df.iloc[seg_to_df.index != "Total"].div(seg_to_df.iloc[seg_to_df.index !=
+                                                                                   "Total"].sum(0) / 100, 1)
 
     # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
     # directory are associated with the same H-V tile.
     tile = get_tile(seg_files[0])
-
-    get_summary_plot(froms=[seg_from_df.iloc[:, seg_from_df.columns != '2015'],
-                            seg_from_df_perc.iloc[:, seg_from_df_perc.columns != '2015']],
-                     tos=[seg_to_df.iloc[:, seg_to_df.columns != '2015'],
-                          seg_to_df_perc.iloc[:, seg_to_df_perc.columns != '2015']], tile=tile,
-                     out_img=outdir + os.sep + tile + "_summary.png")
 
     # Create an XlsxWriter object to create a workbook with multiple sheets, make sure not to overwrite an existing
     # workbook by checking os.path.exists(xlsx_name)
@@ -671,32 +675,73 @@ def main_work(indir, outdir, years=None):
 
     writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
 
+    workbook = writer.book
+
+    worksheet = workbook.add_worksheet("Summary")
+
+    writer.sheets["Summary"] = worksheet
+
+    seg_from_df.to_excel(writer, sheet_name="Summary", startrow=1, startcol=1)
+
+    seg_to_df.to_excel(writer, sheet_name="Summary", startrow=14, startcol = 1)
+
+    seg_from_df_perc.to_excel(writer, sheet_name="Summary", startrow = 27, startcol = 1)
+
+    seg_to_df_perc.to_excel(writer, sheet_name="Summary", startrow = 39, startcol = 1)
+
+    format = workbook.add_format({"bold": True})
+
+    worksheet.write("C1", "Segment Change Originating Class Count", format)
+
+    worksheet.write("C14", "Segment Change Destination Class Count", format)
+
+    worksheet.write("C27", "Segment Change Originating Class Percent", format)
+
+    worksheet.write("C39", "Segment Change Destination Class Percent", format)
+
     for ind, f in enumerate(seg_files):
+        # Make a key for the segment change dictionary
         segkey = os.path.basename(f)
 
+        # Make a key for the cover map dictionary
         coverkey = os.path.basename(cover_files[ind])
 
+        # Get the filename and current year based on the current segment change file
         fname, current_year = get_fname(f)
 
+        # Create an output filename for the .png
         img_name = outdir + os.sep + fname + "_fig.png"
 
         print(f"\nWorking on file: {segkey}")
 
+        # Write the segment change confusion matrix to a temporary .csv file
         write_to_csv(seg_confusion[segkey], outdir, fname)
 
+        # Make a DataFrame from the segment change confusion matrix
         seg_df = array_to_dataframe(seg_confusion[segkey])
 
+        # Get DataFrame for the quantity of cover and percentage of cover classes
         cover_table, cover_perc_table = get_cover_table(indata=cover_data[coverkey])
 
+        # Write the segment change confusion matrix, cover quantity, and cover percentages to the excel file
+        # using the previously created xlsx writer object
         write_to_excel(writer=writer, df_seg=seg_df, df_cover=cover_table, df_cover_perc=cover_perc_table,
                        year=current_year)
 
+        # Make the annual segment change plots
         get_plot(seg_matrix=seg_confusion[segkey], seg_table=seg_df,
                  cover_matrix=np.bincount(cover_data[coverkey].flatten()),
                  tile=tile, year=current_year, out_img=img_name)
 
     # Close and save the excel workbook
     writer.save()
+
+    # Generate the summary of segment change plots
+    get_summary_plot(froms=[seg_from_df.iloc[:-1, seg_from_df.columns != '2015'],
+                            seg_from_df_perc.iloc[:, seg_from_df_perc.columns != '2015']],
+                     tos=[seg_to_df.iloc[:-1, seg_to_df.columns != '2015'],
+                          seg_to_df_perc.iloc[:, seg_to_df_perc.columns != '2015']], tile=tile,
+                     out_img=outdir + os.sep + tile + "_summary.png")
 
     # Clean up the output directory by removing the .csv files
     for root, folders, files in os.walk(outdir):
