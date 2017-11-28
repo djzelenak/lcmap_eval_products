@@ -33,10 +33,10 @@ def main(rootdir, outdir, tile=None, years=None):
             os.makedirs(outfolder)
         
         if years is not None:
-            subprocess.call(f"python from_to_confusion.py -i {f}{os.sep}maps -o {outfolder} -y {years}", shell=True)
+            subprocess.call(f"python segment_change_analysis.py -i {f}{os.sep}maps -o {outfolder} -y {years}", shell=True)
 
         else:
-            subprocess.call(f"python from_to_confusion.py -i {f}{os.sep}maps -o {outfolder}", shell=True)
+            subprocess.call(f"python segment_change_analysis.py -i {f}{os.sep}maps -o {outfolder}", shell=True)
 
 
 if __name__=="__main__":

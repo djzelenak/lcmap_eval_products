@@ -153,7 +153,7 @@ def get_cover_table(indata):
     val_percents = np.zeros_like(val_counts, dtype=np.float)
 
     for ind, v in enumerate(val_counts):
-        val_percents[ind] = v / total * 100.0
+        val_percents[ind] = round(v / total * 100.0, 2)
 
     df_count = pd.DataFrame(val_counts, columns=["Count"])
 
@@ -315,7 +315,7 @@ def array_to_dataframe(matrix):
     return df
 
 
-def write_to_excel(writer, df_seg, df_cover, df_cover_perc, year):
+def write_to_excel(writer, df_seg, df_cover, df_cover_perc, df_summary, year):
     """
 
     :param writer:
@@ -327,6 +327,12 @@ def write_to_excel(writer, df_seg, df_cover, df_cover_perc, year):
     """
     # Get a list of the diagonal values from the confusion matrix
     diags = [df_seg.loc[i[0], j[0]] for i in df_seg.iterrows() for j in df_seg.iteritems() if i[0] == j[0]]
+
+    df_cover_perc.columns=["% Tile"]
+
+    df_cover_area = df_cover * 900 * 0.0009
+
+    df_cover_area.columns = ["Area"]
 
     workbook = writer.book
 
@@ -343,13 +349,18 @@ def write_to_excel(writer, df_seg, df_cover, df_cover_perc, year):
 
     df_cover.to_excel(writer, sheet_name=year, startrow=16, startcol=1)
 
-    df_cover_perc.to_excel(writer, index=False, sheet_name=year, startrow=16, startcol=3)
+    df_cover_area.to_excel(writer, sheet_name=year, index=False, startrow=16, startcol=3)
+
+    df_cover_perc.to_excel(writer, index=False, sheet_name=year, startrow=16, startcol=4)
+
+    df_summary.to_excel(writer, sheet_name=year, startrow=16, startcol=7)
 
     # Add row and column names
-    worksheet.write(0, 6, "Segment Change Class Distribution", format)
+    worksheet.write(0, 5, "Segment Break Class From-To Distribution", format)
     worksheet.write(1, 6, "Destination", format)
     worksheet.write(6, 0, "Origin", format)
     worksheet.write(15, 2, "Total Class Distribution", format)
+    worksheet.write(15, 8, "Segment Break Class Summary", format)
 
     # Format the diagonal cells where from class = to class, write the values to the worksheet
     worksheet.write("C4", diags[0], diag_format)
@@ -455,6 +466,7 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
         for ind, rect in enumerate(rects):
             width = int(rect.get_width())
 
+            """
             if width < 50:
                 xloc = width + 5
                 clr = "k"
@@ -463,13 +475,26 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
                 xloc = 0.98 * width
                 clr = "k"
                 align = "left"
+            """
+            xloc = 100
+
+            clr = "k"
+
+            align = "left"
 
             yloc = rect.get_y() + rect.get_height() / 2.0
 
-            label = ax.text(xloc, yloc, "{:02.2f} $km^2$ | {:02.2f} $km^2$".format(totals[0][ind], totals[1][ind]),
+            # Calculate the percent of the class that changed
+            if not totals[1][ind] == 0:
+                perc = round(totals[0][ind] / totals[1][ind] * 100.0, 2)
+            else:
+                perc = 0.00
+
+            label = ax.text(xloc, yloc, "{:02.2f} $km^2$ | {:02.2f} $km^2$ | {:02.2f}%".format(totals[0][ind],
+                                                                                               totals[1][ind], perc),
                             ha=align, va="center",
                             color=clr, weight="bold",
-                            clip_on=True, fontsize=10)
+                            clip_on=True, fontsize=8)
 
         return None
 
@@ -526,7 +551,8 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     plt.figtext(0.5, 0.96, f"Cover Change in {round(total_thematic_percent, 2)}% of Tile", fontsize=12, ha="center")
 
     # Add subplot titles
-    ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile",
+    ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile | "
+                  "Percent of Class with Segment Break",
                   fontsize=12)
     ax2.set_title("Percent of Class Destination from Origin Class", fontsize=12)
 
@@ -568,7 +594,8 @@ def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
 
     plt.close()
 
-    return None
+    return seg_class_areas, cover_areas, \
+           [round(s / c * 100.0, 2) if c != 0 else 0.00 for s, c in zip(seg_class_areas, cover_areas)], segments_total
 
 
 def get_summary_plot(froms, tos, tile, out_img):
@@ -582,17 +609,21 @@ def get_summary_plot(froms, tos, tile, out_img):
     """
     fig, axes = plt.subplots(figsize=(15, 20), dpi=200, nrows=2, ncols=2, sharex=False, sharey=False)
 
-    froms[1].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=False, width=0.8,
-                                      title="Originating Class Percentage Through Time", ax=axes[0, 0], edgecolor="k")
+    froms[1].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=False, width=0.8, ylim=(1984, 2014),
+                                    yticks=np.arange(1984, 2015), title="Originating Class Percentage Through Time",
+                                    ax=axes[0, 0], edgecolor="k")
 
-    froms[0].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=True, width=0.8,
-                                      title="Originating Class Quantity Through Time", ax=axes[0, 1], edgecolor="k")
+    froms[0].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=True, width=0.8, ylim=(1984, 2014),
+                                    yticks=np.arange(1984, 2015), title="Originating Class Quantity Through Time",
+                                    ax=axes[0, 1], edgecolor="k")
 
-    tos[1].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=False, width=0.8,
-                                    title="Destination Class Percentage Through Time", ax=axes[1, 0], edgecolor="k")
+    tos[1].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=False, width=0.8, ylim=(1984, 2014),
+                                  yticks=np.arange(1984, 2015), title="Destination Class Percentage Through Time",
+                                  ax=axes[1, 0], edgecolor="k")
 
-    tos[0].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=True, width=0.8,
-                                    title="Destination Class Quantity Through Time", ax=axes[1, 1], edgecolor="k")
+    tos[0].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=True, width=0.8, ylim=(1984, 2014),
+                                  yticks=np.arange(1984, 2015), title="Destination Class Quantity Through Time",
+                                  ax=axes[1, 1], edgecolor="k")
 
     fig.suptitle(f"Annual Segment Change for Tile {tile}", fontsize=24)
 
@@ -632,12 +663,6 @@ def main_work(indir, outdir, years=None):
 
     # Calculate the Segment Change confusion matrices
     seg_confusion = {f: compute_confusion_matrix(seg_data[f]) for f in seg_data.keys()}
-
-    # Get the Originating Class values
-    # seg_from = {f: seg_confusion[f][1:-1, -1:].flatten() for f in seg_confusion.keys()}
-
-    # Get the Destination Class values
-    # seg_to = {f: seg_confusion[f][-1:, 1:-1].flatten() for f in seg_confusion.keys()}
 
     # Get the Originating Class values
     seg_from = {f: seg_confusion[f][1:, -1:].flatten() for f in seg_confusion.keys()}
@@ -683,11 +708,11 @@ def main_work(indir, outdir, years=None):
 
     seg_from_df.to_excel(writer, sheet_name="Summary", startrow=1, startcol=1)
 
-    seg_to_df.to_excel(writer, sheet_name="Summary", startrow=14, startcol = 1)
+    seg_to_df.to_excel(writer, sheet_name="Summary", startrow=14, startcol=1)
 
-    seg_from_df_perc.to_excel(writer, sheet_name="Summary", startrow = 27, startcol = 1)
+    seg_from_df_perc.to_excel(writer, sheet_name="Summary", startrow=27, startcol=1)
 
-    seg_to_df_perc.to_excel(writer, sheet_name="Summary", startrow = 39, startcol = 1)
+    seg_to_df_perc.to_excel(writer, sheet_name="Summary", startrow=39, startcol=1)
 
     format = workbook.add_format({"bold": True})
 
@@ -698,6 +723,8 @@ def main_work(indir, outdir, years=None):
     worksheet.write("C27", "Segment Change Originating Class Percent", format)
 
     worksheet.write("C39", "Segment Change Destination Class Percent", format)
+
+    seg_class_summary = {}
 
     for ind, f in enumerate(seg_files):
         # Make a key for the segment change dictionary
@@ -723,15 +750,27 @@ def main_work(indir, outdir, years=None):
         # Get DataFrame for the quantity of cover and percentage of cover classes
         cover_table, cover_perc_table = get_cover_table(indata=cover_data[coverkey])
 
+        # Make the annual segment change plots
+        seg_class_areas, cover_areas, cover_percents, seg_total = get_plot(seg_matrix=seg_confusion[segkey],
+                                                                    seg_table=seg_df,
+                                                                    cover_matrix=np.bincount(
+                                                                    cover_data[coverkey].flatten()),
+                                                                    tile=tile, year=current_year, out_img=img_name)
+
+        seg_total_area = round(seg_total * 900 * 0.0009, 2)
+
+        seg_perc = [round(seg_class_area / seg_total_area * 100, 2) for seg_class_area in seg_class_areas]
+
+        seg_class_summary = [seg_class_areas, cover_areas[:-1], cover_percents, seg_perc]
+
+        seg_class_summary_df = pd.DataFrame(seg_class_summary).T
+
+        seg_class_summary_df.columns = ["Seg Area", "Total Area", "% Class", "% Breaks"]
+
         # Write the segment change confusion matrix, cover quantity, and cover percentages to the excel file
         # using the previously created xlsx writer object
         write_to_excel(writer=writer, df_seg=seg_df, df_cover=cover_table, df_cover_perc=cover_perc_table,
-                       year=current_year)
-
-        # Make the annual segment change plots
-        get_plot(seg_matrix=seg_confusion[segkey], seg_table=seg_df,
-                 cover_matrix=np.bincount(cover_data[coverkey].flatten()),
-                 tile=tile, year=current_year, out_img=img_name)
+                       df_summary=seg_class_summary_df, year=current_year)
 
     # Close and save the excel workbook
     writer.save()
