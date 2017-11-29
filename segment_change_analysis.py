@@ -162,7 +162,7 @@ def get_cover_table(indata):
     return df_count, df_perc
 
 
-def compute_confusion_matrix(fromto):
+def compute_confusion_matrix(fromto, f):
     """
     Calculate the confusion matrix for the current from-to data set
     :param fromto: An array object containing the from-to data
@@ -179,22 +179,23 @@ def compute_confusion_matrix(fromto):
     # create the confusion matrix, for now containing all zeros
     confusion_matrix = np.zeros((len(from_vals), len(to_vals)), np.int32)
 
-    print("generating %s by %s confusion matrix" % (len(to_vals), len(from_vals)))
+    print(f"\ngenerating {len(to_vals)} by {len(from_vals)} confusion matrix for file {f}")
 
     counter = 1.0
 
     # loop through columns
-    for c in to_vals:
+    for c in from_vals:
 
         # loop through rows
-        for r in from_vals:
+        for r in to_vals:
+            # val is concatenated from + to values
             val = int(str(c) + str(r))
 
+            # Keep track of the progress relative to the number of total from-to combinations
             current = counter / total * 100.0  # as percent
 
             if val in check_vals and val != 0:
                 # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
-
                 confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
 
             else:
@@ -328,7 +329,7 @@ def write_to_excel(writer, df_seg, df_cover, df_cover_perc, df_summary, year):
     # Get a list of the diagonal values from the confusion matrix
     diags = [df_seg.loc[i[0], j[0]] for i in df_seg.iterrows() for j in df_seg.iteritems() if i[0] == j[0]]
 
-    df_cover_perc.columns=["% Tile"]
+    df_cover_perc.columns = ["% Tile"]
 
     df_cover_area = df_cover * 900 * 0.0009
 
@@ -446,7 +447,7 @@ def get_thematic_change_percent(matrix):
     return total_count / 25000000.0 * 100.0
 
 
-def get_plot(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
+def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     """
 
     :param seg_matrix: <numpy.ndarray>
@@ -662,7 +663,7 @@ def main_work(indir, outdir, years=None):
     seg_data = {os.path.basename(f): read_data(f) for f in seg_files}
 
     # Calculate the Segment Change confusion matrices
-    seg_confusion = {f: compute_confusion_matrix(seg_data[f]) for f in seg_data.keys()}
+    seg_confusion = {f: compute_confusion_matrix(seg_data[f], f) for f in seg_data.keys()}
 
     # Get the Originating Class values
     seg_from = {f: seg_confusion[f][1:, -1:].flatten() for f in seg_confusion.keys()}
@@ -724,8 +725,6 @@ def main_work(indir, outdir, years=None):
 
     worksheet.write("C39", "Segment Change Destination Class Percent", format)
 
-    seg_class_summary = {}
-
     for ind, f in enumerate(seg_files):
         # Make a key for the segment change dictionary
         segkey = os.path.basename(f)
@@ -751,11 +750,13 @@ def main_work(indir, outdir, years=None):
         cover_table, cover_perc_table = get_cover_table(indata=cover_data[coverkey])
 
         # Make the annual segment change plots
-        seg_class_areas, cover_areas, cover_percents, seg_total = get_plot(seg_matrix=seg_confusion[segkey],
-                                                                    seg_table=seg_df,
-                                                                    cover_matrix=np.bincount(
-                                                                    cover_data[coverkey].flatten()),
-                                                                    tile=tile, year=current_year, out_img=img_name)
+        seg_class_areas, cover_areas, cover_percents, seg_total = get_seg_change_plots(seg_matrix=seg_confusion[segkey],
+                                                                                       seg_table=seg_df,
+                                                                                       cover_matrix=np.bincount(
+                                                                                           cover_data[
+                                                                                               coverkey].flatten()),
+                                                                                       tile=tile, year=current_year,
+                                                                                       out_img=img_name)
 
         seg_total_area = round(seg_total * 900 * 0.0009, 2)
 
