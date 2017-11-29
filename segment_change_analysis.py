@@ -172,8 +172,10 @@ def compute_confusion_matrix(fromto, f):
     from_vals = [0, 1, 2, 3, 4, 5, 6, 7, 8]
     to_vals = [0, 1, 2, 3, 4, 5, 6, 7, 8]
 
+    # Used for keeping track of progress for the current cnf matrix calculation
     total = float(len(from_vals) * len(to_vals))
 
+    # Get the unique values present in the SegmentChange data
     check_vals = np.unique(fromto)
 
     # create the confusion matrix, for now containing all zeros
@@ -193,6 +195,7 @@ def compute_confusion_matrix(fromto, f):
 
             # Keep track of the progress relative to the number of total from-to combinations
             current = counter / total * 100.0  # as percent
+
 
             if val in check_vals and val != 0:
                 # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
