@@ -4,7 +4,8 @@ Created on Fri Jun 16 14:05:09 2017
 
 @author: dzelenak
 
-Purpose: Generate confusion matrix comparing pyccd and trends/nlcd land cover agreement
+Purpose: Generate confusion matrix to perform analysis of from-to class destination based on the
+         Segment Change mapped products.  
 
 Horizontal Axis = Destination classes
 Vertical Axis = Origin classes
