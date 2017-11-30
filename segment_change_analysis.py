@@ -18,11 +18,12 @@ import os
 import sys
 import traceback
 import matplotlib
+import pickle
 
 matplotlib.use("agg")
 import matplotlib.patches as mpatches
 import matplotlib.pyplot as plt
-from matplotlib import colors as clr
+# from matplotlib import colors as clr
 
 import numpy as np
 import pandas as pd
@@ -662,11 +663,39 @@ def main_work(indir, outdir, years=None):
     # Get list of the segment change files
     seg_files = get_files(path=indir, years=years)
 
-    # Read in the Segment Change data
-    seg_data = {os.path.basename(f): read_data(f) for f in seg_files}
+    # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
+    # directory are associated with the same H-V tile.
+    tile = get_tile(seg_files[0])
 
-    # Calculate the Segment Change confusion matrices
-    seg_confusion = {f: compute_confusion_matrix(seg_data[f], f) for f in seg_data.keys()}
+    p_data = f"{tile}_segchange_data.pickle"
+
+    if not os.path.exists(p_data):
+        # Read in the Segment Change data if the data structure wasn't previously built
+        seg_data = {os.path.basename(f): read_data(f) for f in seg_files}
+
+        # Pickle the data structure
+        with open(p_data, "wb") as p:
+            pickle.dump(seg_data, p)
+
+    else:
+        # If the data structure was previously built, save time by reading it in rather than recreating it
+        with open(p_data, "rb") as p:
+            seg_data = pickle.load(p)
+
+    p_cnf = f"{tile}_segchange_cnf.pickle"
+
+    if not os.path.exists(p_cnf):
+        # Calculate the Segment Change confusion matrices
+        seg_confusion = {f: compute_confusion_matrix(seg_data[f], f) for f in seg_data.keys()}
+
+        # Pickle the data structure
+        with open(p_cnf, "wb") as p:
+            pickle.dump(seg_confusion, p)
+
+    else:
+        # If the data structure was previously built, save time by reading it in rather than recreating it
+        with open(p_cnf, "rb") as p:
+            seg_confusion = pickle.load(p)
 
     # Get the Originating Class values
     seg_from = {f: seg_confusion[f][1:, -1:].flatten() for f in seg_confusion.keys()}
@@ -693,10 +722,6 @@ def main_work(indir, outdir, years=None):
     # Get the Destination Class percentages
     seg_to_df_perc = seg_to_df.iloc[seg_to_df.index != "Total"].div(seg_to_df.iloc[seg_to_df.index !=
                                                                                    "Total"].sum(0) / 100, 1)
-
-    # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
-    # directory are associated with the same H-V tile.
-    tile = get_tile(seg_files[0])
 
     # Create an XlsxWriter object to create a workbook with multiple sheets, make sure not to overwrite an existing
     # workbook by checking os.path.exists(xlsx_name)
