@@ -453,10 +453,14 @@ def get_thematic_change_percent(matrix):
 
 def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
     """
-
-    :param seg_matrix: <numpy.ndarray>
-    :param seg_table: <pandas.core.frame.DataFrame>
-    :return: None
+    Generate annual segment change plots
+    :param seg_matrix:
+    :param seg_table:
+    :param cover_matrix:
+    :param tile:
+    :param year:
+    :param out_img:
+    :return:
     """
 
     def autolabel(rects, ax, totals):
@@ -495,8 +499,7 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
             else:
                 perc = 0.00
 
-            label = ax.text(xloc, yloc, "{:02.2f} $km^2$ | {:02.2f} $km^2$ | {:02.2f}%".format(totals[0][ind],
-                                                                                               totals[1][ind], perc),
+            label = ax.text(xloc, yloc, "{:02.2f} $km^2$ | {:02.2f} $km^2$".format(totals[0][ind], totals[1][ind]),
                             ha=align, va="center",
                             color=clr, weight="bold",
                             clip_on=True, fontsize=8)
@@ -518,15 +521,11 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
 
     total_segment_percent = segments_total / 25000000.0 * 100.0
 
-    cover_percents = [round(cover / 25000000 * 100, 2) for cover in cover_matrix]
+    # cover_percents = [round(cover / 25000000 * 100, 2) for cover in cover_matrix]
 
     cover_areas = [round(cover * 900 * .0009, 2) for cover in cover_matrix]
 
     matplotlib.style.use("ggplot")
-
-    # Used for the total class distribution pie chart
-    names = ["Insufficient-Data", "Developed", "Agriculture", "Grassland/Shrubland", "Tree Cover", "Water", "Wetland",
-             "Ice/Snow", "Barren", "No Model/Transitional"]
 
     # Create the figure with two subplots that share a y-axis
     fig, (ax1, ax2) = plt.subplots(figsize=(16, 5), dpi=200, nrows=1, ncols=2, sharex=False, sharey=False)
@@ -556,9 +555,9 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
     plt.figtext(0.5, 0.96, f"Cover Change in {round(total_thematic_percent, 2)}% of Tile", fontsize=12, ha="center")
 
     # Add subplot titles
-    ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile | "
-                  "Percent of Class with Segment Break",
+    ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile",
                   fontsize=12)
+
     ax2.set_title("Percent of Class Destination from Origin Class", fontsize=12)
 
     # Add axes labels and titles
@@ -633,7 +632,6 @@ def get_summary_plot(froms, tos, tile, out_img):
     fig.suptitle(f"Annual Segment Change for Tile {tile}", fontsize=24)
 
     # Adjust subplots to make enough room at the top for figure titles
-
     fig.subplots_adjust(top=0.92, hspace=0.15, wspace=0.1)
 
     plt.savefig(out_img, dpi=200, bbox_inches="tight")
@@ -643,22 +641,17 @@ def get_summary_plot(froms, tos, tile, out_img):
     return None
 
 
-def main_work(indir, outdir, years=None):
+def main_work(indir, outdir, years=None, overwrite=False):
     """
 
     :param indir:
     :param outdir:
     :param years:
+    :param overwrite:
     :return:
     """
     if not os.path.exists(outdir):
         os.makedirs(outdir)
-
-    # Get list of the primary cover files
-    cover_files = get_files(path=indir, years=years, lookfor="CoverPrim")
-
-    # Read in the Cover Data
-    cover_data = {os.path.basename(f): read_data(f) for f in cover_files}
 
     # Get list of the segment change files
     seg_files = get_files(path=indir, years=years)
@@ -667,21 +660,42 @@ def main_work(indir, outdir, years=None):
     # directory are associated with the same H-V tile.
     tile = get_tile(seg_files[0])
 
-    p_data = f"{tile}_segchange_data.pickle"
+    # Get list of the primary cover files
+    cover_files = get_files(path=indir, years=years, lookfor="CoverPrim")
 
-    if not os.path.exists(p_data):
+    # Name the cover data pickle
+    p_cover = f"{tile}_cover_data.pickle"
+
+    if not os.path.exists(p_cover):
+        # Read in the Cover Data
+        cover_data = {os.path.basename(f): read_data(f) for f in cover_files}
+
+        # Pickle the data structure
+        with open(p_cover, "wb") as p:
+            pickle.dump(cover_data, p)
+
+    else:
+        # If the data structure was previously built, save time by reading it in rather than recreating it
+        with open(p_cover, "rb") as p:
+            cover_data = pickle.load(p)
+
+    # Name the segment change pickle
+    p_seg = f"{tile}_segchange_data.pickle"
+
+    if not os.path.exists(p_seg):
         # Read in the Segment Change data if the data structure wasn't previously built
         seg_data = {os.path.basename(f): read_data(f) for f in seg_files}
 
         # Pickle the data structure
-        with open(p_data, "wb") as p:
+        with open(p_seg, "wb") as p:
             pickle.dump(seg_data, p)
 
     else:
         # If the data structure was previously built, save time by reading it in rather than recreating it
-        with open(p_data, "rb") as p:
+        with open(p_seg, "rb") as p:
             seg_data = pickle.load(p)
 
+    # Name the segment change confusion matrix pickle
     p_cnf = f"{tile}_segchange_cnf.pickle"
 
     if not os.path.exists(p_cnf):
