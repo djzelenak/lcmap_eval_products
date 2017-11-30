@@ -739,8 +739,7 @@ def main_work(indir, outdir, years=None, overwrite=False):
     seg_to_df_perc = seg_to_df.iloc[seg_to_df.index != "Total"].div(seg_to_df.iloc[seg_to_df.index !=
                                                                                    "Total"].sum(0) / 100, 1)
 
-    # Create an XlsxWriter object to create a workbook with multiple sheets, make sure not to overwrite an existing
-    # workbook by checking os.path.exists(xlsx_name)
+    # Create an XlsxWriter object to create a workbook with multiple sheets
     xlsx_name = outdir + os.sep + tile + "_segment_analysis.xlsx"
 
     writer = pd.ExcelWriter(xlsx_name, engine="xlsxwriter")
