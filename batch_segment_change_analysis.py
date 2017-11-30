@@ -14,6 +14,7 @@ def main(rootdir, outdir, tile=None, years=None):
     
     input_list = []
     
+    # Get a list of all the tile subfolders in the root input directory
     for root, folders, files in os.walk(rootdir):
         if tile is None:
             for folder in folders:
@@ -21,20 +22,24 @@ def main(rootdir, outdir, tile=None, years=None):
                     input_list.append(os.path.join(root, folder))
                 
         else:
+            # Otherwise, if a tile was specified only return a list containing that particular tile subfolder
             for folder in folders:
                 if tile in folder:
                     input_list.append(os.path.join(root, folder))
                     
     for f in input_list:
-        
+        # Create the output subfolder within the output root directory
         outfolder = outdir + os.sep + os.path.basename(f)
         
         if not os.path.exists(outfolder):
             os.makedirs(outfolder)
         
+        # Run with the years argument if it was passed any values
         if years is not None:
-            subprocess.call(f"python segment_change_analysis.py -i {f}{os.sep}maps -o {outfolder} -y {years}", shell=True)
+            subprocess.call(f"python segment_change_analysis.py -i {f}{os.sep}maps -o {outfolder} -y {years}",
+                            shell=True)
 
+        # Otherwise, run for all available years in the time series
         else:
             subprocess.call(f"python segment_change_analysis.py -i {f}{os.sep}maps -o {outfolder}", shell=True)
 
