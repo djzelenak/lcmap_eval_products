@@ -500,7 +500,7 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
             else:
                 perc = 0.00
 
-            label = ax.text(xloc, yloc, "{:02.2f} $km^2$ | {:02.2f} $km^2$".format(totals[0][ind], totals[1][ind]),
+            label = ax.text(xloc, yloc, "{:02.2f} $km^2$ | {:02.2f}%".format(totals[0][ind], perc),
                             ha=align, va="center",
                             color=clr, weight="bold",
                             clip_on=True, fontsize=8)
@@ -556,7 +556,8 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
     plt.figtext(0.5, 0.96, f"Cover Change in {round(total_thematic_percent, 2)}% of Tile", fontsize=12, ha="center")
 
     # Add subplot titles
-    ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | Total Area in Tile",
+    ax1.set_title("Percent of Origin Class in All Segment Breaks\nArea with Segment Break | "
+                  "Percent of Class with Segment Break",
                   fontsize=12)
 
     ax2.set_title("Percent of Class Destination from Origin Class", fontsize=12)
