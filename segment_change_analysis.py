@@ -36,6 +36,7 @@ gdal.AllRegister()
 t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
+# RGB class colors
 colors = [(0.0, 0.0, 0.0),
           (1.0, .188235, 0.078431),
           (0.980392, 0.588235, 0.180392),
@@ -46,6 +47,9 @@ colors = [(0.0, 0.0, 0.0),
           (0.882353, 0.882353, 0.882353),
           (0.509804, 0.509804, 0.509804),
           (0.494, 0.0784, 1.0)]
+
+# List of class values
+classes = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
 
 def error_message(file):
@@ -463,7 +467,6 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
     :param out_img:
     :return:
     """
-
     def autolabel(rects, ax, totals):
         """
         Generate labels for the horizontal bar plot.  Use the class totals as the label values
@@ -527,6 +530,10 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
     cover_areas = [round(cover * 900 * .0009, 2) for cover in cover_matrix]
 
     matplotlib.style.use("ggplot")
+
+    if os.path.exists(out_img):
+        return seg_class_areas, cover_areas, \
+           [round(s / c * 100.0, 2) if c != 0 else 0.00 for s, c in zip(seg_class_areas, cover_areas)], segments_total
 
     # Create the figure with two subplots that share a y-axis
     fig, (ax1, ax2) = plt.subplots(figsize=(16, 5), dpi=200, nrows=1, ncols=2, sharex=False, sharey=False)
@@ -613,6 +620,9 @@ def get_summary_plot(froms, tos, tile, out_img):
     :param out_img:
     :return:
     """
+    if os.path.exists(out_img):
+        return None
+
     fig, axes = plt.subplots(figsize=(15, 20), dpi=200, nrows=2, ncols=2, sharex=False, sharey=False)
 
     froms[1].T.iloc[:, :].plot.barh(stacked=True, color=colors[:-1], legend=False, width=0.8, ylim=(1984, 2014),
@@ -639,6 +649,42 @@ def get_summary_plot(froms, tos, tile, out_img):
     plt.savefig(out_img, dpi=200, bbox_inches="tight")
 
     plt.close()
+
+    return None
+
+
+def get_annual_class_plot(sum_class, sum_class_seg, tile, out_img):
+    """
+    Generate a plot showing the class quantities across time overlaid with the quantities of each class that had
+    segment change
+    :param sum_class:
+    :param sum_class_seg:
+    :param tile:
+    :param out_img:
+    :return:
+    """
+
+    fig, axes = plt.subplots(figsize=(12, len(classes) * 5), dpi=100, nrows=len(classes), ncols=1,
+                             sharex=False, sharey=False)
+
+    for ind, ax in enumerate(axes):
+        # Plot the class totals
+        ax.bar(np.arange(1984, 2016), [sum_class[k][ind] for k in sum_class.keys()], color=colors[ind], edgecolor="k")
+
+        # Plot the totals of each class with segment change
+        ax.bar(np.arange(1984, 2016), [sum_class_seg[k][ind] if not ax == axes[-1] else 0
+                                       for k in sum_class_seg.keys()],
+                         color="white", alpha=0.7, edgecolor="k")
+
+        ax.set_title(f"Quantity of Class {ind} per Year")
+
+    fig.suptitle("Overall Class Quantity Overlaid with Quantity of Seg Change", y=1.01, fontsize=22)
+
+    plt.figtext(0.5, 1.0, f"Tile {tile}", fontsize=18, ha="center")
+
+    fig.subplots_adjust(top=0.99)
+
+    plt.savefig(out_img, dpi=200, bbox_inches="tight")
 
     return None
 
@@ -739,6 +785,24 @@ def main_work(indir, outdir, years=None, overwrite=False):
     seg_to_df_perc = seg_to_df.iloc[seg_to_df.index != "Total"].div(seg_to_df.iloc[seg_to_df.index !=
                                                                                    "Total"].sum(0) / 100, 1)
 
+    # Create a dict of the class quantities that had segment change
+    seg_class_totals = {key: list(seg_confusion[key][:, -1][1:-1]) for key in seg_confusion.keys()}
+
+    # Name the class totals pickle
+    p_class_totals = f"{outdir}{os.sep}{tile}_class_totals.pickle"
+
+    if not os.path.exists(p_class_totals):
+        # Create a dict of the overall class quantities
+        class_totals = {key: [np.bincount(cover_data[key].flatten())[c] for c in classes] for key in cover_data.keys()}
+
+        # Pickle the data structure
+        with open(p_class_totals, "wb") as p:
+            pickle.dump(class_totals, p)
+
+    else:
+        with open(p_class_totals, "rb") as p:
+            class_totals = pickle.load(p)
+
     # Create an XlsxWriter object to create a workbook with multiple sheets
     xlsx_name = outdir + os.sep + tile + "_segment_analysis.xlsx"
 
@@ -825,6 +889,9 @@ def main_work(indir, outdir, years=None, overwrite=False):
                      tos=[seg_to_df.iloc[:-1, seg_to_df.columns != '2015'],
                           seg_to_df_perc.iloc[:, seg_to_df_perc.columns != '2015']], tile=tile,
                      out_img=outdir + os.sep + tile + "_summary.png")
+
+    get_annual_class_plot(sum_class=class_totals, sum_class_seg=seg_class_totals, tile=tile,
+                          out_img=outdir + os.sep + tile + "_class_totals.png")
 
     # Clean up the output directory by removing the .csv files
     for root, folders, files in os.walk(outdir):
