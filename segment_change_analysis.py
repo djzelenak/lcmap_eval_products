@@ -665,7 +665,7 @@ def main_work(indir, outdir, years=None, overwrite=False):
     cover_files = get_files(path=indir, years=years, lookfor="CoverPrim")
 
     # Name the cover data pickle
-    p_cover = f"{tile}_cover_data.pickle"
+    p_cover = f"{outdir}{os.sep}{tile}_cover_data.pickle"
 
     if not os.path.exists(p_cover):
         # Read in the Cover Data
@@ -681,7 +681,7 @@ def main_work(indir, outdir, years=None, overwrite=False):
             cover_data = pickle.load(p)
 
     # Name the segment change pickle
-    p_seg = f"{tile}_segchange_data.pickle"
+    p_seg = f"{outdir}{os.sep}{tile}_segchange_data.pickle"
 
     if not os.path.exists(p_seg):
         # Read in the Segment Change data if the data structure wasn't previously built
@@ -697,7 +697,7 @@ def main_work(indir, outdir, years=None, overwrite=False):
             seg_data = pickle.load(p)
 
     # Name the segment change confusion matrix pickle
-    p_cnf = f"{tile}_segchange_cnf.pickle"
+    p_cnf = f"{outdir}{os.sep}{tile}_segchange_cnf.pickle"
 
     if not os.path.exists(p_cnf):
         # Calculate the Segment Change confusion matrices
