@@ -39,8 +39,7 @@ def main(rootdir, outdir, tile=None, years=None):
 
         # Run with the years argument if it was passed any values
         if years is not None:
-            subprocess.call(f"python segment_change_analysis.py -i {f}{os.sep}maps -o {outfolder} -y {years}",
-                            shell=True)
+            subprocess.call(f"python segment_change_analysis.py -i {f}{os.sep}maps -o {outfolder} -y {years}", shell=True)
 
         # Otherwise, run for all available years in the time series
         else:
