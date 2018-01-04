@@ -3,7 +3,7 @@
 
 """
 Apply a color table using the GDAL method of converting the input raster
-to a VRT, inserting the color table into the VRT, and finally writing it
+to a VRT, inserting the color table into the VRT, and then writing it
 back to a new .tif raster.  
 Author: Dan Zelenak
 Last Updated: 8/4/2017 by Dan Zelenak
@@ -14,10 +14,9 @@ import sys
 import datetime
 import glob
 import subprocess
+import argparse
 
 from osgeo import gdal
-
-print(sys.version)
 
 t1 = datetime.datetime.now()
 print("\n", t1.strftime("%Y-%m-%d %H:%M:%S"))
@@ -34,6 +33,8 @@ def add_color_table(in_file, clr_table, dtype):
     Returns:
         out_vrt = the edited vrt file containing color table information
     """
+
+    clr_table = "Color_tables%s%s" % (os.sep, clr_table)
 
     color_table = open(clr_table, "r")
 
@@ -74,7 +75,7 @@ def add_color_table(in_file, clr_table, dtype):
     return out_vrt
 
 
-def allCalc(infile, outputdir, outfile, clrtable, dtype):
+def all_calc(infile, outputdir, outfile, clrtable, dtype):
     """Primary function that runs gdal executables.  Takes in a single input
     raster file, a specified output directory including the full path, output 
     file name with full path, as well as the appropriate color table and data 
@@ -89,7 +90,6 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
     Returns:
         None
     """
-
     outcsv_file = r"%s%szzzz_%s_list.csv" % (outputdir, os.sep, os.path.basename(infile))
 
     if os.path.isfile(outcsv_file):
@@ -101,18 +101,15 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
     # Generate a temporary output raster file--------------------------------
     tempoutfile = outputdir + os.sep + "zzzz_" + os.path.basename(infile) + ".tif"
 
-    runsubset = "gdal_translate -of %s -b %s -q %s %s" \
-                % ("GTiff", "1", infile, tempoutfile)
+    runsubset = "gdal_translate -of %s -b %s -q %s %s" % ("GTiff", "1", infile, tempoutfile)
 
     subprocess.call(runsubset, shell=True)
 
     # write temporary raster file path to this .csv file (required for VRT)
     if sys.version[0] == '3':
-
         open_csv.write(tempoutfile.encode("utf-8") + "\r\n".encode("utf-8"))
 
     else:
-
         open_csv.write(tempoutfile + "\r\n")
 
     open_csv.close()
@@ -131,16 +128,14 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
 
     # -----------------------------------------------------------------------
     # Write the VRT w/ color table added to the output raster file
-    runCom = "gdal_translate -of %s -q %s %s" \
-             % ("GTiff", color_VRT, outfile)
+    runCom = "gdal_translate -of %s -q -stats %s %s" % ("GTiff", color_VRT, outfile)
 
     subprocess.call(runCom, shell=True)
 
     """
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     #Add spatial reference system to output raster file
-    runEdit = "%s/gdal_edit.py -a_srs EPSG:5070 %s"\
-               %(GDALpath, outfile)
+    runEdit = "%s/gdal_edit.py -a_srs EPSG:5070 %s" % (GDALpath, outfile)
     subprocess.call(runEdit, shell=True)
     """
 
@@ -173,59 +168,33 @@ def get_srs(inraster, outraster):
     in_src = None
     out_src = None
 
-    return None
-
-
-def usage():
-    print("\n\t[-i Input File Directory]\n"
-          "\t[-name Input File Name (root only, e.g. ChangeMap)]\n"
-          "\n\tValid file names:\n"
-          "\tChangeMap, CoverPrim, CoverSec, CoverConfPrim, CoverConfSec, \n"
-          "\tLastChange, QAMap, SegLength, ChangeMagMap\n"
-          "\n\t[-o Output Folder with complete path]\n\n")
-
-    print("\n\tExample: 1_apply_colormap.py -i C:/.../CCDCMap -name ChangeMap -o C:/.../OutputFolder\n\n")
+    # build_overviews(outraster)
 
     return None
 
 
-def main():
-    argv = sys.argv
+def build_overviews(outraster):
+    """
+    
+    :param outraster:
+    :return:
+    """
+    out_src = gdal.Open(outraster, gdal.GA_ReadOnly)
 
-    if argv is None:
-        print("try -help")
+    out_src.BuildOverviews(resampling="NEAREST", overviewlist=[2,4,8])
 
-        sys.exit(1)
+    out_src = None
 
-    # Parse command line arguments.
-    i = 1
+    return None
 
-    while i < len(argv):
-        arg = argv[i]
+def main_work(indir, name, outdir):
+    """
 
-        if arg == "-i":
-            i = i + 1
-            indir = argv[i]
-
-        elif arg == "-name":
-            i = i + 1
-            name = argv[i]
-
-        elif arg == "-o":
-            i = i + 1
-            outdir = argv[i]
-
-        elif arg == "-help":
-            usage()
-            sys.exit(1)
-
-        elif arg[:1] == ":":
-            print("Unrecognized command option: %s" % arg)
-            usage()
-            sys.exit(1)
-
-        i = i + 1
-
+    :param indir:
+    :param name:
+    :param outdir:
+    :return:
+    """
     outputdir = "%s%s%s_color" % (outdir, os.sep, name)
 
     filelist = sorted(glob.glob("{}{}*{}*.tif".format(indir, os.sep, name)))
@@ -267,15 +236,39 @@ def main():
         print("Processing file ", r, "\n")
 
         # Call the primary function
-        allCalc(r, outputdir, outfile, clrtable, dtype)
+        all_calc(r, outputdir, outfile, clrtable, dtype)
 
     return None
+
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.usage = __doc__
+
+    parser.add_argument('-i', '--input', dest='indir', type=str, required=True,
+                        help="The full path to the input directory")
+
+    parser.add_argument('-n', dest='name', type=str, required=True,
+                        choices=["CoverPrim", "CoverSec", "CoverConfPrim", "CoverConfSec",
+                                 "ChangeMap", "LastChange", "SegLength", "QAMap", "ChangeMagMap"],
+                        help='Input product name')
+
+    parser.add_argument('-o', '--output', dest='outdir', type=str, required=True,
+                        help='The full path to the output directory')
+
+    args = parser.parse_args()
+
+    main_work(**vars(args))
 
 
 if __name__ == "__main__":
     main()
 
-t2 = datetime.datetime.now()
-print(t2.strftime("%Y-%m-%d %H:%M:%S"))
-tt = t2 - t1
-print("\nProcessing time: " + str(tt))
+    t2 = datetime.datetime.now()
+
+    print(t2.strftime("%Y-%m-%d %H:%M:%S"))
+
+    tt = t2 - t1
+
+    print("\nProcessing time: " + str(tt))
