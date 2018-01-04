@@ -9,25 +9,26 @@ Author: Dan Zelenak
 Last Updated: 5/5/2017 by Dan Zelenak
 """
 
-#%%
-import os, sys, datetime, glob, subprocess
+import datetime
+import glob
+import os
+import subprocess
+import sys
+import argparse
 
 try:
     from osgeo import gdal
 except ImportError:
     import gdal
 
-print (sys.version)
-
 t1 = datetime.datetime.now()
-print ("\n", t1.strftime("%Y-%m-%d %H:%M:%S"))
+print("\n", t1.strftime("%Y-%m-%d %H:%M:%S"))
 
 gdal.UseExceptions()
 gdal.AllRegister()
 
-#%%
-def add_color_table(in_file, clr_table, dtype):
 
+def add_color_table(in_file, clr_table, dtype):
     """Open the .txt file which contains the color table information and
     insert it into the xml code of the .vrt file
 
@@ -38,6 +39,8 @@ def add_color_table(in_file, clr_table, dtype):
     Returns:
         out_vrt = the edited vrt file containing color table information
     """
+
+    clr_table = "Color_tables%s%s" % (os.sep, clr_table)
 
     color_table = open(clr_table, "r")
 
@@ -54,7 +57,7 @@ def add_color_table(in_file, clr_table, dtype):
     txt_read = txt.readlines()
 
     # check text for keywords
-    key = '<VRTRasterBand dataType="%s" band="1">' % (dtype)
+    key = '<VRTRasterBand dataType="%s" band="1">' % dtype
 
     # create and open the output vrt file for writing
     out_txt = open(out_vrt, "w")
@@ -62,7 +65,7 @@ def add_color_table(in_file, clr_table, dtype):
     for line in txt_read:
 
         write = r"%s" % line
-                 
+
         out_txt.write(write)
 
         # insert color table following keywords
@@ -71,16 +74,14 @@ def add_color_table(in_file, clr_table, dtype):
             color_read = color_table.readlines()
 
             for ln in color_read:
-
                 out_txt.write(ln)
 
     out_txt.close()
 
     return out_vrt
 
-#%%
-def allCalc(infile, outputdir, outfile, clrtable, dtype):
 
+def all_calc(infile, outputdir, outfile, clrtable, dtype):
     """Primary function that runs gdal executables.  Takes in a single input
     raster file, a specified output directory including the full path, output 
     file name with full path, as well as the appropriate color table and data 
@@ -96,80 +97,69 @@ def allCalc(infile, outputdir, outfile, clrtable, dtype):
         None
     """
 
-    outcsv_file = r"%s%szzzz_%s_list.csv" \
-                    % (outputdir, os.sep, os.path.basename(infile))
+    outcsv_file = r"%s%szzzz_%s_list.csv" % (outputdir, os.sep, os.path.basename(infile))
 
     if os.path.isfile(outcsv_file):
-
         os.remove(outcsv_file)
 
     open_csv = open(outcsv_file, "wb")
 
-    #-----------------------------------------------------------------------
-    #Generate a temporary output raster file--------------------------------
-    tempoutfile = outputdir + os.sep + "zzzz_" + \
-                   os.path.basename(infile) + ".tif"
-    
-    runsubset   = "gdal_translate -of %s -b %s -q %s %s"\
-                   % ("GTiff", "1", infile, tempoutfile)
-    
+    # -----------------------------------------------------------------------
+    # Generate a temporary output raster file--------------------------------
+    tempoutfile = outputdir + os.sep + "zzzz_" + os.path.basename(infile) + ".tif"
+
+    runsubset = "gdal_translate -of %s -b %s -q %s %s" % ("GTiff", "1", infile, tempoutfile)
+
     subprocess.call(runsubset, shell=True)
 
-    #write temporary raster file path to this .csv file (required for VRT)
-    
+    # write temporary raster file path to this .csv file (required for VRT)
+
     if sys.version[0] == '3':
-    
-        open_csv.write(tempoutfile.encode("utf-8") + ("\r\n").encode("utf-8"))
-        
+
+        open_csv.write(tempoutfile.encode("utf-8") + "\r\n".encode("utf-8"))
+
     else:
-        
+
         open_csv.write(tempoutfile + "\r\n")
 
     open_csv.close()
 
-    #-----------------------------------------------------------------------
-    #Genereate temporary VRT file based on temp raster listed in .csv file
-    temp_VRT =  outputdir + os.sep +  "zzzz_" + \
-                os.path.basename(infile) + ".vrt"
-    
-    com      = "gdalbuildvrt -q -input_file_list %s %s"\
-                % (outcsv_file, temp_VRT)
-    
+    # -----------------------------------------------------------------------
+    # Genereate temporary VRT file based on temp raster listed in .csv file
+    temp_VRT = outputdir + os.sep + "zzzz_" + os.path.basename(infile) + ".vrt"
+
+    com = "gdalbuildvrt -q -input_file_list %s %s" % (outcsv_file, temp_VRT)
+
     subprocess.call(com, shell=True)
 
-    #subprocess.call(com, shell=True)
+    # subprocess.call(com, shell=True)
 
     color_VRT = add_color_table(temp_VRT, clrtable, dtype)
 
-    #-----------------------------------------------------------------------
-    #Write the VRT w/ color table added to the output raster file
-    runCom  = "gdal_translate -of %s -q %s %s"\
-               % ("GTiff", color_VRT, outfile)
-    
+    # -----------------------------------------------------------------------
+    # Write the VRT w/ color table added to the output raster file
+    runCom = "gdal_translate -of %s -q %s %s" % ("GTiff", color_VRT, outfile)
+
     subprocess.call(runCom, shell=True)
 
     """
-    #-----------------------------------------------------------------------
+    # -----------------------------------------------------------------------
     #Add spatial reference system to output raster file
-    runEdit = "%s/gdal_edit.py -a_srs EPSG:5070 %s"\
-               %(GDALpath, outfile)
+    runEdit = "%s/gdal_edit.py -a_srs EPSG:5070 %s" %(GDALpath, outfile)
     subprocess.call(runEdit, shell=True)
     """
-    
-    get_srs(infile, outfile)
-        
-        
-    
-    #Remove temporary files (1 each of a .csv, .vrt, and .tif)
-    for v in glob.glob(outputdir + os.sep + "zzz*"):
 
+    get_srs(infile, outfile)
+
+    # Remove temporary files (1 each of a .csv, .vrt, and .tif)
+    for v in glob.glob(outputdir + os.sep + "zzz*"):
         os.remove(v)
 
     return None
 
-#%%
+
+
 def get_srs(inraster, outraster):
-    
     """Apply a spatial reference system to the new raster file based on the
     SRS of the original raster
     
@@ -179,88 +169,39 @@ def get_srs(inraster, outraster):
     Returns:
         None
     """
-    
+
     in_src = gdal.Open(inraster, gdal.GA_ReadOnly)
     out_src = gdal.Open(outraster, gdal.GA_Update)
-    
-    out_src.SetGeoTransform( in_src.GetGeoTransform() )
-    out_src.SetProjection( in_src.GetProjection() )
-    
+
+    out_src.SetGeoTransform(in_src.GetGeoTransform())
+    out_src.SetProjection(in_src.GetProjection())
+
     in_src = None
     out_src = None
-    
-    return None
-    
-#%%
-def usage():
-
-    print("\n\t[-i Input File Directory]\n" \
-    "\t[-name Input reference file (trends or nlcd)]\n" \
-    "\n\tValid file names:\n" \
-    "\tnlcd trends\n"\
-    "\n\t[-o Output Folder with complete path]\n\n")
-
-    print("\n\tExample: 1_apply_colormap_ref.py -i C:/.../NLCD -name " + \
-          "nlcd -o C:/.../OutputFolder\n")
 
     return None
 
-#%%
-def main():
 
-    argv = sys.argv
+def main_work(indir, name, outdir):
+    """
 
-    if argv is None:
-
-        print ("try -help")
-
-        sys.exit(1)
-
-    # Parse command line arguments.
-    i = 1
-
-    while i < len(argv):
-        arg = argv[i]
-
-        if arg == "-i":
-            i = i + 1
-            indir = argv[i]
-
-        elif arg == "-name":
-            i = i + 1
-            name = argv[i]
-
-        elif arg == "-o":
-            i = i + 1
-            outdir = argv[i]
-
-        elif arg == "-help":
-            usage()
-            sys.exit(1)
-
-        elif arg[:1] == ":":
-            print("Unrecognized command option: %s" % arg)
-            usage()
-            sys.exit(1)
-
-        i = i + 1
-
-    #indir = indir.replace("\\", "/")
-
-    #outdir = outdir.replace("\\", "/")
-
+    :param indir:
+    :param name:
+    :param outdir:
+    :return:
+    """
     outputdir = "{}{}{}_color".format(outdir, os.sep, name)
 
     if name == "trends": name = "Trends"
 
-    filelist = sorted(glob.glob("{}{}{}*.tif".format(indir, os.sep, name) ) )
-    print (filelist)
-    
-    if not os.path.exists(outputdir):
+    filelist = sorted(glob.glob("{}{}{}*.tif".format(indir, os.sep, name)))
 
+    print(filelist)
+
+    if not os.path.exists(outputdir):
         os.makedirs(outputdir)
 
-    print ("\nFiles are saving in", outputdir, "\n")
+    print("\nFiles are saving in", outputdir, "\n")
 
     names = ["nlcd", "Trends"]
 
@@ -278,26 +219,43 @@ def main():
 
     for r in filelist:
 
-        #r = r.replace("\\", "/")
-
         outfile = outputdir + os.sep + os.path.basename(r)
 
         if not os.path.exists(outfile):
+            print("Processing file ", r, "\n")
 
-            print ("Processing file ", r, "\n")
-            
             # Call the primary function
-            allCalc(r, outputdir, outfile, clrtable, dtype)
+            all_calc(r, outputdir, outfile, clrtable, dtype)
 
     return None
 
-#%%
-if __name__ == "__main__":
 
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.usage = __doc__
+
+    parser.add_argument('-i', '--input', dest='indir', type=str, required=True,
+                        help='The full path to the input directory')
+
+    parser.add_argument('-n', '--name', dest='name', type=str, required=True, choices=['trends', 'nlcd'],
+                        help='The input reference file, either trends or nlcd')
+
+    parser.add_argument('-o', '--output', dest='outdir', type=str, required=True,
+                        help='The full path to the output directory')
+
+    args = parser.parse_args()
+
+    main_work(**vars(args))
+
+
+if __name__ == "__main__":
     main()
 
-#%%
-t2 = datetime.datetime.now()
-print (t2.strftime("%Y-%m-%d %H:%M:%S"))
-tt = t2 - t1
-print ("\nProcessing time: " + str(tt))
+    t2 = datetime.datetime.now()
+
+    print(t2.strftime("%Y-%m-%d %H:%M:%S"))
+
+    tt = t2 - t1
+
+    print("\nProcessing time: " + str(tt))
