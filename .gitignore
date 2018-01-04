@@ -54,5 +54,6 @@ docs/_build/
 
 # Jupyter
 .ipynb_checkpoints/
-Notebooks/*.pickle
-Notebooks/Testing/
+# Notebooks/*.pickle
+# Notebooks/Testing/
+Notebooks/
