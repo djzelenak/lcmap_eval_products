@@ -20,7 +20,7 @@ def do_work(indir):
     """
     for dir, dirs, files in os.walk(args.input):
         for folder in dirs:
-            file_list = glob.glob(os.path.join(dir, folder) + os.sep + "*.jpg")
+            file_list = glob.glob(os.path.join(dir, folder) + os.sep + "*.tif")
 
             for f in file_list:
                 try:
