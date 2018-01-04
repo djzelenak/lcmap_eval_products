@@ -51,3 +51,7 @@ docs/_build/
 
 # JetBrains
 .idea/
+
+# Jupyter
+.ipynb_checkpoints/
+Notebooks/*.pickle
