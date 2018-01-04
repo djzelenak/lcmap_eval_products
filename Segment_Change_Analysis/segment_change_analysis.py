@@ -722,16 +722,15 @@ def main_work(indir, outdir, years=None, overwrite=False):
         with open(p_cover, "wb") as p:
             pickle.dump(cover_data, p)
 
-    # TODO remove this code after running once on the server
-    elif os.path.exists(p_cover):
-        os.remove(p_cover)
-
-        # Read in the Cover Data
-        cover_data = {os.path.basename(f): read_data(f) for f in cover_files}
-
-        # Pickle the data structure
-        with open(p_cover, "wb") as p:
-            pickle.dump(cover_data, p)
+    # elif os.path.exists(p_cover):
+    #     os.remove(p_cover)
+    #
+    #     # Read in the Cover Data
+    #     cover_data = {os.path.basename(f): read_data(f) for f in cover_files}
+    #
+    #     # Pickle the data structure
+    #     with open(p_cover, "wb") as p:
+    #         pickle.dump(cover_data, p)
 
     else:
         # If the data structure was previously built, save time by reading it in rather than recreating it
@@ -810,16 +809,16 @@ def main_work(indir, outdir, years=None, overwrite=False):
         with open(p_class_totals, "wb") as p:
             pickle.dump(class_totals, p)
 
-    # TODO remove this code after running once on the server
-    elif os.path.exists(p_class_totals):
-        os.remove(p_class_totals)
 
-        # Create a dict of the overall class quantities
-        class_totals = {key: [np.bincount(cover_data[key].flatten())[c] for c in classes] for key in cover_data.keys()}
-
-        # Pickle the data structure
-        with open(p_class_totals, "wb") as p:
-            pickle.dump(class_totals, p)
+    # elif os.path.exists(p_class_totals):
+    #     os.remove(p_class_totals)
+    #
+    #     # Create a dict of the overall class quantities
+    #     class_totals = {key: [np.bincount(cover_data[key].flatten())[c] for c in classes] for key in cover_data.keys()}
+    #
+    #     # Pickle the data structure
+    #     with open(p_class_totals, "wb") as p:
+    #         pickle.dump(class_totals, p)
 
     else:
         with open(p_class_totals, "rb") as p:
