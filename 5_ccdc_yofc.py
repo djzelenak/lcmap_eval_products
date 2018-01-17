@@ -80,7 +80,7 @@ def colorize(out_dir, temp_file, out_file, from_y, to_y):
 
     try:
         # ##--------color_pallette---------------------
-        clr_table = 'color_yolc.txt'
+        clr_table = 'Color_tables{}color_yolc.txt'.format(os.sep)
 
         outcsv_file = f'{out_dir}{os.sep}zzzzzz_{from_y[-2:]}_to_{to_y[-2:]}_list.csv'
 

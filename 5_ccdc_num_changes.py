@@ -271,7 +271,7 @@ def add_color(outdir, raster):
 
     outfile = outdir + os.sep + "color" + os.sep + namex
 
-    clr_table = "color_numchanges.txt"
+    clr_table = "Color_tables{}color_numchanges.txt".format(os.sep)
 
     outcsv_file = r'%s%szzzzzz_%s_list.csv' % (outdir, os.sep, name)
 
