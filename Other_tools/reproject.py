@@ -18,7 +18,7 @@ def do_work(indir):
     :param indir:
     :return:
     """
-    for dir, dirs, files in os.walk(args.input):
+    for dir, dirs, files in os.walk(indir):
         for folder in dirs:
             file_list = glob.glob(os.path.join(dir, folder) + os.sep + "*.tif")
 
