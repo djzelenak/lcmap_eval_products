@@ -68,7 +68,7 @@ def error_message(file):
     return None
 
 
-def get_files(path, years=None, lookfor="SegChange"):
+def get_files(path, lookfor, years=None):
     """
     Use glob to generate a list of all matching files in the specified path
     :param path: Full path to the location of the From-To layers
@@ -201,7 +201,6 @@ def compute_confusion_matrix(fromto, f):
 
             # Keep track of the progress relative to the number of total from-to combinations
             current = counter / total * 100.0  # as percent
-
 
             if val in check_vals and val != 0:
                 # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
@@ -515,7 +514,8 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
     # Needed to use the .astype(np.int64) to avoid value overflow warning
     seg_class_totals = (get_class_totals(seg_matrix)).astype(np.int64)
 
-    seg_class_areas = [round(class_total * 900 * .0009, 2) for class_total in seg_class_totals]
+    # seg_class_areas = [round(class_total * 900 * .0009, 2) for class_total in seg_class_totals]
+    seg_class_areas = [round(class_total * .0009, 2) for class_total in seg_class_totals]
 
     segments_total = get_segments_total(seg_matrix)
 
@@ -527,7 +527,8 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
 
     # cover_percents = [round(cover / 25000000 * 100, 2) for cover in cover_matrix]
 
-    cover_areas = [round(cover * 900 * .0009, 2) for cover in cover_matrix]
+    # cover_areas = [round(cover * 900 * .0009, 2) for cover in cover_matrix]
+    cover_areas = [round(cover * .0009, 2) for cover in cover_matrix]
 
     matplotlib.use("ggplot")
 
@@ -702,7 +703,7 @@ def main_work(indir, outdir, years=None, overwrite=False):
         os.makedirs(outdir)
 
     # Get list of the segment change files
-    seg_files = get_files(path=indir, years=years)
+    seg_files = get_files(path=indir, years=years, lookfor="SegChange")
 
     # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
     # directory are associated with the same H-V tile.
@@ -715,13 +716,14 @@ def main_work(indir, outdir, years=None, overwrite=False):
     p_cover = f"{outdir}{os.sep}{tile}_cover_data.pickle"
 
     if not os.path.exists(p_cover):
-        # Read in the Cover Data
+        # Read in the Cover Data if it wasn't already pickled
         cover_data = {os.path.basename(f): read_data(f) for f in cover_files}
 
         # Pickle the data structure
         with open(p_cover, "wb") as p:
             pickle.dump(cover_data, p)
 
+    # This block of code was previously used to over-write any pre-existing pickles
     # elif os.path.exists(p_cover):
     #     os.remove(p_cover)
     #
@@ -886,7 +888,8 @@ def main_work(indir, outdir, years=None, overwrite=False):
                                                                                        tile=tile, year=current_year,
                                                                                        out_img=img_name)
 
-        seg_total_area = round(seg_total * 900 * 0.0009, 2)
+        # seg_total_area = round(seg_total * 900 * 0.0009, 2)
+        seg_total_area = round(seg_total * 0.0009, 2)
 
         seg_perc = [round(seg_class_area / seg_total_area * 100, 2) for seg_class_area in seg_class_areas]
 
@@ -927,7 +930,7 @@ def main():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('-i', '--indir', dest="indir", type=str, required=True,
-                        help='Full path to the directory containing From-To layers')
+                        help='Full path to the directory containing all Land Cover products')
 
     parser.add_argument('-o', '--output', dest="outdir", type=str, required=True,
                         help='Full path to the output folder')
