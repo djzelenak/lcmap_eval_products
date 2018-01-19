@@ -339,7 +339,7 @@ def write_to_excel(writer, df_seg, df_cover, df_cover_perc, df_summary, year):
 
     df_cover_perc.columns = ["% Tile"]
 
-    df_cover_area = df_cover * 900 * 0.0009
+    df_cover_area = df_cover * 0.0009
 
     df_cover_area.columns = ["Area"]
 
@@ -530,7 +530,7 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
     # cover_areas = [round(cover * 900 * .0009, 2) for cover in cover_matrix]
     cover_areas = [round(cover * .0009, 2) for cover in cover_matrix]
 
-    matplotlib.use("ggplot")
+    plt.style.use("ggplot")
 
     if os.path.exists(out_img):
         return seg_class_areas, cover_areas, \
