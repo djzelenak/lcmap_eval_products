@@ -53,7 +53,7 @@ def get_inlayers(infolder, name, y1, y2):
     
     """
 
-    templist = glob.glob("{}{}{}*.tif".format(infolder, os.sep, name))
+    templist = glob.glob("{}{}*{}*.tif".format(infolder, os.sep, name))
 
     templist.sort()
 

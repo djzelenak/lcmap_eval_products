@@ -527,7 +527,6 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
 
     # cover_percents = [round(cover / 25000000 * 100, 2) for cover in cover_matrix]
 
-    # cover_areas = [round(cover * 900 * .0009, 2) for cover in cover_matrix]
     cover_areas = [round(cover * .0009, 2) for cover in cover_matrix]
 
     plt.style.use("ggplot")
@@ -888,7 +887,6 @@ def main_work(indir, outdir, years=None, overwrite=False):
                                                                                        tile=tile, year=current_year,
                                                                                        out_img=img_name)
 
-        # seg_total_area = round(seg_total * 900 * 0.0009, 2)
         seg_total_area = round(seg_total * 0.0009, 2)
 
         seg_perc = [round(seg_class_area / seg_total_area * 100, 2) for seg_class_area in seg_class_areas]
