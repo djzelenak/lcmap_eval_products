@@ -162,7 +162,7 @@ def get_cover_table(indata):
     :param indata:
     :return:
     """
-    val_counts = np.bincount(indata[MASK == 1].flatten())
+    val_counts = np.bincount(indata.flatten())
 
     total = np.sum(val_counts)
 
@@ -214,7 +214,7 @@ def compute_confusion_matrix(fromto, f):
 
             if val in check_vals and val != 0:
                 # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
-                confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto[MASK == 1].flatten())[val]
+                confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
 
             else:
                 confusion_matrix[to_vals.index(c), from_vals.index(r)] = 0
@@ -720,7 +720,7 @@ def main_work(indir, outdir, years=None, overwrite=False):
     # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
     # directory are associated with the same H-V tile.
     # tile = get_tile(seg_files[0])
-    tile = "Puget Eco-Region"
+    tile = "Puget"
 
     # Get list of the primary cover files
     cover_files = get_files(path=indir, years=years, lookfor="CoverPrim")
