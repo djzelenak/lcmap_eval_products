@@ -18,7 +18,6 @@ def get_time():
 
     :return:
     """
-    # t1 = datetime.datetime.now()
     # print(t1.strftime("%Y-%m-%d %H:%M:%S"))
     return(datetime.datetime.now())
 
@@ -87,11 +86,6 @@ def clip_and_mosaic(infiles, outdir, year, product, shp):
     :param shp
     :return:
     """
-    outdir = outdir + os.sep + year
-
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
-
     shp_src = ogr.Open(shp)
 
     layer = shp_src.GetLayer(0)
@@ -116,7 +110,8 @@ def clip_and_mosaic(infiles, outdir, year, product, shp):
     mainbox = BBox(left=left, right=right, top=top, bottom=bottom)
 
     subprocess.call([
-        "gdalwarp", "-cutline", SHP,
+        "gdalwarp",
+        "-cutline", shp,
         "-tr", str(abs(gt[1])), str(abs(gt[5])),
         "-te", str(mainbox.left), str(mainbox.bottom), str(mainbox.right), str(mainbox.top),
         [" %s " % f for f in infiles],
@@ -132,6 +127,9 @@ def main_work(indir, outdir, shp):
     :param outdir:
     :return:
     """
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
     # List of ARD tiles
     # TODO Generate HV_list based on AOI envelope
     HV_list = ['h03v01', 'h03v02', 'h03v03', 'h04v01', 'h04v02']
@@ -140,8 +138,6 @@ def main_work(indir, outdir, shp):
     years = [str(y) for y in range(1984, 2016)]
 
     products = ['SegChange', 'CoverPrim']
-
-    process_structure = dict()
 
     for product in products:
 
@@ -178,7 +174,21 @@ def main():
                         help="Full path to the output location")
 
     parser.add_argument("-shp", "--shapefile", dest="shp", type=str, required=True,
-                        help="Full path and filename of clipping shapefile")
+                        help="Full path and filename of AOI shapefile")
+
+    # TODO make more customizable
+    # parser.add_argument("-maps", "--maps", dest="products", type=str, nargs="*", default="CoverPrim", required=True,
+    #                     choices=["CoverPrim", "CoverSec", "CoverConfPrim", "CoverConfSec", "QAMap",
+    #                              "ChangeMap", "ChangeMagnitude", "SegLength", "SegChange",
+    #                              "LastChange"],
+    #                     help="Name of mapped product")
+    #
+    # parser.add_argument("-hv", "--hv", dest="hv_list", type=str, required=False, nargs="*",
+    #                     default=,
+    #                     help="A list of HV tiles to be included in the mosaic")
+    #
+    # parser.add_argument("-y", "--years", dest="years", type=str, required=False, nargs=2, default=(1984, 2015),
+    #                     help="The beginning and end years")
 
     args = parser.parse_args()
 

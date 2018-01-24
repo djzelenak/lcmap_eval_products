@@ -36,6 +36,14 @@ gdal.AllRegister()
 t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
+pickle_file = "Other_tools%spuget_tools%spuget_mask.pickle" % (os.sep, os.sep)
+
+with open(pickle_file, "rb") as p:
+    MASK = pickle.load(p)
+
+# Get the total number of pixels in the eco_region mosaic
+TOTAL = np.bincount(MASK.flatten())[1]
+
 # RGB class colors
 colors = [(0.0, 0.0, 0.0),
           (1.0, .188235, 0.078431),
@@ -153,7 +161,7 @@ def get_cover_table(indata):
     :param indata:
     :return:
     """
-    val_counts = np.bincount(indata.flatten())
+    val_counts = np.bincount(indata[MASK == 1].flatten())
 
     total = np.sum(val_counts)
 
@@ -205,7 +213,7 @@ def compute_confusion_matrix(fromto, f):
 
             if val in check_vals and val != 0:
                 # (c, r) means 'from' is vertical axis and 'to' is the horizontal axis
-                confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto.flatten())[val]
+                confusion_matrix[to_vals.index(c), from_vals.index(r)] = np.bincount(fromto[MASK == 1].flatten())[val]
 
             else:
                 confusion_matrix[to_vals.index(c), from_vals.index(r)] = 0
@@ -453,7 +461,7 @@ def get_thematic_change_percent(matrix):
     # Calculate the sum of all row totals
     total_count = np.sum(thematic_count)
 
-    return total_count / 25000000.0 * 100.0
+    return total_count / TOTAL * 100.0
 
 
 def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_img):
@@ -524,9 +532,7 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
 
     total_thematic_percent = get_thematic_change_percent(seg_matrix)
 
-    total_segment_percent = segments_total / 25000000.0 * 100.0
-
-    # cover_percents = [round(cover / 25000000 * 100, 2) for cover in cover_matrix]
+    total_segment_percent = segments_total / TOTAL * 100.0
 
     cover_areas = [round(cover * .0009, 2) for cover in cover_matrix]
 
