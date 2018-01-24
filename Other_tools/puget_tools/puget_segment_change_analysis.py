@@ -36,7 +36,8 @@ gdal.AllRegister()
 t1 = datetime.datetime.now()
 print(t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
-pickle_file = "Other_tools%spuget_tools%spuget_mask.pickle" % (os.sep, os.sep)
+# pickle_file = "Other_tools%spuget_tools%spuget_mask.pickle" % (os.sep, os.sep)
+pickle_file = "/lcmap_data/dzelenak/puget/puget_mask.pickle"
 
 with open(pickle_file, "rb") as p:
     MASK = pickle.load(p)
@@ -518,6 +519,8 @@ def get_seg_change_plots(seg_matrix, seg_table, cover_matrix, tile, year, out_im
 
         return None
 
+    tile = "Puget"
+
     df_class_percents = get_fromclass_percents(seg_table)
 
     # Needed to use the .astype(np.int64) to avoid value overflow warning
@@ -627,6 +630,8 @@ def get_summary_plot(froms, tos, tile, out_img):
     :param out_img:
     :return:
     """
+    tile = "Puget Eco-region"
+
     if os.path.exists(out_img):
         return None
 
@@ -670,6 +675,7 @@ def get_annual_class_plot(sum_class, sum_class_seg, tile, out_img):
     :param out_img:
     :return:
     """
+    tile = "Puget Eco-Region"
 
     fig, axes = plt.subplots(figsize=(12, len(classes) * 5), dpi=100, nrows=len(classes), ncols=1,
                              sharex=False, sharey=False)
@@ -687,7 +693,7 @@ def get_annual_class_plot(sum_class, sum_class_seg, tile, out_img):
 
     fig.suptitle("Overall Class Quantity Overlaid with Quantity of Seg Change", y=1.01, fontsize=22)
 
-    plt.figtext(0.5, 1.0, f"Tile {tile}", fontsize=18, ha="center")
+    plt.figtext(0.5, 1.0, f"{tile}", fontsize=18, ha="center")
 
     fig.subplots_adjust(top=0.99)
 
@@ -713,7 +719,8 @@ def main_work(indir, outdir, years=None, overwrite=False):
 
     # Arbitrarily use the first file in the file list to obtain the tile name.  This assumes that all files in the
     # directory are associated with the same H-V tile.
-    tile = get_tile(seg_files[0])
+    # tile = get_tile(seg_files[0])
+    tile = "Puget Eco-Region"
 
     # Get list of the primary cover files
     cover_files = get_files(path=indir, years=years, lookfor="CoverPrim")
@@ -723,7 +730,7 @@ def main_work(indir, outdir, years=None, overwrite=False):
 
     if not os.path.exists(p_cover):
         # Read in the Cover Data if it wasn't already pickled
-        cover_data = {os.path.basename(f): read_data(f) for f in cover_files}
+        cover_data = {os.path.basename(f): read_data(f)[MASK == 1] for f in cover_files}
 
         # Pickle the data structure
         with open(p_cover, "wb") as p:
@@ -750,7 +757,7 @@ def main_work(indir, outdir, years=None, overwrite=False):
 
     if not os.path.exists(p_seg):
         # Read in the Segment Change data if the data structure wasn't previously built
-        seg_data = {os.path.basename(f): read_data(f) for f in seg_files}
+        seg_data = {os.path.basename(f): read_data(f)[MASK == 1] for f in seg_files}
 
         # Pickle the data structure
         with open(p_seg, "wb") as p:
@@ -790,10 +797,10 @@ def main_work(indir, outdir, years=None, overwrite=False):
     seg_to_df = pd.DataFrame(seg_to, index=[0, 1, 2, 3, 4, 5, 6, 7, 8, "Total"], columns=seg_to.keys())
 
     # Make Column names = years
-    seg_from_df.columns = [k[-8:-4] for k in seg_from.keys()]
+    seg_from_df.columns = [k.split("_")[1] for k in seg_from.keys()]
 
     # Make Column names = years
-    seg_to_df.columns = [k[-8:-4] for k in seg_to.keys()]
+    seg_to_df.columns = [k.split("_")[1] for k in seg_to.keys()]
 
     # Get the Origin Class percentages
     seg_from_df_perc = seg_from_df.iloc[seg_from_df.index != "Total"].div(seg_from_df.iloc[seg_from_df.index
