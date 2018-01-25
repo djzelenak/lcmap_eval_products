@@ -57,3 +57,5 @@ docs/_build/
 # Notebooks/*.pickle
 # Notebooks/Testing/
 Notebooks/
+
+*.pickle
