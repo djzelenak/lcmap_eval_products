@@ -89,11 +89,24 @@ def get_outlayers(inrasters, outfolder, name):
     years = []
 
     for r in range(len(inrasters)):
-        dirx, filex = os.path.split(inrasters[r])
 
-        fname, ext = os.path.splitext(filex)
+        base = os.path.splitext(os.path.basename(inrasters[r]))[0]
 
-        years.append(fname[-4:])
+        pieces = base.split("_")
+
+        for piece in pieces:
+
+            if len(piece) == 4:
+
+                try:
+                    int(piece)
+
+                    years.append(piece)
+
+                except ValueError:
+                    continue
+
+        # years.append(fname[-4:])
 
     outlist = ["{}{}{}{}to{}ct.tif".format(outfolder, os.sep, name, years[0], years[i]) for i in range(len(inrasters))]
 
@@ -126,7 +139,7 @@ def do_calc(in_files, out_r):
 
     # Create a copy of the first cover map to contain "holder" values
     # which will be used to compare future values to determine
-    # whether a change has occured.  Each element's value will be updated 
+    # whether a change has occurred.  Each element's value will be updated
     # each time that a valid class change occurs.
     holder = np.copy(srcdata0)
 
@@ -156,7 +169,7 @@ def do_calc(in_files, out_r):
             # the following year.
             holder[holder == 9] = tempdata[holder == 9]
 
-            # Do the same for any "missing data" class 0 instances
+            # Do the same for any "insufficient data" class 0 instances
             holder[holder == 0] = tempdata[holder == 0]
 
         # recode class 9 to previous non-9 class value (i.e. no change)
@@ -409,7 +422,7 @@ def main():
         i += 1
 
     if not os.path.exists(outputdir):
-        os.mkdir(outputdir)
+        os.makedirs(outputdir)
 
     if fromY is None: fromY = "1984"
 

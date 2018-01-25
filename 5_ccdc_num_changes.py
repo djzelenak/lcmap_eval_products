@@ -24,9 +24,6 @@ print(sys.version)
 t1 = datetime.datetime.now()
 print("\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
 
-# driver = gdal.GetDriverByName("GTiff")
-# driver.Register()
-
 gdal.AllRegister()
 gdal.UseExceptions()
 
@@ -45,7 +42,7 @@ def get_inlayers(infolder, y1, y2):
         rlist = the clipped list of change map raster files based on y1, y2
     """
 
-    templist = glob.glob("{a}{b}ChangeMap*.tif".format(a=infolder, b=os.sep))
+    templist = glob.glob("{a}{b}*ChangeMap*.tif".format(a=infolder, b=os.sep))
 
     templist.sort()
 
@@ -78,15 +75,30 @@ def get_outlayers(inrasters, outfolder):
     years = []
 
     for r in range(len(inrasters)):
-        dirx, filex = os.path.split(inrasters[r])
+        name = os.path.splitext(os.path.basename(inrasters[r]))[0]
 
-        name, ext = os.path.splitext(filex)
+        # Get the year value from the name string
+        pieces = name.split("_")
 
-        years.append(name[-4:])
+        for piece in pieces:
+
+            if len(piece) == 4:
+
+                try:
+
+                    int(piece)
+
+                    years.append(piece)
+
+                except ValueError:
+
+                    continue
+
+        # years.append(name[-4:])
 
     for i in range(len(inrasters)):
-        rlist.append("{a}{b}ccdc{c}to{d}ct.tif".format \
-                         (a=outfolder, b=os.sep, c=years[0], d=years[i]))
+
+        rlist.append("{a}{b}ccdc{c}to{d}ct.tif".format(a=outfolder, b=os.sep, c=years[0], d=years[i]))
 
     return rlist
 
@@ -267,7 +279,7 @@ def add_color(outdir, raster):
     name = os.path.splitext(namex)[0]
 
     if not os.path.exists(outdir + os.sep + "color"):
-        os.mkdir(outdir + os.sep + "color")
+        os.makedirs(outdir + os.sep + "color")
 
     outfile = outdir + os.sep + "color" + os.sep + namex
 
@@ -342,7 +354,6 @@ def usage():
     return None
 
 
-# %%
 def main():
     fromY, toY = None, None
 
@@ -388,12 +399,14 @@ def main():
 
         i += 1
 
-    if not os.path.exists(outputdir): os.mkdir(outputdir)
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
 
     # create a new subdirectory based on the "from" and "to" years to keep accumulated sets organized
     outputdir = outputdir + os.sep + "{a}_{b}".format(a=fromY, b=toY)
 
-    if not os.path.exists(outputdir): os.mkdir(outputdir)
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
 
     infiles = get_inlayers(inputdir, fromY, toY)
 
@@ -428,11 +441,9 @@ def main():
     return None
 
 
-# %%
 if __name__ == '__main__':
     main()
 
-# %%
 t2 = datetime.datetime.now()
 print("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
 
