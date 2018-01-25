@@ -142,7 +142,7 @@ def main_work(indir, outdir, shp, product, ovr='False'):
     HV_list = ["H03V01", "H03V02", "H03V03", "H04V01", "H04V02"]
 
     # List of years
-    years = [str(y) for y in range(1984, 2016)]
+    years = ['1992', '2000', '2001', '2006', '2011']
 
     for year in years:
 
@@ -150,13 +150,18 @@ def main_work(indir, outdir, shp, product, ovr='False'):
 
         for hv in HV_list:
 
-            temp = glob.glob("{indir}{sep}{hv}{sep}{prod}*{y}*.tif".format(indir=indir,
-                                                                                          sep=os.sep,
-                                                                                          hv=hv,
-                                                                                          prod=product,
-                                                                                          y=year))[0]
+            try:
+                temp = glob.glob("{indir}{sep}{hv}{sep}{prod}*{y}*.tif".format(indir=indir,
+                                                                                              sep=os.sep,
+                                                                                              hv=hv,
+                                                                                              prod=product,
+                                                                                                  y=year))[0]
+                infiles.append(temp)
 
-            infiles.append(temp)
+            except IndexError:
+                continue
+
+        print(infiles)
 
         if not os.path.exists(outdir + os.sep + product):
             os.makedirs(outdir + os.sep + product)
