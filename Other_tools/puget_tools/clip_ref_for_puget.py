@@ -150,14 +150,11 @@ def main_work(indir, outdir, shp, product, ovr='False'):
 
         for hv in HV_list:
 
-            version = 'Recode'
-
-            temp = glob.glob("{indir}{sep}{version}{sep}{hv}{sep}{prod}*{y}*.tif".format(indir=indir,
+            temp = glob.glob("{indir}{sep}{hv}{sep}{prod}*{y}*.tif".format(indir=indir,
                                                                                           sep=os.sep,
                                                                                           hv=hv,
                                                                                           prod=product,
-                                                                                          y=year,
-                                                                                          version=version))
+                                                                                          y=year))[0]
 
             infiles.append(temp)
 
