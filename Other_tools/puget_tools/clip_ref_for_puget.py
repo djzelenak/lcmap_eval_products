@@ -131,8 +131,8 @@ def main_work(indir, outdir, shp, product, ovr='False'):
     :param outdir:
     :return:
     """
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
+    if not os.path.exists(outdir + os.sep + product):
+        os.makedirs(outdir + os.sep + product)
 
     ovr = ast.literal_eval(ovr)
 
@@ -152,39 +152,37 @@ def main_work(indir, outdir, shp, product, ovr='False'):
 
             try:
                 temp = glob.glob("{indir}{sep}{hv}{sep}{prod}*{y}*.tif".format(indir=indir,
-                                                                                              sep=os.sep,
-                                                                                              hv=hv,
-                                                                                              prod=product,
-                                                                                                  y=year))[0]
+                                                                                sep=os.sep,
+                                                                                hv=hv,
+                                                                                prod=product,
+                                                                                y=year))[0]
                 infiles.append(temp)
 
             except IndexError:
                 continue
 
-        print(infiles)
+        if not len(infiles) == 0:
+            print(infiles)
 
-        if not os.path.exists(outdir + os.sep + product):
-            os.makedirs(outdir + os.sep + product)
+            outfile = "{outdir}{sep}{product}{sep}puget_{product}_{year}.tif".format(outdir=outdir, sep=os.sep, year=year,
+                                                                       product=product)
 
-        outfile = "{outdir}{sep}{product}{sep}puget_{product}_{year}.tif".format(outdir=outdir, sep=os.sep, year=year,
-                                                                   product=product)
+            file_exists = os.path.exists(outfile)
 
-        file_exists = os.path.exists(outfile)
+            if (file_exists and ovr) or not file_exists:
+                print("Generating file")
 
-        if (file_exists and ovr) or not file_exists:
-            print("Generating file")
+                try:
+                    os.remove(outfile)
+                except:
+                    pass
 
-            try:
-                os.remove(outfile)
-            except:
-                pass
+                clip_and_mosaic(infiles=infiles, outdir=outdir + os.sep + product, year=year, product=product, shp=shp)
 
-            clip_and_mosaic(infiles=infiles, outdir=outdir + os.sep + product, year=year, product=product, shp=shp)
+            elif file_exists and not ovr:
+                print("Not overwriting existing files")
 
-        elif file_exists and not ovr:
-            print("Not overwriting existing files")
-
-            continue
+                continue
 
     return None
 
