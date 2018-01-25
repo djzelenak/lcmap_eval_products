@@ -151,12 +151,28 @@ def main_work(indir, outdir, shp, product, ovr='False'):
         for hv in HV_list:
 
             try:
-                temp = glob.glob("{indir}{sep}{hv}{sep}{prod}*{y}*.tif".format(indir=indir,
-                                                                                sep=os.sep,
-                                                                                hv=hv,
-                                                                                prod=product,
-                                                                                y=year))[0]
-                infiles.append(temp)
+                temp = glob.glob(indir + os.sep + hv + os.sep + product + "*.tif")
+
+                for t in temp:
+                    if "_" in os.path.basename(t):
+
+                        pieces = os.path.basename(t).split("_")
+
+                        if pieces[1] == year:
+
+                            infiles.append(t)
+
+                # temp = glob.glob("{indir}{sep}{hv}{sep}{prod}*{y}*.tif".format(indir=indir,
+                #                                                                 sep=os.sep,
+                #                                                                 hv=hv,
+                #                                                                 prod=product,
+                #                                                                 y=year))[0]
+
+                    else:
+
+                        if year in t:
+
+                            infiles.append(t)
 
             except IndexError:
                 continue
