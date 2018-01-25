@@ -8,6 +8,7 @@ import argparse
 import osr
 import ogr
 import gdal
+import ast
 from collections import namedtuple
 
 BBox = namedtuple("BBox", ["left", "right", "top", "bottom"])
@@ -15,11 +16,11 @@ BBox = namedtuple("BBox", ["left", "right", "top", "bottom"])
 
 def get_time():
     """
-
+    Return the current time
     :return:
     """
-    # print(t1.strftime("%Y-%m-%d %H:%M:%S"))
     return(datetime.datetime.now())
+
 
 def get_raster_geoinfo(infile):
     """
@@ -86,6 +87,8 @@ def clip_and_mosaic(infiles, outdir, year, product, shp):
     :param shp
     :return:
     """
+
+
     shp_src = ogr.Open(shp)
 
     layer = shp_src.GetLayer(0)
@@ -120,7 +123,7 @@ def clip_and_mosaic(infiles, outdir, year, product, shp):
 
     return None
 
-def main_work(indir, outdir, shp):
+def main_work(indir, outdir, shp, ovr='False'):
     """
 
     :param indir:
@@ -130,14 +133,17 @@ def main_work(indir, outdir, shp):
     if not os.path.exists(outdir):
         os.makedirs(outdir)
 
+    ovr = ast.literal_eval(ovr)
+
     # List of ARD tiles
     # TODO Generate HV_list based on AOI envelope
-    HV_list = ['h03v01', 'h03v02', 'h03v03', 'h04v01', 'h04v02']
+    # HV_list = ['h03v01', 'h03v02', 'h03v03', 'h04v01', 'h04v02']
+    HV_list = ["H03V01", "H03V02", "H03V03", "H04V01", "H04V02"]
 
     # List of years
     years = [str(y) for y in range(1984, 2016)]
 
-    products = ['SegChange', 'CoverPrim']
+    products = ['ChangeMap', 'LastChange', 'ChangeMagMap', 'QAMap', 'SegLength']
 
     for product in products:
 
@@ -147,15 +153,42 @@ def main_work(indir, outdir, shp):
 
             for hv in HV_list:
 
-                temp = "{indir}{sep}{hv}{sep}maps{sep}{hv}_{prod}_{y}.tif".format(indir=indir,
-                                                                                  sep=os.sep,
-                                                                                  hv=hv,
-                                                                                  prod=product,
-                                                                                  y=year)
+                # temp = "{indir}{sep}{hv}{sep}maps{sep}{hv}_{prod}_{y}.tif".format(indir=indir,
+                #                                                                   sep=os.sep,
+                #                                                                   hv=hv,
+                #                                                                   prod=product,
+                #                                                                   y=year)
+
+                temp = "{indir}{sep}{hv}{sep}2017.06.20{sep}tif{sep}{prod}_{y}.tif".format(indir=indir,
+                                                                                   sep=os.sep,
+                                                                                   hv=hv,
+                                                                                   prod=product,
+                                                                                   y=year)
 
                 infiles.append(temp)
 
-            clip_and_mosaic(infiles, outdir, year, product, shp)
+            if not os.path.exists(outdir + os.sep + product):
+                os.makedirs(outdir + os.sep + product)
+
+            outfile = "{outdir}{sep}{product}{sep}puget_{year}_{product}.tif".format(outdir=outdir, sep=os.sep, year=year,
+                                                                       product=product)
+
+            file_exists = os.path.exists(outfile)
+
+            if (file_exists and ovr) or not file_exists:
+                print("Overwriting existing file")
+
+                try:
+                    os.remove(outfile)
+                except:
+                    pass
+
+                clip_and_mosaic(infiles=infiles, outdir=outdir + os.sep + product, year=year, product=product, shp=shp)
+
+            elif file_exists and not ovr:
+                print("Not overwriting existing files")
+
+                continue
 
     return None
 
@@ -175,6 +208,9 @@ def main():
 
     parser.add_argument("-shp", "--shapefile", dest="shp", type=str, required=True,
                         help="Full path and filename of AOI shapefile")
+
+    parser.add_argument("-ovr", dest="ovr", required=True, type=str, default='False',
+                        help="Specify whether or not to overwrite existing outputs")
 
     # TODO make more customizable
     # parser.add_argument("-maps", "--maps", dest="products", type=str, nargs="*", default="CoverPrim", required=True,

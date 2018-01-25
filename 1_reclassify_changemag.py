@@ -12,7 +12,12 @@ Last updated on Tue Apr 25, 2017
 
 """
 
-import os, sys, glob, datetime
+import datetime
+import glob
+import os
+import sys
+import argparse
+import ast
 import numpy as np
 
 try:
@@ -27,7 +32,7 @@ gdal.AllRegister()
 t1 = datetime.datetime.now()
 print (t1.strftime("\n%Y-%m-%d %H:%M:%S\n\n"))
 
-#%%
+
 def get_layers(infolder, pattern, y1, y2):
 
     """Generate a list of the input layers with full paths
@@ -46,19 +51,19 @@ def get_layers(infolder, pattern, y1, y2):
     templist = glob.glob("{a}{b}*{c}*.tif".format
                          ( a=infolder, b=os.sep, c=pattern))
 
-    if y1==None or y2==None:
+    # if y1==None or y2==None:
+    #
+    #     return templist
+    #
+    # else:
 
-        return templist
+    ylist = [y for y in range(int(y1), int(y2)+1)]
 
-    else:
+    rlist = [r for y in ylist for r in templist if str(y) in r]
 
-        ylist = [y for y in range(int(y1), int(y2)+1)]
+    return rlist
 
-        rlist = [r for y in ylist for r in templist if str(y) in r]
 
-        return rlist
-
-#%%
 def get_array(inrast):
 
     """Open the input raster and write it to a numpy array
@@ -85,7 +90,7 @@ def get_array(inrast):
 
     return outarray
 
-#%%
+
 def array_calc(inarray):
 
     """Bin the array values
@@ -135,7 +140,7 @@ def array_calc(inarray):
 
     return xarray
 
-#%%
+
 def get_outname(infile, outfolder, pat):
 
     """Gerenate the output directory and filename
@@ -146,10 +151,7 @@ def get_outname(infile, outfolder, pat):
     Returns:
         outfile = the full path to the output file
     """
-
-    # outfolder.replace("\\", "/")
-
-    outdir = "{a}{b}{c}_reclass".format( a=outfolder, b=os.sep, c=pat )
+    outdir = "{a}{b}{c}_reclass".format(a=outfolder, b=os.sep, c=pat)
 
     indir, filex = os.path.split(infile)
     
@@ -157,13 +159,14 @@ def get_outname(infile, outfolder, pat):
 
     outname = outname + "_reclass" + ext
 
-    if not os.path.exists( outdir ): os.makedirs( outdir )
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
     outfile = outdir + os.sep + outname
 
     return outfile
 
-#%%
+
 def write_raster(raster, srcarray, outfile):
 
     """Take the reclassified numpy array and write it back to a raster file
@@ -224,89 +227,80 @@ def write_raster(raster, srcarray, outfile):
 
     return None
 
-#%%
-def usage():
-    
-    print("\n\t[-i Full path to the input File Directory]\n" \
-    "\t[-o Full path to the output location]\n" \
-    "\t[-from The start year]\n" \
-    "\t[-to The end year]\n" \
-    "\t[-help Display this message]\n\n")
 
-    print("\n\tExample: reclassify_changemag.py -i C:/.../CCDCMap -from " + \
-          "1984 -to 2015")
+def main_work(infolder, outfolder, fromyear=1984, toyear=2015, ovr='False'):
+    """
 
-    return None
-
-#%%
-def main():
-
-    fromyear, toyear = None, None
-    
-    argv = sys.argv
-
-    if len(argv) <= 1:
-        print ("\n***Missing required arguments***")
-        print ("Try -help\n")
-        sys.exit(0)
-
-    i = 1
-
-    while i < len(argv):
-        arg = argv[i]
-
-        if arg == "-i":
-            i = i + 1
-            infolder = argv[i]
-
-        elif arg == "-o":
-            i = i + 1
-            outfolder = argv[i]
-        
-        elif arg == "-from":
-            i = i + 1
-            fromyear = argv[i]
-            
-        elif arg == "-to":
-            i = i + 1
-            toyear = argv[i]
-
-        elif arg == "-help":
-            usage()
-            sys.exit(1)
-
-        i += 1
-    
+    :param infolder:
+    :param outfolder:
+    :param fromyear:
+    :param toyear:
+    :return:
+    """
     lookfor = "ChangeMagMap"
-    
+
+    ovr = ast.literal_eval(ovr)
+
     rasters = get_layers(infolder, lookfor, fromyear, toyear)
 
     for r in rasters:
 
-        array = get_array(r)
-
-        array = array_calc(array)
-
-        #pprint.pprint(array)
-
         output = get_outname(r, outfolder, lookfor)
 
-        if not os.path.exists(output):
-            
-            print ("Processing image ", r)
+        file_exists = os.path.exists(output)
+
+        if (file_exists and ovr) or not file_exists:
+
+            try:
+                os.remove(output)
+            except:
+                pass
+
+            print("Processing image ", r)
+
+            array = get_array(r)
+
+            array = array_calc(array)
 
             write_raster(r, array, output)
 
+        elif file_exists and not ovr:
+
+            continue
+
         array = None
 
-#%%
+
+def main():
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-i', dest='infolder', type=str, required=True,
+                        help='The full path to the Change Magnitude products')
+
+    parser.add_argument('-o', dest='outfolder', type=str, required=True,
+                        help='The full path to the output folder')
+
+    parser.add_argument('-from', dest='fromyear', type=int, required=False, default=1984,
+                        help='Optionally specify the start year')
+
+    parser.add_argument('-to', dest='toyear', type=int, required=False, default=2015,
+                        help="Optionally specify the end year")
+
+    parser.add_argument('-ovr', dest='ovr', type=str, required=False, default='False',
+                        help="Specify whether or not to overwrite existing products")
+
+    args = parser.parse_args()
+
+    main_work(**vars(args))
+
+
 if __name__ == "__main__":
 
     main()
 
-#%%
+
 t2 = datetime.datetime.now()
 print (t2.strftime("\n\n%Y-%m-%d %H:%M:%S"))
 tt = t2 - t1
 print ("\nProcessing time: " + str(tt))
-

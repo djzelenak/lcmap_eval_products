@@ -28,7 +28,7 @@ def message(p):
     return None
 
 
-def main_work(tif, outdir, shp):
+def main_work(tif, outdir, shp, ovr):
     """
 
     :param tif:
@@ -44,7 +44,8 @@ def main_work(tif, outdir, shp):
         'python', 'Other_tools{sep}puget_tools{sep}clip_and_mosaic.py'.format(sep=os.sep),
         '-i', tif,
         '-o', outdir,
-        '-shp', shp
+        '-shp', shp,
+        '-ovr', ovr
     ])
 
     to_color = ['ChangeMap', 'QAMap']
@@ -57,7 +58,8 @@ def main_work(tif, outdir, shp):
             'python', '1_apply_colormap.py',
             '-i', '{}{}{}'.format(outdir, os.sep, item),
             '-o', '{}{}{}'.format(outdir, os.sep, item),
-            '-n', item
+            '-n', item,
+            '-ovr', ovr
         ])
 
     to_reclass = {'ChangeMagMap': '1_reclassify_changemag.py', 'LastChange': '1_reclassify_lastchange.py',
@@ -70,16 +72,18 @@ def main_work(tif, outdir, shp):
         subprocess.call([
             'python', to_reclass[key],
             '-i', '{}{}{}'.format(outdir, os.sep, key),
-            '-o', '{}{}{}'.format(outdir, os.sep, key)
+            '-o', '{}{}{}'.format(outdir, os.sep, key),
+            '-ovr', ovr
         ])
 
         reclass_out = '{out}{sep}{k}{sep}{k}_reclass'.format(out=outdir, sep=os.sep, k=key)
 
         subprocess.call([
-            'python', '1_apply.colormap.py',
+            'python', '1_apply_colormap.py',
             '-i', reclass_out,
             '-o', '{}{}{}'.format(outdir, os.sep, key),
-            '-n', key
+            '-n', key,
+            '-ovr', ovr
         ])
 
 def main():
@@ -98,6 +102,9 @@ def main():
     parser.add_argument('-shp', dest='shp', required=True, type=str,
                         help='The full path including filename of the AOI shapefile')
 
+    parser.add_argument('-ovr', dest='ovr', required=True, default='False', type=str,
+                        help='Specify whether or not to overwrite previously existing outputs')
+
     args = parser.parse_args()
 
     main_work(**vars(args))
@@ -110,4 +117,4 @@ if __name__ == '__main__':
 
     t2 = get_time()
 
-    print("\nProcessing time: {}".format(str(t2 - t1)))
+    print("\nTotal processing time: {}".format(str(t2 - t1)))

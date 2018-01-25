@@ -15,6 +15,7 @@ import datetime
 import glob
 import subprocess
 import argparse
+import ast
 
 from osgeo import gdal
 
@@ -187,7 +188,7 @@ def build_overviews(outraster):
 
     return None
 
-def main_work(indir, name, outdir):
+def main_work(indir, name, outdir, ovr):
     """
 
     :param indir:
@@ -196,6 +197,8 @@ def main_work(indir, name, outdir):
     :return:
     """
     outputdir = "%s%s%s_color" % (outdir, os.sep, name)
+
+    ovr = ast.literal_eval(ovr)
 
     filelist = sorted(glob.glob("{}{}*{}*.tif".format(indir, os.sep, name)))
 
@@ -230,13 +233,23 @@ def main_work(indir, name, outdir):
 
         outfile = outputdir + os.sep + os.path.basename(r)
 
-        if os.path.exists(outfile):
-            os.remove(outfile)
+        file_exists = os.path.exists(outfile)
 
-        print("Processing file ", r, "\n")
+        if (file_exists and ovr) or not file_exists:
 
-        # Call the primary function
-        all_calc(r, outputdir, outfile, clrtable, dtype)
+            try:
+                os.remove(outfile)
+            except:
+                pass
+
+            print("Processing file ", r, "\n")
+
+            # Call the primary function
+            all_calc(r, outputdir, outfile, clrtable, dtype)
+
+        elif file_exists and not ovr:
+
+            continue
 
     return None
 
@@ -256,6 +269,9 @@ def main():
 
     parser.add_argument('-o', '--output', dest='outdir', type=str, required=True,
                         help='The full path to the output directory')
+
+    parser.add_argument('-ovr', dest='ovr', type=str, required=False, default='False',
+                        help="Specify whether or not to overwrite the file if it already exists")
 
     args = parser.parse_args()
 
