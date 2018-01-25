@@ -159,11 +159,26 @@ def main_work(indir, outdir, shp, ovr='False'):
                 #                                                                   prod=product,
                 #                                                                   y=year)
 
-                temp = "{indir}{sep}{hv}{sep}2017.06.20{sep}tif{sep}{prod}_{y}.tif".format(indir=indir,
+                version = '2017.06.20-b'
+
+                temp = "{indir}{sep}{hv}{sep}{version}{sep}tif{sep}{prod}_{y}.tif".format(indir=indir,
                                                                                    sep=os.sep,
                                                                                    hv=hv,
                                                                                    prod=product,
-                                                                                   y=year)
+                                                                                   y=year,
+                                                                                version=version)
+                if not os.path.exists(temp):
+                    version = version.split('-')[0]
+
+                    temp = "{indir}{sep}{hv}{sep}{version}{sep}tif{sep}{prod}_{y}.tif".format(indir=indir,
+                                                                                              sep=os.sep,
+                                                                                              hv=hv,
+                                                                                              prod=product,
+                                                                                              y=year,
+                                                                                              version=version)
+
+
+
 
                 infiles.append(temp)
 
@@ -176,7 +191,7 @@ def main_work(indir, outdir, shp, ovr='False'):
             file_exists = os.path.exists(outfile)
 
             if (file_exists and ovr) or not file_exists:
-                print("Overwriting existing file")
+                print("Generating file")
 
                 try:
                     os.remove(outfile)
