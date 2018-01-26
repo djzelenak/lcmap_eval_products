@@ -123,24 +123,13 @@ def clip_and_mosaic(infiles, outdir, year, product, shp):
 
     return None
 
-def main_work(indir, outdir, shp, ovr='False'):
+
+def get_change(HV_list, indir, outdir, ovr, shp):
     """
 
-    :param indir:
-    :param outdir:
     :return:
     """
-    if not os.path.exists(outdir):
-        os.makedirs(outdir)
 
-    ovr = ast.literal_eval(ovr)
-
-    # List of ARD tiles
-    # TODO Generate HV_list based on AOI envelope
-    # HV_list = ['h03v01', 'h03v02', 'h03v03', 'h04v01', 'h04v02']
-    HV_list = ["H03V01", "H03V02", "H03V03", "H04V01", "H04V02"]
-
-    # List of years
     years = [str(y) for y in range(1984, 2016)]
 
     products = ['ChangeMap', 'LastChange', 'ChangeMagMap', 'QAMap', 'SegLength']
@@ -152,12 +141,6 @@ def main_work(indir, outdir, shp, ovr='False'):
             infiles = []
 
             for hv in HV_list:
-
-                # temp = "{indir}{sep}{hv}{sep}maps{sep}{hv}_{prod}_{y}.tif".format(indir=indir,
-                #                                                                   sep=os.sep,
-                #                                                                   hv=hv,
-                #                                                                   prod=product,
-                #                                                                   y=year)
 
                 version = '2017.06.20-b'
 
@@ -207,6 +190,84 @@ def main_work(indir, outdir, shp, ovr='False'):
 
     return None
 
+def get_cover(HV_list, indir, outdir, ovr, shp):
+    """
+
+    :return:
+    """
+    years = [str(y) for y in range(1984, 2016)]
+
+    products = ['CoverConfPrim', 'CoverConfSec', 'CoverPrim', 'CoverSec', 'SegChange']
+
+    for product in products:
+
+        for year in years:
+
+            infiles = []
+
+            for hv in HV_list:
+
+                temp = "{indir}{sep}{hv}{sep}maps{sep}{hv}_{prod}_{y}.tif".format(indir=indir,
+                                                                                  sep=os.sep,
+                                                                                  hv=hv,
+                                                                                  prod=product,
+                                                                                  y=year)
+
+                infiles.append(temp)
+
+            if not os.path.exists(outdir + os.sep + product):
+                os.makedirs(outdir + os.sep + product)
+
+            outfile = "{outdir}{sep}{product}{sep}puget_{year}_{product}.tif".format(outdir=outdir, sep=os.sep,
+                                                                                     year=year,
+                                                                                     product=product)
+
+            file_exists = os.path.exists(outfile)
+
+            if (file_exists and ovr) or not file_exists:
+                print("Generating file")
+
+                try:
+                    os.remove(outfile)
+                except:
+                    pass
+
+                clip_and_mosaic(infiles=infiles, outdir=outdir + os.sep + product, year=year, product=product, shp=shp)
+
+            elif file_exists and not ovr:
+                print("Not overwriting existing files")
+
+                continue
+    return None
+
+
+def main_work(indir, outdir, shp, flag, ovr='False'):
+    """
+
+    :param indir:
+    :param outdir:
+    :return:
+    """
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    ovr = ast.literal_eval(ovr)
+
+    # List of ARD tiles
+    # TODO Generate HV_list based on AOI envelope
+    # HV_list = ['h03v01', 'h03v02', 'h03v03', 'h04v01', 'h04v02']
+    HV_list = ["H03V01", "H03V02", "H03V03", "H04V01", "H04V02"]
+
+    if flag == "change":
+        get_change(HV_list, indir, outdir, ovr, shp)
+
+        return None
+
+    if flag == "cover":
+        get_cover(HV_list, indir, outdir, ovr, shp)
+
+        return None
+
 
 def main():
     """
@@ -217,6 +278,10 @@ def main():
 
     parser.add_argument("-i", "--input", dest="indir", type=str, required=True,
                         help="Full path to the directory containing the time-series mapped products")
+
+    parser.add_argument("-f", "--flag", dest="flag", type=str, required=True,
+                        choices=["change", "cover"],
+                        help="Flag for either change or cover products")
 
     parser.add_argument("-o", "--output", dest="outdir", type=str, required=True,
                         help="Full path to the output location")

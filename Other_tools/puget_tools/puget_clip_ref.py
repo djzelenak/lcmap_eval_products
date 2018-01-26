@@ -118,6 +118,7 @@ def clip_and_mosaic(infiles, outdir, year, product, shp):
         "-cutline", shp,
         "-tr", str(abs(gt[1])), str(abs(gt[5])),
         "-te", str(mainbox.left), str(mainbox.bottom), str(mainbox.right), str(mainbox.top),
+        "-dstnodata", "0",
         [" %s " % f for f in infiles],
         "{outdir}{sep}puget_{year}_{product}.tif".format(outdir=outdir, sep=os.sep, year=year, product=product)
     ])

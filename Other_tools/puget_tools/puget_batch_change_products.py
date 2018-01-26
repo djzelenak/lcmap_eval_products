@@ -28,27 +28,40 @@ def message(p):
     return None
 
 
-def main_work(tif, outdir, shp, ovr):
+def main_work(change, cover, outdir, shp, ovr):
     """
 
-    :param tif:
+    :param change:
+    :param cover:
     :param outdir:
     :param shp:
+    :param ovr:
     :return:
     """
-    processes = ['Clip and mosaic', 'ChangeMap and QAMap color mapping', 'Reclassification and color mapping']
+    processes = ['Clip and mosaic', 'ChangeMap and QAMap color mapping', 'Reclassification and color mapping',
+                 'Cover products']
 
     message(processes[0])
 
     subprocess.call([
-        'python', 'Other_tools{sep}puget_tools{sep}clip_and_mosaic.py'.format(sep=os.sep),
-        '-i', tif,
+        'python', 'Other_tools{sep}puget_tools{sep}puget_clip_mosaic_ccd.py'.format(sep=os.sep),
+        '-i', change,
         '-o', outdir,
         '-shp', shp,
-        '-ovr', ovr
+        '-ovr', ovr,
+        '-f', 'change'
     ])
 
-    to_color = ['ChangeMap', 'QAMap']
+    subprocess.call([
+        'python', 'Other_tools{sep}puget_tools{sep}puget_clip_mosaic_ccd.py'.format(sep=os.sep),
+        '-i', cover,
+        '-o', outdir,
+        '-shp', shp,
+        '-ovr', ovr,
+        '-f', 'cover'
+    ])
+
+    to_color = ['ChangeMap', 'QAMap', 'CoverPrim', 'CoverSec']
 
     message(processes[1])
 
@@ -86,6 +99,8 @@ def main_work(tif, outdir, shp, ovr):
             '-ovr', ovr
         ])
 
+
+
 def main():
     """
 
@@ -93,8 +108,13 @@ def main():
     """
     parser = argparse.ArgumentParser(description=__doc__)
 
-    parser.add_argument('-tif', dest='tif', required=True, type=str,
-                        help='The full path to the root directory of HV subfolders containing the raw mapped products')
+    parser.add_argument('-change', dest='change', required=True, type=str,
+                        help='The full path to the root directory of HV subfolders '
+                             'containing the mapped change products')
+
+    parser.add_argument('-cover', dest='cover', required=False, type=str,
+                        help='The full path to the root directory of HV subfolders '
+                             'containing the mapped cover products')
 
     parser.add_argument('-o', dest='outdir', required=True, type=str,
                         help='The full path to the root output directory')
