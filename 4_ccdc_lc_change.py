@@ -6,27 +6,25 @@ Last Updated: 8/7/2017
 Usage: Calculate the from-to class-to-class comparison between each year at a
 user-specified interval and also between user-specified end-years
 """
-import os, sys, datetime, glob
-
+import datetime
+import glob
+import os
+import sys
+import argparse
 import numpy as np
+import gdal
+import re
 
-try:
-    from osgeo import gdal
-    #from osgeo.gdalconst import *
-except ImportError:
-    import gdal
 
-print(sys.version)
-
-t1 = datetime.datetime.now()
-print("\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
-
-gdal.AllRegister()
-gdal.UseExceptions()
+def get_time():
+    """
+    Return the current time
+    :return:
+    """
+    return datetime.datetime.now()
 
 
 def get_inlayers(infolder, name, y1, y2, inty):
-
     """Generate a list of the input change map layers with full paths
 
     Args:
@@ -40,27 +38,27 @@ def get_inlayers(infolder, name, y1, y2, inty):
         templist = the complete list of change map raster files
         - or -
         flist = the clipped list of change map raster files based on y1, y2
+        ylist = the list of years present
     """
 
-    templist = glob.glob("{}{}*{}*.tif".format(infolder, os.sep, name ))
+    templist = glob.glob("{}{}*{}*.tif".format(infolder, os.sep, name))
 
     templist.sort()
 
-    if y1==None or y2==None:
+    if y1 == None or y2 == None:
 
         return templist
 
     else:
 
-        ylist = [y for y in range(int(y1), int(y2)+1, int(inty))]
+        ylist = [y for y in range(int(y1), int(y2) + 1, int(inty))]
 
         flist = [r for y in ylist for r in templist if str(y) in r]
-        
-        return flist
+
+        return flist, ylist
 
 
 def get_outlayers(inrasters, outfolder):
-
     """Generate a list of output rasters containing full paths
 
     Args:
@@ -71,24 +69,15 @@ def get_outlayers(inrasters, outfolder):
         outlist = list of output rasters to be created
     """
 
-    years = []
+    years = [re.search(r'\d+', os.path.basename(r)).group() for r in inrasters]
 
-    for r in range(len(inrasters)):
-
-        dirx, filex = os.path.split(inrasters[r])
-
-        fname, ext = os.path.splitext(filex)
-
-        years.append(fname[-4:])
-
-    outlist = ["{}{}ccdc{}to{}cl.tif".format(outfolder, os.sep, years[i-1], years[i])\
+    outlist = ["{}{}ccdc{}to{}lcc.tif".format(outfolder, os.sep, years[i - 1], years[i]) \
                for i in range(1, len(inrasters))]
-    
+
     return outlist, years
 
 
 def do_calc(in_files, out_files):
-
     """Generate the output layers containing the from/to class comparisons
 
     Args:
@@ -100,148 +89,87 @@ def do_calc(in_files, out_files):
     """
 
     driver = gdal.GetDriverByName("GTiff")
-    
+
     src0 = gdal.Open(in_files[0])
-    
+
     rows = src0.RasterYSize
     cols = src0.RasterXSize
-    
+
     srcdata0 = src0.GetRasterBand(1).ReadAsArray()
-    
+
     from_to = np.zeros_like(srcdata0, dtype=np.int8)
-        
+
     for index, infile in enumerate(in_files):
-        
+
         if index < len(in_files) - 1:
 
             if not os.path.exists(out_files[index]):
-            
-                print("processing input files {} and {}".format(os.path.basename(infile), 
-                      os.path.basename(in_files[index+1])))
+
+                print("processing input files {} and {}".format(os.path.basename(infile),
+                                                                os.path.basename(in_files[index + 1])))
 
                 print("\tgenerating output file {}".format(os.path.basename(out_files[index])))
-                
+
                 src1 = gdal.Open(infile, gdal.GA_ReadOnly)
-                
+
                 src1data = src1.GetRasterBand(1).ReadAsArray()
-                
+
                 src2 = gdal.Open(in_files[index + 1], gdal.GA_ReadOnly)
-                
+
                 src2data = src2.GetRasterBand(1).ReadAsArray()
-                
+
                 from_to = (src1data * 10) + src2data
-    
+
                 outfile = driver.Create(out_files[index], cols, rows, 1, gdal.GDT_Byte)
-            
+
                 if outfile is None:
-            
-                    print ("\nCould not create image file {a}".format
-                           ( a=os.path.basename(out_files[index]) ))
-            
+                    print("\nCould not create image file {a}".format
+                          (a=os.path.basename(out_files[index])))
+
                     sys.exit(1)
-            
+
                 outband = outfile.GetRasterBand(1)
                 outband.WriteArray(from_to, 0, 0)
-            
+
                 outband.FlushCache()
                 # outband.SetNoDataValue(255)
-            
-                outfile.SetGeoTransform( src0.GetGeoTransform() )
-                outfile.SetProjection( src0.GetProjection() )
-                
+
+                outfile.SetGeoTransform(src0.GetGeoTransform())
+                outfile.SetProjection(src0.GetProjection())
+
             # reset this array to all zeros, possibly not necessary
             from_to = from_to * 0
-            
+
             src1, src2, src1data, src2data, outfile = None, None, None, None, None
 
     return None
 
 
-def usage():
+def main_work(inputdir, outputdir, name, y1, y2, interval=None):
+    """
 
-    print("\t[-i Full path to the directory where annual CCDC "
-              "cover map layers are saved]\n"
-     "\t[-from The start year]\n"
-     "\t[-to The end year]\n"
-     "\t[-int the year interval]\n"
-     "\t[-name the cover map product name]\n"
-     "\t**CoverPrim or CoverSec are valid names**\n"
-     "\t[-o Full path to the output folder]\n"
-     "\n\t*Output raster will be saved in the same format "
-     "as input raster (GTiff).\n\n"
-
-     "\tExample: 4_ccdc_lc_change.py -i /.../CoverMaps -from 1984 -to 2015"
-     " int 1 -o /.../OutputFolder -name CoverPrim")
-
-    return None
-
-
-def main():
-
-    fromY, toY = None, None
-
-    argv = sys.argv
-
-    if len(argv) < 3:
-
-        print("\n\tMissing one or more arguments:\n ")
-
-        usage()
-
-        sys.exit(1)
-
-    # Parse command line arguments.
-    i = 1
-    while i < len(argv):
-
-        arg = argv[i]
-
-        if arg == '-i':
-            i           = i + 1
-            inputdir        = argv[i]
-
-        elif arg == '-from':
-            i           = i + 1
-            fromY      = argv[i]
-
-        elif arg == '-to':
-            i           = i + 1
-            toY      = argv[i]
-
-        elif arg == '-o':
-            i           = i + 1
-            outputdir      = argv[i]
-
-        elif arg == '-int':
-            i = i + 1
-            inty = argv[i]
-        
-        elif arg == '-name':
-            i = i + 1
-            name = argv[i]
-
-        elif arg == '-help':
-            usage()
-            sys.exit(1)
-
-        elif arg[:1] == ':':
-            print('Unrecognized command option: %s' % arg)
-            usage()
-            sys.exit(1)
-
-        i += 1
-
+    :param inputdir:
+    :param outputdir:
+    :param name:
+    :param y1:
+    :param y2:
+    :param interval:
+    :return:
+    """
     if not os.path.exists(outputdir):
-
         os.mkdir(outputdir)
 
     # create a new subdirectory based on the "from" and "to" years
     # to keep the output from/to sets organized
-    outputdir = outputdir + os.sep + "{a}_{b}".format(a=fromY, b=toY)
+    outputdir = outputdir + os.sep + "{a}_{b}".format(a=y1, b=y2)
 
-    if not os.path.exists(outputdir): os.mkdir(outputdir)
-    
-    infiles = get_inlayers(inputdir, name, fromY, toY, inty)
+    if not os.path.exists(outputdir):
+        os.makedirs(outputdir)
+
+    if interval is None:
+        interval = int(y2) - int(y1)
+
+    infiles = get_inlayers(inputdir, name, y1, y2, interval)
 
     outfiles, years = get_outlayers(infiles, outputdir)
 
@@ -250,13 +178,39 @@ def main():
     return None
 
 
+def main():
+
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-i', dest='inputdir', type=str, required=True,
+                        help='The full path to the input directory containing annual land cover rasters')
+
+    parser.add_argument('-o', dest='outputdir', type=str, required=True,
+                        help='The full path to the output directory')
+
+    parser.add_argument('-n', '--name', dest='name', type=str, required=True, choices=['CoverPrim', 'CoverSec'],
+                        help='Specify either primary or seconday land cover')
+
+    parser.add_argument('-y1', dest='y1', type=str, required=True,
+                        help='Specify year 1 of the land cover change')
+
+    parser.add_argument('-y2', dest='y2', type=str, required=True,
+                        help='Specify year 2 of the land cover change')
+
+    parser.add_argument('-int', dest='interval', type=int, required=False,
+                        help='Specify the year interval between years 1 and 2.  The default will be year 2 - year 1.')
+
+    args = parser.parse_args()
+
+    main_work(**vars(args))
+
+
 if __name__ == '__main__':
+
+    t1 = get_time()
 
     main()
 
+    t2 = get_time()
 
-t2 = datetime.datetime.now()
-print("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
-
-tt = t2 - t1
-print("Processing time: " + str(tt),"\n")
+    print("\nProcessing time: %s" % (str(t2 - t1)))

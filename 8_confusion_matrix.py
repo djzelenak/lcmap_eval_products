@@ -18,11 +18,10 @@ import sys
 import argparse
 import glob
 import pprint
-
+import string
+import re
 import numpy as np
-
 import pandas as pd
-
 from osgeo import gdal
 
 gdal.UseExceptions()
@@ -45,28 +44,31 @@ def get_file(path, year):
 
     filelist.sort()
 
-    # All files in path containing year string
-    templist = [item for item in filelist if year in os.path.basename(item)]
+    target_file = None
 
-    if len(templist) == 0:
+    # # All files in path containing year string
+    # templist = [item for item in filelist if year in os.path.basename(item)]
+
+    for f in filelist:
+
+        if re.search(r'\d+', os.path.basename(f)).group() == year:
+
+            target_file = f
+
+            break
+
+    if target_file is not None:
+
+        return target_file
+
+    else:
+
         print("\nCould not locate a file for year {} in the given path {}\n".format(year, path))
-
-        print("Available files in path are:\n")
-
-        pprint.pprint(filelist)
 
         sys.exit(1)
 
-    elif len(templist) == 1:
-        return templist[0]
 
-    else:
-        # Because NLCD files have 2 years in their filenames
-
-        return templist[-1]
-
-
-def read_data(refdir, preddir, y):
+def read_data(refdir, preddir, y, mask=None):
     """
 
     :param refdir: <str> Full path to the directory containing the reference land cover
@@ -87,6 +89,10 @@ def read_data(refdir, preddir, y):
 
     preddata = gdal.Open(predfile, gdal.GA_ReadOnly).ReadAsArray()
 
+    preddata_m = np.zeros_like(preddata)
+
+    preddata_m[refdata != 0] = preddata[refdata != 0]
+
     # Obtain unique class values from the reference data array
     ref = np.unique(refdata)
 
@@ -103,18 +109,39 @@ def read_data(refdir, preddir, y):
 
     ref, ccdc = None, None
 
-    return refdata, preddata, classes, reffile, predfile
+    if mask is None:
+
+        return refdata, preddata_m, classes, reffile, predfile
+
+    else:
+        mask_data = gdal.Open(mask, gdal.GA_ReadOnly).ReadAsArray()
+
+        try:
+            return refdata[mask_data == 1], preddata_m[mask_data == 1], classes, reffile, predfile
+
+        except IndexError:
+            print("The mask is not compatible with the size of the input data")
+            sys.exit(1)
 
 
-def compute_confusion_matrix(truth, predicted, classes):
+def compute_confusion_matrix(reference, classified, classes):
+    """
+    Generate a confusion matrix that shows the classification accuracy.
+    Columns = Reference Data
+    Rows = Classification Results
+    :param reference:
+    :param classified:
+    :param classes:
+    :return:
+    """
     total = float(len(classes) ** 2)
 
     # create boolean arrays of all zeros
-    TP = np.zeros(truth.shape, np.bool)
+    TP = np.zeros(reference.shape, np.bool)
 
-    FP = np.zeros(truth.shape, np.bool)
+    FP = np.zeros(reference.shape, np.bool)
 
-    FN = np.zeros(truth.shape, np.bool)
+    FN = np.zeros(reference.shape, np.bool)
 
     # create the confusion matrix, for now containing all zeros
     confusion_matrix = np.zeros((len(classes), len(classes)), np.int32)
@@ -133,25 +160,25 @@ def compute_confusion_matrix(truth, predicted, classes):
 
                 # print('column: ', c, '\trow: ', r)
 
-                np.logical_and(truth == r, predicted == c, TP)
+                np.logical_and(reference == r, classified == c, TP)
 
-                confusion_matrix[classes.index(r), classes.index(c)] = np.sum(TP)
+                confusion_matrix[classes.index(c), classes.index(r)] = np.sum(TP)
 
             elif classes.index(r) > classes.index(c):
 
                 # print('column: ', c, '\trow: ', r)
 
-                np.logical_and(truth == r, predicted == c, FP)
+                np.logical_and(reference == r, classified == c, FP)
 
-                confusion_matrix[classes.index(r), classes.index(c)] = np.sum(FP)
+                confusion_matrix[classes.index(c), classes.index(r)] = np.sum(FP)
 
             elif classes.index(r) < classes.index(c):
 
                 # print('column: ', c, '\trow: ', r)
 
-                np.logical_and(truth == r, predicted == c, FN)
+                np.logical_and(reference == r, classified == c, FN)
 
-                confusion_matrix[classes.index(r), classes.index(c)] = np.sum(FN)
+                confusion_matrix[classes.index(c), classes.index(r)] = np.sum(FN)
 
             # show the percent complete
             sys.stdout.write("\r%s%% Done " % str(current)[:5])
@@ -289,24 +316,40 @@ def array_to_dataframe(matrix):
     # Dataframe with empty rows and columns removed
     df = pd.DataFrame(cnf_mat2[1:, 1:], index=cnf_mat2[1:, 0], columns=cnf_mat2[0, 1:])
 
+    # df = pd.DataFrame(matrix[1:, 1:], index=matrix[1:, 0], columns=matrix[0, 1:])
+
+    ccdc_to_name = {0: "Insufficient Data", 1: "Developed", 2: "Agriculture", 3: "Grassland", 4: "Tree Cover",
+                    5: "Water", 6: "Wetland", 7: "Ice/Snow", 8: "Barren", 9: "No Model-Fit", 99999999: "Total"}
+
+    ref_to_name = ccdc_to_name.copy()
+    ref_to_name[0] = "No Data"
+    ref_to_name[9] = "Disturbed"
+    ref_to_name[81] = "Pasture/Hay"
+
     # Find and replace 99999999 with "Total"
     try:
 
         # Find in dataframe index
         ind_list = df.index.tolist()
 
-        idx = ind_list.index(99999999)
+        for ind, item in enumerate(ind_list):
 
-        ind_list[idx] = "Total"
+            try:
+                ind_list[ind] = ccdc_to_name[item]
+            except KeyError:
+                continue
 
         df.index = ind_list
 
         # Find in dataframe columns
         col_list = df.columns.tolist()
 
-        idx = col_list.index(99999999)
+        for ind, item in enumerate(col_list):
 
-        col_list[idx] = "Total"
+            try:
+                col_list[ind] = ref_to_name[item]
+            except KeyError:
+                continue
 
         df.columns = col_list
 
@@ -316,13 +359,100 @@ def array_to_dataframe(matrix):
     return df
 
 
-def write_to_excel(loc, df, basename, y):
+def write_to_excel(loc, df, basename, y, startrow=3, startcol=2):
+    """
+
+    :param loc:
+    :param df:
+    :param basename:
+    :param y:
+    :return:
+    """
     # Create a Pandas Excel writer using XlsxWriter as the engine
     writer = pd.ExcelWriter(loc + os.sep + "{name}.xlsx".format(name=basename),
                             engine="xlsxwriter")
 
+    workbook = writer.book
+
+    worksheet = workbook.add_worksheet(y)
+
+    writer.sheets[y] = worksheet
+
+    format_title = workbook.add_format({"bold": True, "font_size": 16})
+    format_subtitle = workbook.add_format({"bold": True, "font_size": 12})
+    format_labels = workbook.add_format({"bold": True, "text_wrap": True, "valign": "top", "font_size": 8})
+    format_diag = workbook.add_format({"bold": True, "bg_color": "#C0C0C0", "border_color": "#000000"})
+
     # Convert the dataframe to an XLsxWriter Excel object
-    df.to_excel(writer, sheet_name="{year}".format(year=y))
+    df.to_excel(writer, sheet_name="{year}".format(year=y),
+                header=False, index=False,
+                startrow=startrow, startcol=startcol)
+
+    # Use the output excel filename to construct the title displayed on the worksheet
+    name_pieces = basename.split("_")
+
+    title = ""
+    subtitle = name_pieces[0].upper()
+
+    for piece in name_pieces:
+        if not "cnf" in piece:
+            title = title + piece.upper() + " "
+
+    worksheet.write(0, 1, title, format_title)
+
+    for col_num, name in enumerate(df.columns.values):
+        worksheet.write(2, col_num + 2, name, format_labels)
+
+    for row_num, name in enumerate(df.index):
+        worksheet.write(row_num + 3, 1, name, format_labels)
+
+    worksheet.write(6, 0, "CCDC", format_subtitle)
+
+    worksheet.write(7, 0, "Classes", format_subtitle)
+
+    worksheet.write(1, 6, "{} Classes".format(subtitle), format_subtitle)
+
+    # Construct a data structure for looking up the dataframe location and value
+    # where reference name equals classified name
+    diag_lookup = dict()
+
+    for r, row in enumerate(df.iterrows()):
+
+        for c, col in enumerate(df.iteritems()):
+
+            if row[0] == col[0]:
+
+                diag_lookup[row[0]] = {"rowcol": (r, c), "value": df.loc[row[0], col[0]]}
+
+    def df_to_cell(rowcol, startrow, startcol):
+        """
+        Convert a dataframe (row, col) tuple to an excel cell identifier
+        :param rowcol:
+        :param startrow:
+        :param startcol:
+        :return:
+        """
+        letters = list(string.ascii_uppercase)
+
+        numbers = [n for n in range(1, len(letters) + 1)]
+
+        row = rowcol[0]
+        col = rowcol[1]
+
+        row_ = row + startrow
+        col_ = col + startcol
+
+        try:
+            cell = str(letters[col_] + str(numbers[row_]))
+            return cell
+        except IndexError:
+            raise
+
+    for key in diag_lookup.keys():
+
+        cell = df_to_cell(diag_lookup[key]["rowcol"], startrow, startcol)
+
+        worksheet.write(cell, diag_lookup[key]["value"], format_diag)
 
     # Close the Pandas Excel writer and output the Excel file
     writer.save()
@@ -330,41 +460,59 @@ def write_to_excel(loc, df, basename, y):
     return None
 
 
-def main():
-    parser = argparse.ArgumentParser()
+def main_work(ref, pred, output, year, mask=None):
+    """
 
-    parser.add_argument('-r', '-ref', '--reference', type=str, required=True,
-                        help='Full path to the reference file parent directory (Trends or NLCD)')
+    :param ref:
+    :param pred:
+    :param output:
+    :param year:
+    :param mask:
+    :return:
+    """
+    if not os.path.exists(output):
+        os.makedirs(output)
 
-    parser.add_argument('-p', '-pred', '--prediction', type=str, required=True,
-                        help='Full path to the prediction file parent directory (CCDC CoverPrim)')
-
-    parser.add_argument('-o', '--output', type=str, required=True,
-                        help='Full path to the output folder')
-
-    parser.add_argument('-y', '--year', type=str, required=True,
-                        help='The year used to identify matching layers for comparing in the matrix')
-
-    args = parser.parse_args()
-
-    if not os.path.exists(args.output):
-        os.makedirs(args.output)
-
-    refData, predData, Classes, ref_file, pred_file = read_data(args.reference, args.prediction, args.year)
+    refData, predData, Classes, ref_file, pred_file = read_data(ref, pred, year, mask)
 
     cnf_mat = compute_confusion_matrix(refData, predData, Classes)
 
-    fname = get_fname(ref_file, args.year)
+    fname = get_fname(ref_file, year)
 
-    write_to_csv(cnf_mat, args.output, fname)
+    write_to_csv(cnf_mat, output, fname)
 
     df = array_to_dataframe(cnf_mat)
 
-    write_to_excel(args.output, df, fname, args.year)
-
-    pprint.pprint(df)
+    write_to_excel(output, df, fname, year)
 
     print("\nAll done")
+
+    return None
+
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-r', '-ref', '--reference', dest='ref', type=str, required=True,
+                        help='Full path to the reference file parent directory (Trends or NLCD)')
+
+    parser.add_argument('-p', '-pred', '--prediction', dest='pred', type=str, required=True,
+                        help='Full path to the prediction file parent directory (CCDC CoverPrim)')
+
+    parser.add_argument('-o', '--output', dest='output', type=str, required=True,
+                        help='Full path to the output folder')
+
+    parser.add_argument('-y', '--year', dest='year', type=str, required=True,
+                        help='The year used to identify matching layers for comparing in the matrix')
+
+    parser.add_argument('-m', '--mask', dest='mask', type=str, required=False,
+                        help='Optionally specify a processing mask raster')
+
+    args = parser.parse_args()
+
+    main_work(**vars(args))
+
+
 
     return None
 

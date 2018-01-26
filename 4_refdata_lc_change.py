@@ -11,20 +11,21 @@ import glob
 import os
 import sys
 import argparse
-
+import re
+import itertools
 import numpy as np
-from osgeo import gdal
-
-print(sys.version)
-
-t1 = datetime.datetime.now()
-print("\nProcessing started at: ", t1.strftime("%Y-%m-%d %H:%M:%S\n"))
-
-gdal.AllRegister()
-gdal.UseExceptions()
+import gdal
 
 
-def get_inlayers(infolder, name, y1, y2):
+def get_time():
+    """
+    Return the current time
+    :return:
+    """
+    return datetime.datetime.now()
+
+
+def get_inlayers(infolder, name, years):
     """Generate a list of the input change map layers with full paths
 
     Args:
@@ -46,11 +47,9 @@ def get_inlayers(infolder, name, y1, y2):
 
         name = "Trends"
 
-    filelist = glob.glob("{}{}*.tif".format(infolder, os.sep))
+    filelist = sorted(glob.glob("{}{}*.tif".format(infolder, os.sep)))
 
-    filelist.sort()
-
-    print(filelist)
+    print("\nFound files {}".format(filelist))
 
     if filelist is None:
 
@@ -58,89 +57,115 @@ def get_inlayers(infolder, name, y1, y2):
 
         sys.exit(0)
 
-    if name == "nlcd":
+    yearlist = [re.search(r'\d+', os.path.basename(f)).group() for f in filelist]
 
-        yearlist = [os.path.basename(y).split("_")[1][:4] for y in filelist]
+    print("\nFound years {}".format(yearlist))
+
+    if years is None:
+
+        file2file = list(itertools.combinations(filelist, 2))
+
+        year2year = list(itertools.combinations(yearlist, 2))
+
+        return file2file, year2year
 
     else:
 
-        yearlist = [os.path.basename(y).split("_")[0][-4:] for y in filelist]
+        file2file = []
 
-    print(yearlist)
+        year2year = []
 
-    if y1 is None or y2 is None:
+        for ind, f in enumerate(filelist):
 
-        y1 == "1992"
+            if yearlist[ind] == years[0]:
 
-        y2 == "2006"
+                infile1 = f
 
-    for ind, f in enumerate(filelist):
+            elif yearlist[ind] == years[1]:
 
-        if yearlist[ind] == y1:
+                infile2 = f
 
-            infile1 = f
-
-        elif yearlist[ind] == y2:
-
-            infile2 = f
-
-    return infile1, infile2
+        return file2file.append((infile1, infile2)), year2year.append((years[0], years[1]))
 
 
-def do_calc(name, file1, file2, outdir, y1, y2):
-    """Generate the output layers containing the from/to class comparisons
-
-    Args:
-        file1 <string> path to the year1 NLCD layer
-        file2 <string> path to the year2 NLCD layer
-
-    Returns:
-        None
+def do_calc(name, file_fromto, year_fromto, outdir):
     """
-
-    ofile = outdir + os.sep + "{}{}to{}cl.tif".format(name, y1, y2)
-
+    Generate the output layers containing the from/to class comparisons
+    :param name:
+    :param file_fromto:
+    :param year_fromto:
+    :param outdir:
+    :return:
+    """
     driver = gdal.GetDriverByName("GTiff")
 
-    src1 = gdal.Open(file1, gdal.GA_ReadOnly)
-    src2 = gdal.Open(file2, gdal.GA_ReadOnly)
+    for ind, files in enumerate(file_fromto):
 
-    rows = src1.RasterYSize
-    cols = src1.RasterXSize
+        out_name = outdir + os.sep + "{}{}to{}lcc.tif".format(name, year_fromto[ind][0], year_fromto[ind][1])
 
-    srcdata1 = src1.GetRasterBand(1).ReadAsArray()
-    srcdata2 = src2.GetRasterBand(1).ReadAsArray()
+        src1 = gdal.Open(files[0], gdal.GA_ReadOnly)
+        src2 = gdal.Open(files[1], gdal.GA_ReadOnly)
 
-    data1 = srcdata1.astype(np.int16)
-    data2 = srcdata2.astype(np.int16)
+        rows = src1.RasterYSize
+        cols = src1.RasterXSize
 
-    from_to = np.zeros_like(data1, dtype=np.int16)
+        srcdata1 = src1.GetRasterBand(1).ReadAsArray()
+        srcdata2 = src2.GetRasterBand(1).ReadAsArray()
 
-    print("processing input files {} and {}".format(os.path.basename(file1),
-                                                    os.path.basename(file2)))
+        data1 = srcdata1.astype(np.int16)
+        data2 = srcdata2.astype(np.int16)
 
-    print("\tgenerating output file {}".format(os.path.basename(ofile)))
+        from_to = np.zeros_like(data1, dtype=np.int16)
 
-    from_to = (data1 * 100) + data2
+        print("\nprocessing input files {} and {}".format(os.path.basename(files[0]),
+                                                        os.path.basename(files[1])))
 
-    outfile = driver.Create(ofile, cols, rows, 1, gdal.GDT_Int16)
+        print("\tgenerating output file {}".format(os.path.basename(out_name)))
 
-    if outfile is None:
-        print("\nCould not create image file {a}".format
-              (a=os.path.basename(ofile)))
+        from_to = (data1 * 100) + data2
 
-        sys.exit(1)
+        outfile = driver.Create(out_name, cols, rows, 1, gdal.GDT_Int16)
 
-    outband = outfile.GetRasterBand(1)
-    outband.WriteArray(from_to, 0, 0)
+        if outfile is None:
+            print("\nCould not create image file {a}".format(a=os.path.basename(out_name)))
 
-    outband.FlushCache()
-    outband.SetNoDataValue(0)
+            sys.exit(1)
 
-    outfile.SetGeoTransform(src1.GetGeoTransform())
-    outfile.SetProjection(src1.GetProjection())
+        outband = outfile.GetRasterBand(1)
+        outband.WriteArray(from_to, 0, 0)
 
-    src1, src2, srcdata1, srcdata2, data1, data2, outfile = None, None, None, None, None, None, None
+        outband.FlushCache()
+        outband.SetNoDataValue(0)
+
+        outfile.SetGeoTransform(src1.GetGeoTransform())
+        outfile.SetProjection(src1.GetProjection())
+
+        src1, src2, srcdata1, srcdata2, data1, data2, outfile = None, None, None, None, None, None, None
+
+    return None
+
+
+def main_work(inputdir, outputdir, name, years=None):
+    """
+
+    :param inputdir:
+    :param outputdir:
+    :param name:
+    :param y1:
+    :param y2:
+    :return:
+    """
+    if not os.path.exists(outputdir):
+
+        os.mkdir(outputdir)
+
+    files_list, years_list = get_inlayers(inputdir, name, years)
+
+    print("\nfile2file= ", files_list)
+
+    print("\nyear2year= ", years_list)
+
+    do_calc(name, files_list, years_list, outputdir)
 
     return None
 
@@ -149,50 +174,31 @@ def main():
 
     parser = argparse.ArgumentParser()
 
-    parser.add_argument("-i", "--input", type=str, required=True,
+    parser.add_argument("-i", "--input", dest='inputdir', type=str, required=True,
                         help="The full path to the input land cover products")
 
-    parser.add_argument("-o", "--output", type=str, required=True,
+    parser.add_argument("-o", "--output", dest='outputdir', type=str, required=True,
                         help="The full path to the output folder")
 
-    parser.add_argument("-n", "--name", type=str, required=True, choices=["nlcd", "trends"],
+    parser.add_argument("-n", "--name", type=str, dest='name', required=True, choices=["nlcd", "trends"],
                         help="Specify the land cover product as NLCD or Trends")
 
-    parser.add_argument("-frm", "-from", "--year1", type=str, required=True,
-                        help="Specify Year 1")
-
-    parser.add_argument("-to", "--year2", type=str, required=True,
-                        help="Specify Year 2")
+    parser.add_argument("-years", dest='years', type=str, nargs=2, required=False,
+                        help="Specify Year 1 and Year 2 for the land cover comparison")
 
     args = parser.parse_args()
 
-    outputdir = args.output
-
-    inputdir = args.input
-
-    name = args.name
-
-    fromY = args.year1
-
-    toY = args.year2
-
-    if not os.path.exists(outputdir):
-
-        os.mkdir(outputdir)
-
-    file1, file2 = get_inlayers(inputdir, name, fromY, toY)
-
-    do_calc(name, file1, file2, outputdir, fromY, toY)
+    main_work(**vars(args))
 
     return None
 
 
 if __name__ == '__main__':
 
+    t1 = get_time()
+
     main()
 
-t2 = datetime.datetime.now()
-print("\nCompleted at: ", t2.strftime("%Y-%m-%d %H:%M:%S"))
+    t2 = get_time()
 
-tt = t2 - t1
-print("Processing time: " + str(tt), "\n")
+    print("\nProcessing time: %s" %(str(t2 - t1)))
