@@ -78,7 +78,7 @@ def get_bounding_box(layer, raster_gt, coord_trans):
     return BBox(left=left, right=right, bottom=bottom, top=top)
 
 
-def clip_and_mosaic(infiles, outdir, year, product, shp):
+def clip_and_mosaic(infiles, outfile, year, product, shp):
     """
 
     :param infiles:
@@ -120,10 +120,103 @@ def clip_and_mosaic(infiles, outdir, year, product, shp):
         "-te", str(mainbox.left), str(mainbox.bottom), str(mainbox.right), str(mainbox.top),
         "-dstnodata", "0",
         [" %s " % f for f in infiles],
-        "{outdir}{sep}puget_{year}_{product}.tif".format(outdir=outdir, sep=os.sep, year=year, product=product)
+        outfile
     ])
 
     return None
+
+
+def get_trends(indir, outdir, product, hv_list, years, ovr, shp):
+    """
+
+    :param indir:
+    :param hv_list:
+    :param years:
+    :return:
+    """
+    for year in years:
+
+        infiles = []
+
+        for hv in hv_list:
+
+            temp = glob.glob(indir + os.sep + hv + os.sep + "*.tif")
+
+            for t in temp:
+
+                if year in os.path.basename(t):
+
+                    infiles.append(t)
+
+        if not len(infiles) == 0:
+
+            outfile = "{outdir}{sep}puget_{year}_{product}.tif".format(outdir=outdir, sep=os.sep, year=year,
+                                                                       product=product)
+
+            file_exists = os.path.exists(outfile)
+
+            if (file_exists and ovr) or not file_exists:
+                print("Generating file ", outfile)
+
+                try:
+                    os.remove(outfile)
+                except:
+                    pass
+
+                clip_and_mosaic(infiles=infiles, outfile=outfile, year=year, product=product, shp=shp)
+
+            elif file_exists and not ovr:
+                print("Not overwriting existing files")
+
+    return None
+
+
+def get_nlcd(indir, outdir, product, hv_list, years, ovr, shp):
+    """
+
+    :param indir:
+    :param hv_list:
+    :param years:
+    :return:
+    """
+    for year in years:
+
+        infiles = []
+
+        for hv in hv_list:
+
+            temp = glob.glob(indir + os.sep + hv + os.sep + "*.tif")
+
+            for t in temp:
+
+                    pieces = os.path.basename(t).split("_")
+
+                    if pieces[1] == year:
+
+                        infiles.append(t)
+
+        if not len(infiles) == 0:
+
+            outfile = "{outdir}{sep}puget_{year}_{product}.tif".format(outdir=outdir, sep=os.sep, year=year,
+                                                                       product=product)
+
+            file_exists = os.path.exists(outfile)
+
+            if (file_exists and ovr) or not file_exists:
+                print("Generating file ", outfile)
+
+                try:
+                    os.remove(outfile)
+                except:
+                    pass
+
+                clip_and_mosaic(infiles=infiles, outfile=outfile, year=year, product=product, shp=shp)
+
+            elif file_exists and not ovr:
+                print("Not overwriting existing files")
+
+    return None
+
 
 def main_work(indir, outdir, shp, product, ovr='False'):
     """
@@ -132,74 +225,25 @@ def main_work(indir, outdir, shp, product, ovr='False'):
     :param outdir:
     :return:
     """
-    if not os.path.exists(outdir + os.sep + product):
-        os.makedirs(outdir + os.sep + product)
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
+    # Create a boolean value from string
     ovr = ast.literal_eval(ovr)
 
     # List of ARD tiles
     # TODO Generate HV_list based on AOI envelope
-    # HV_list = ['h03v01', 'h03v02', 'h03v03', 'h04v01', 'h04v02']
-    HV_list = ["H03V01", "H03V02", "H03V03", "H04V01", "H04V02"]
+    HV_list = ['h03v01', 'h03v02', 'h03v03', 'h04v01', 'h04v02']
+    # HV_list = ["H03V01", "H03V02", "H03V03", "H04V01", "H04V02"]
 
     # List of years
     years = ['1992', '2000', '2001', '2006', '2011']
 
-    for year in years:
+    if product == "Trends" or product == "trends":
+        get_trends(indir, outdir, product, HV_list, years, ovr, shp)
 
-        infiles = []
-
-        for hv in HV_list:
-
-            try:
-                temp = glob.glob(indir + os.sep + hv + os.sep + product + "*.tif")
-
-                for t in temp:
-                    if "_" in os.path.basename(t):
-
-                        pieces = os.path.basename(t).split("_")
-
-                        if pieces[1] == year:
-
-                            infiles.append(t)
-
-                # temp = glob.glob("{indir}{sep}{hv}{sep}{prod}*{y}*.tif".format(indir=indir,
-                #                                                                 sep=os.sep,
-                #                                                                 hv=hv,
-                #                                                                 prod=product,
-                #                                                                 y=year))[0]
-
-                    else:
-
-                        if year in t:
-
-                            infiles.append(t)
-
-            except IndexError:
-                continue
-
-        if not len(infiles) == 0:
-            print(infiles)
-
-            outfile = "{outdir}{sep}{product}{sep}puget_{product}_{year}.tif".format(outdir=outdir, sep=os.sep, year=year,
-                                                                       product=product)
-
-            file_exists = os.path.exists(outfile)
-
-            if (file_exists and ovr) or not file_exists:
-                print("Generating file")
-
-                try:
-                    os.remove(outfile)
-                except:
-                    pass
-
-                clip_and_mosaic(infiles=infiles, outdir=outdir + os.sep + product, year=year, product=product, shp=shp)
-
-            elif file_exists and not ovr:
-                print("Not overwriting existing files")
-
-                continue
+    elif product == "nlcd" or product == "NLCD":
+        get_nlcd(indir, outdir, product, HV_list, years, ovr, shp)
 
     return None
 
