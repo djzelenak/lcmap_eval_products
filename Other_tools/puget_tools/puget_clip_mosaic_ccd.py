@@ -124,15 +124,18 @@ def clip_and_mosaic(infiles, outdir, year, product, shp):
     return None
 
 
-def get_change(HV_list, indir, outdir, ovr, shp):
+def get_change(HV_list, indir, outdir, ovr, shp, years, products):
     """
 
     :return:
     """
+    if years is None:
 
-    years = [str(y) for y in range(1984, 2016)]
+        years = [str(y) for y in range(1984, 2016)]
 
-    products = ['ChangeMap', 'LastChange', 'ChangeMagMap', 'QAMap', 'SegLength']
+    if products is None:
+
+        products = ['ChangeMap', 'LastChange', 'ChangeMagMap', 'QAMap', 'SegLength']
 
     for product in products:
 
@@ -190,14 +193,18 @@ def get_change(HV_list, indir, outdir, ovr, shp):
 
     return None
 
-def get_cover(HV_list, indir, outdir, ovr, shp):
+def get_cover(HV_list, indir, outdir, ovr, shp, years, products):
     """
 
     :return:
     """
-    years = [str(y) for y in range(1984, 2016)]
+    if years is None:
 
-    products = ['CoverConfPrim', 'CoverConfSec', 'CoverPrim', 'CoverSec', 'SegChange']
+        years = [str(y) for y in range(1984, 2016)]
+
+    if products is None:
+
+        products = ['CoverConfPrim', 'CoverConfSec', 'CoverPrim', 'CoverSec', 'SegChange']
 
     for product in products:
 
@@ -241,7 +248,7 @@ def get_cover(HV_list, indir, outdir, ovr, shp):
     return None
 
 
-def main_work(indir, outdir, shp, flag, ovr='False'):
+def main_work(indir, outdir, shp, flag, ovr='False', years=None, products=None):
     """
 
     :param indir:
@@ -259,12 +266,12 @@ def main_work(indir, outdir, shp, flag, ovr='False'):
     HV_list = ["H03V01", "H03V02", "H03V03", "H04V01", "H04V02"]
 
     if flag == "change":
-        get_change(HV_list, indir, outdir, ovr, shp)
+        get_change(HV_list, indir, outdir, ovr, shp, years, products)
 
         return None
 
     if flag == "cover":
-        get_cover(HV_list, indir, outdir, ovr, shp)
+        get_cover(HV_list, indir, outdir, ovr, shp, years, products)
 
         return None
 
@@ -291,6 +298,13 @@ def main():
 
     parser.add_argument("-ovr", dest="ovr", required=True, type=str, default='False',
                         help="Specify whether or not to overwrite existing outputs")
+
+    parser.add_argument("-y", dest="years", required=False, type=str, nargs = "+",
+                        help="Optionally specify one or more years to process")
+
+    parser.add_argument("-p", dest="products", required=False, type=str, nargs="+",
+                        choices=['ChangeMap', 'LastChange', 'ChangeMagMap', 'QAMap', 'SegLength',
+                                 'CoverConfPrim', 'CoverConfSec', 'CoverPrim', 'CoverSec', 'SegChange'])
 
     # TODO make more customizable
     # parser.add_argument("-maps", "--maps", dest="products", type=str, nargs="*", default="CoverPrim", required=True,
