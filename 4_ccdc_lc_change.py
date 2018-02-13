@@ -13,7 +13,7 @@ import sys
 import argparse
 import numpy as np
 import gdal
-import re
+# import re
 
 
 def get_time():
@@ -55,10 +55,10 @@ def get_inlayers(infolder, name, y1, y2, inty):
 
         flist = [r for y in ylist for r in templist if str(y) in r]
 
-        return flist, ylist
+        return flist
 
 
-def get_outlayers(inrasters, outfolder):
+def get_outlayers(inrasters, outfolder, years):
     """Generate a list of output rasters containing full paths
 
     Args:
@@ -69,12 +69,12 @@ def get_outlayers(inrasters, outfolder):
         outlist = list of output rasters to be created
     """
 
-    years = [re.search(r'\d+', os.path.basename(r)).group() for r in inrasters]
+    # years = [re.search(r'\d+', os.path.basename(r)).group() for r in inrasters]
 
     outlist = ["{}{}ccdc{}to{}lcc.tif".format(outfolder, os.sep, years[i - 1], years[i]) \
                for i in range(1, len(inrasters))]
 
-    return outlist, years
+    return outlist
 
 
 def do_calc(in_files, out_files):
@@ -169,9 +169,17 @@ def main_work(inputdir, outputdir, name, y1, y2, interval=None):
     if interval is None:
         interval = int(y2) - int(y1)
 
+    years = [y for y in range(int(y1), int(y2)+1, interval)]
+
     infiles = get_inlayers(inputdir, name, y1, y2, interval)
 
-    outfiles, years = get_outlayers(infiles, outputdir)
+    print("\nInput files are: {}\n".format(infiles))
+
+    outfiles = get_outlayers(infiles, outputdir, years)
+
+    print("\nOut files are: {}\n".format(outfiles))
+
+    print("\nYears are: {}\n".format(years))
 
     do_calc(infiles, outfiles)
 
@@ -207,10 +215,10 @@ def main():
 
 if __name__ == '__main__':
 
-    t1 = get_time()
+    t0 = get_time()
 
     main()
 
-    t2 = get_time()
+    t1 = get_time()
 
-    print("\nProcessing time: %s" % (str(t2 - t1)))
+    print("\nProcessing time: {}".format(t1 - t0))
