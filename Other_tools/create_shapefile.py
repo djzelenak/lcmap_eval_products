@@ -10,11 +10,17 @@ daniel.zelenak.ctr@usgs.gov
 4.  Write the masked array to a new temporary raster file
 5.  Polygonize and delete the temporary raster file
 6.  Iterate through steps 2-5 for each class value
+
+Useage: Take an input thematic raster layer and a list of pixel class values to create a polygon shapefile for each
+class.
+
+***Note: Classes with larger quantities may take a long time to process***
 """
 
 import datetime
 import os
 import sys
+import argparse
 
 from osgeo import gdal
 from osgeo import ogr
@@ -23,8 +29,13 @@ from osgeo import osr
 gdal.UseExceptions()
 gdal.AllRegister()
 
-t1 = datetime.datetime.now()
-print(t1.strftime("\n%Y-%m-%d %H:%M:%S\n\n"))
+
+def get_time():
+    """
+    Return the current time
+    :return:
+    """
+    return datetime.datetime.now()
 
 
 def get_class_values(x):
@@ -66,7 +77,8 @@ def get_outname(indir, outdir, xclass):
 
     outdir = outdir.replace("\\", "/")
 
-    if not os.path.exists(outdir): os.mkdir(outdir)
+    if not os.path.exists(outdir):
+        os.mkdir(outdir)
 
     output = outdir + "/" + outname
 
@@ -88,13 +100,10 @@ def get_array(ds):
 
     src_ds = gdal.Open(ds)
 
-    if src_ds == None:
+    if src_ds is None:
         print('Unable to open {}'.format(ds))
 
     src_array = src_ds.GetRasterBand(1).ReadAsArray()
-
-    # close raster file after converting to an array
-    src_ds = None
 
     return src_array
 
@@ -165,9 +174,6 @@ def get_xraster(xarray, ds):
     outraster.SetGeoTransform(src_ds.GetGeoTransform())
     outraster.SetProjection(src_ds.GetProjection())
 
-    # close raster files
-    src_ds, outraster = None, None
-
     return temp_raster
 
 
@@ -182,7 +188,6 @@ def raster_to_shp(tempraster, newlayername):
     Returns:
         None
     """
-
     temp_ds = gdal.Open(tempraster)
 
     temp_band = temp_ds.GetRasterBand(1)
@@ -198,90 +203,61 @@ def raster_to_shp(tempraster, newlayername):
 
     gdal.Polygonize(temp_band, temp_band, outlayer, -1, [], callback=None)
 
-    # Close raster files
-    temp_ds, temp_band = None, None
-
     os.remove(tempraster)
 
     return None
 
 
-def usage():
-    print("\n\tUsage: Take an input thematic raster layer and a list of\n"
-          "\tpixel class values to create a polygon shapefile for each class.\n"
-          "\n\t[-i the full path to the input raster file]\n"
-          "\t[-o the full path to the output shapefile]\n"
-          "\t[-x the target pixel classes separated by commas and no spaces]\n"
-          "\t[-help display this message]\n"
-          "\n\t***Note: Classes with larger quantities may take a long time to process***\n")
-
-    print("\tExample: python create_shapefile.py -i C:\... -o C:\... "
-          "-x 202,608,1111\n")
-
-    return None
-
-
-def main():
-    argv = sys.argv
-
-    if len(argv) <= 1:
-        print("\n***Missing required arguments***\nTry -help\n")
-
-        sys.exit(0)
-
-    i = 1
-
-    while i < len(argv):
-        arg = argv[i]
-
-        if arg == "-i":
-            i = i + 1
-            infile = argv[i]
-
-        elif arg == "-o":
-            i = i + 1
-            outpath = argv[i]
-
-        elif arg == "-x":
-            i = i + 1
-            classes = argv[i]
-
-        elif arg == "-help":
-            usage()
-            sys.exit(1)
-
-        i += 1
-
+def main_work(infile, outpath, classes):
     classvals = get_class_values(classes)
 
-    for q in classvals:
-
-        outlayer = get_outname(infile, outpath, q)
+    for val in classvals:
+        outlayer = get_outname(infile, outpath, val)
 
         if not os.path.exists(outlayer + ".shp"):
 
             srcarray = get_array(infile)
 
-            apply_filter(q, srcarray)
+            apply_filter(val, srcarray)
 
             tempfile = get_xraster(srcarray, infile)
 
-            print("creating new shapefile for class ", str(q))
-            print("saving to ", os.path.split(outlayer)[0], "\n")
+            print("Creating new shapefile for class %s" % val)
+
+            print("Saving to %s" % os.path.split(outlayer)[0])
 
             raster_to_shp(tempfile, outlayer)
 
         else:
+            print("%s .shp already exists" % outlayer)
 
-            print(outlayer + ".shp already exists")
+    return None
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+
+    parser.add_argument("-i", dest="infile", type=str, required=True,
+                        help="The input thematic raster")
+
+    parser.add_argument("-o", dest="outpath", type=str, required=True,
+                        help="The full path to the output folder")
+
+    parser.add_argument("-x", dest="classes", nargs="*", required=True,
+                        help="The list of class values to polygonize")
+
+    args = parser.parse_args()
+
+    main_work(**vars(args))
 
     return None
 
 
 if __name__ == '__main__':
+    t1 = get_time()
+
     main()
 
-t2 = datetime.datetime.now()
-print(t2.strftime("\n\n%Y-%m-%d %H:%M:%S"))
-tt = t2 - t1
-print("\nProcessing time: " + str(tt))
+    t2 = get_time()
+
+    print("\nProcessing time: %s" % (t2 - t1))
