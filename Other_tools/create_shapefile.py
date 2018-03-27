@@ -1,10 +1,8 @@
-#!usr/bin/env python
-# -*- coding: utf-8 -*-
-
 """
 Created on Mon Apr 17 11:29:56 2017
 Last updated on Tue Apr 25, 2017
-@author: dzelenak
+Author: Daniel Zelenak
+daniel.zelenak.ctr@usgs.gov
 
 1.  Open a targeted raster file (should be thematic)
 2.  Convert to a numpy array
@@ -12,26 +10,24 @@ Last updated on Tue Apr 25, 2017
 4.  Write the masked array to a new temporary raster file
 5.  Polygonize and delete the temporary raster file
 6.  Iterate through steps 2-5 for each class value
-
 """
 
-#%%
-import os, sys, datetime
+import datetime
+import os
+import sys
 
-try:
-    from osgeo import gdal, ogr, osr
-except ImportError:
-    import gdal
+from osgeo import gdal
+from osgeo import ogr
+from osgeo import osr
 
 gdal.UseExceptions()
 gdal.AllRegister()
 
 t1 = datetime.datetime.now()
-print (t1.strftime("\n%Y-%m-%d %H:%M:%S\n\n"))
+print(t1.strftime("\n%Y-%m-%d %H:%M:%S\n\n"))
 
-#%%
+
 def get_class_values(x):
-
     """TODO: Takes in a user-specified class value which will be used to
     create a new shapefile from matching pixel values.
 
@@ -45,13 +41,13 @@ def get_class_values(x):
 
     x = x.split(",")
 
-    for i in range(len(x)): x[i] = int(x[i])
+    for i in range(len(x)):
+        x[i] = int(x[i])
 
     return x
 
-#%%
-def get_outname(indir, outdir, xclass):
 
+def get_outname(indir, outdir, xclass):
     """Generate output file names based on the input raster name
 
     Args:
@@ -66,7 +62,7 @@ def get_outname(indir, outdir, xclass):
     inpath, infile = os.path.split(indir)
     fname, ext = os.path.splitext(infile)
 
-    outname = "{a}_{b}".format( a=fname, b=str(xclass) )
+    outname = "{a}_{b}".format(a=fname, b=str(xclass))
 
     outdir = outdir.replace("\\", "/")
 
@@ -76,9 +72,8 @@ def get_outname(indir, outdir, xclass):
 
     return output
 
-#%%
-def get_array(ds):
 
+def get_array(ds):
     """Read in the raster data source and write the data to a numpy array
 
     Args:
@@ -88,25 +83,23 @@ def get_array(ds):
         src_array = numpy array object generated from the raster data
     """
 
-    #replace windows ' \ ' with the friendlier ' / '
+    # replace windows ' \ ' with the friendlier ' / '
     ds.replace('\\', '/')
 
     src_ds = gdal.Open(ds)
 
     if src_ds == None:
-
-        print ('Unable to open {}'.format(ds))
+        print('Unable to open {}'.format(ds))
 
     src_array = src_ds.GetRasterBand(1).ReadAsArray()
 
-    #close raster file after converting to an array
+    # close raster file after converting to an array
     src_ds = None
 
     return src_array
 
-#%%
-def apply_filter(xfilter, band):
 
+def apply_filter(xfilter, band):
     """Take in the target pixel value and apply a mask to the source data
     numpy array leaving only the target pixel values.
 
@@ -122,9 +115,8 @@ def apply_filter(xfilter, band):
 
     return None
 
-#%%
-def get_xraster(xarray, ds):
 
+def get_xraster(xarray, ds):
     """Create a temporary raster from the masked numpy array
 
     Args:
@@ -135,9 +127,9 @@ def get_xraster(xarray, ds):
         temp_raster = the full path to the masked raster file
     """
 
-    #path to the temporary raster file
+    # path to the temporary raster file
     path, fn = os.path.split(ds)
-    
+
     # path.replace("\\", "/")
     temp_raster = "{}{}zzzz_band.tif".format(path, os.sep)
 
@@ -148,40 +140,38 @@ def get_xraster(xarray, ds):
 
     driver = gdal.GetDriverByName('GTiff')
 
-    #GDALDriver::Create() method requires image size,
-    #num. of bands, and band type
+    # GDALDriver::Create() method requires image size,
+    # num. of bands, and band type
     outraster = driver.Create(temp_raster, cols, rows, 1, gdal.GDT_UInt16)
 
     if outraster is None:
-
-        print ("Could not create image file {a}".format
-        ( a=os.path.basename(temp_raster) ))
+        print("Could not create image file {a}".format
+              (a=os.path.basename(temp_raster)))
 
         sys.exit(1)
 
-    #=======================================================================
-    #write numpy array to the raster========================================
+    # =======================================================================
+    # write numpy array to the raster========================================
     outband = outraster.GetRasterBand(1)
     outband.WriteArray(xarray, 0, 0)
 
-    #=======================================================================
-    #save data to the disk and set the nodata value=========================
+    # =======================================================================
+    # save data to the disk and set the nodata value=========================
     outband.FlushCache()
     outband.SetNoDataValue(255)
 
-    #=======================================================================
-    #georeference the image and set the projection==========================
-    outraster.SetGeoTransform( src_ds.GetGeoTransform() )
-    outraster.SetProjection( src_ds.GetProjection() )
+    # =======================================================================
+    # georeference the image and set the projection==========================
+    outraster.SetGeoTransform(src_ds.GetGeoTransform())
+    outraster.SetProjection(src_ds.GetProjection())
 
-    #close raster files
+    # close raster files
     src_ds, outraster = None, None
 
     return temp_raster
 
-#%%
-def raster_to_shp(tempraster, newlayername):
 
+def raster_to_shp(tempraster, newlayername):
     """Convert the masked raster data to a shapefile.  Delete the
     temporary raster file when finished.
 
@@ -194,52 +184,48 @@ def raster_to_shp(tempraster, newlayername):
     """
 
     temp_ds = gdal.Open(tempraster)
-    
+
     temp_band = temp_ds.GetRasterBand(1)
 
     prj = temp_ds.GetProjection()
 
-    driver = ogr.GetDriverByName( "ESRI Shapefile" )
-    
-    outshpfile = driver.CreateDataSource( newlayername + ".shp" )
-    
-    outlayer = outshpfile.CreateLayer( newlayername, \
-                                      srs=osr.SpatialReference(wkt=prj) )
+    driver = ogr.GetDriverByName("ESRI Shapefile")
 
-    gdal.Polygonize( temp_band, temp_band, outlayer, -1, [], callback=None )
+    outshpfile = driver.CreateDataSource(newlayername + ".shp")
 
-    #Close raster files
+    outlayer = outshpfile.CreateLayer(newlayername,
+                                      srs=osr.SpatialReference(wkt=prj))
+
+    gdal.Polygonize(temp_band, temp_band, outlayer, -1, [], callback=None)
+
+    # Close raster files
     temp_ds, temp_band = None, None
 
     os.remove(tempraster)
 
     return None
 
-#%%
+
 def usage():
+    print("\n\tUsage: Take an input thematic raster layer and a list of\n"
+          "\tpixel class values to create a polygon shapefile for each class.\n"
+          "\n\t[-i the full path to the input raster file]\n"
+          "\t[-o the full path to the output shapefile]\n"
+          "\t[-x the target pixel classes separated by commas and no spaces]\n"
+          "\t[-help display this message]\n"
+          "\n\t***Note: Classes with larger quantities may take a long time to process***\n")
 
-    print("\n\tUsage: Take an input thematic raster layer and a list of\n"\
-    "\tpixel class values to create a polygon shapefile for each class.\n"\
-    "\n\t[-i the full path to the input raster file]\n"\
-    "\t[-o the full path to the output shapefile]\n"\
-    "\t[-x the target pixel classes separated by commas and no spaces]\n"\
-    "\t[-help display this message]\n"\
-    "\n\t***Note: Classes with larger quantities may take a long time to process***\n")
-
-
-    print("\tExample: python create_shapefile.py -i C:\... -o C:\... "\
+    print("\tExample: python create_shapefile.py -i C:\... -o C:\... "
           "-x 202,608,1111\n")
 
     return None
 
-#%%
-def main():
 
+def main():
     argv = sys.argv
 
     if len(argv) <= 1:
-
-        print ("\n***Missing required arguments***\nTry -help\n")
+        print("\n***Missing required arguments***\nTry -help\n")
 
         sys.exit(0)
 
@@ -266,7 +252,6 @@ def main():
 
         i += 1
 
-
     classvals = get_class_values(classes)
 
     for q in classvals:
@@ -281,24 +266,22 @@ def main():
 
             tempfile = get_xraster(srcarray, infile)
 
-            print ("creating new shapefile for class ", str(q))
-            print ("saving to ", os.path.split(outlayer)[0], "\n")
+            print("creating new shapefile for class ", str(q))
+            print("saving to ", os.path.split(outlayer)[0], "\n")
 
             raster_to_shp(tempfile, outlayer)
-            
+
         else:
-            
-            print (outlayer + ".shp already exists")
+
+            print(outlayer + ".shp already exists")
 
     return None
 
-#%%
-if __name__ == '__main__':
 
+if __name__ == '__main__':
     main()
 
-#%%
 t2 = datetime.datetime.now()
-print (t2.strftime("\n\n%Y-%m-%d %H:%M:%S"))
+print(t2.strftime("\n\n%Y-%m-%d %H:%M:%S"))
 tt = t2 - t1
-print ("\nProcessing time: " + str(tt))
+print("\nProcessing time: " + str(tt))
