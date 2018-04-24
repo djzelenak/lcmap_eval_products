@@ -1,4 +1,4 @@
-"""Return the row/col location for each pixel value in an array"""
+"""Return the row/col location for all target value(s) in an array"""
 
 import os
 import numpy as np
