@@ -162,7 +162,7 @@ def main():
     parser.add_argument("-o", dest="outdir", type=str, required=True,
                         help="Full path to the output directory")
 
-    parser.add_argument("-type", dest="type_", type=str, choices=["change, cover"], required=True,
+    parser.add_argument("-type", dest="type_", type=str, choices=["change", "cover"], required=True,
                         help="Choose either cover or change product-type")
 
     parser.add_argument("-tile", dest="tile", type=str, required=True,
