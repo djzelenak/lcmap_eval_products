@@ -8,22 +8,19 @@ Generate for all years in a single chart.
 
 @author: dzelenak
 """
-import glob
 import os
+import glob
 import re
-import sys
+import argparse
+import numpy as np
 import matplotlib
+
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
-import numpy as np
 from osgeo import gdal
 
 
-def get_rasters(indir, y1, y2):
-
-    if y1 is None: y1 = '1984'
-
-    if y2 is None: y2 = '2015'
+def get_rasters(indir, y1='1984', y2='2017'):
 
     infiles = glob.glob(indir + os.sep + "*.tif")
 
@@ -53,6 +50,7 @@ def get_rasters(indir, y1, y2):
 
     return infiles, yearlist
 
+
 def get_data(r):
     src = gdal.Open(r, gdal.GA_ReadOnly)
 
@@ -64,9 +62,8 @@ def get_data(r):
 
     bins = np.bincount(srcdata)  # retrieve count of unique values
 
-    src, srcdata = None, None  # close these datasets
-
     return bins
+
 
 def get_plots(ind, b, outdir, tile, labels):
     """Purpose: Generate the Matplotlib bar plots.
@@ -97,6 +94,7 @@ def get_plots(ind, b, outdir, tile, labels):
     ax.set_xlabel("Year")
 
     ax.set_xticks(np.arange(0, len(ind)))
+
     ax.set_xticklabels(labels)
 
     ax.set_ylabel("% of Tile")
@@ -109,20 +107,21 @@ def get_plots(ind, b, outdir, tile, labels):
 
     plt.ylim([0, max(b) * 1.1])
 
-    def autolabel(rects, ax):
-
-        (y_bottom, y_top) = ax.get_ylim()
+    def autolabel(rects_, ax_):
+        (y_bottom, y_top) = ax_.get_ylim()
 
         y_height = y_top - y_bottom
 
-        for rect in rects:
+        for rect in rects_:
             height = rect.get_height()
 
             label_position = height + (y_height * 0.01)
 
-            ax.text(rect.get_x() + rect.get_width() / 2., label_position,
-                    "{:02.2f}%".format(height),
-                    ha="center", va="bottom", fontsize=8, rotation=65)
+            ax_.text(rect.get_x() + rect.get_width() / 2., label_position,
+                     "{:02.2f}%".format(height),
+                     ha="center", va="bottom", fontsize=8, rotation=65)
+
+        return None
 
     autolabel(rects, ax)
 
@@ -132,81 +131,25 @@ def get_plots(ind, b, outdir, tile, labels):
 
     return None
 
-def usage():
-    print("\n\t[-i Full path to the input File Directory]\n"
-          "\t[-o Full path to the output location]\n"
-          "\t[-frm The from year (1984 is default)]\n"
-          "\t[-to The to year (2015 is default)]\n"
-          "\t[-tile The tile name to be used for graph title]\n"
-          "\t[-help Display this message]\n")
 
-    print("\n\tExample: 7_plot_annualchange.py -i C:/.../CCDCMap -from "
-          "-o C:/.../graphs\n")
+def main_work(indir, outdir, tile, from_year, to_year):
+    pass
 
-    return None
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
-def main():
+    rasters, years = get_rasters(indir, from_year, to_year)
 
-    infolder, outfolder, tile, fromyear, toyear = None, None, None, None, None
-
-    argv = sys.argv
-
-    if len(argv) <= 1:
-        print("\n***Missing required arguments***")
-        print("Try -help\n")
-        sys.exit(0)
-
-    i = 1
-
-    while i < len(argv):
-        arg = argv[i]
-
-        if arg == "-i":
-            i = i + 1
-            infolder = argv[i]
-
-        elif arg == "-o":
-            i = i + 1
-            outfolder = argv[i]
-
-        elif arg == "-tile":
-            i = i + 1
-            tile = argv[i]
-
-        elif arg == "-frm":
-            i = i + 1
-            fromyear = argv[i]
-
-        elif arg == "-to":
-            i = i + 1
-            toyear = argv[i]
-
-        elif arg == "-help":
-            usage()
-            sys.exit(1)
-
-        i += 1
-
-    if not os.path.exists(outfolder): 
-        
-        os.makedirs(outfolder)
-
-    rasters, years = get_rasters(infolder, fromyear, toyear)
-
-    # numpy array containing year values for the plot a-axis tick labels
     label_years = np.array([int(years[s]) for s in range(len(years))])
-    # pprint(label_years)
 
     # numpy array to be used for the plot x-axis tick marks
     ind = np.arange(len(years))
-    # pprint(ind)
 
-    bin_count_vals = []
+    bin_count_vals = list()
 
     for c, image in enumerate(rasters):
 
-        print("\nWorking on plot for image %s of %s"
-              % (c + 1, len(rasters)))
+        print("\nWorking on plot for image %s of %s" % (c + 1, len(rasters)))
 
         bin_count = get_data(image)
 
@@ -223,16 +166,41 @@ def main():
             bin_count_vals.append(0)
 
     for num, bin_val in enumerate(bin_count_vals):
-
         # convert the counts to a percentage of the tile
         bin_count_vals[num] = float(bin_val) / 25000000.0 * 100.0
 
     # convert the list of bin count values to a numpy array for plotting
     b_vals = np.array(bin_count_vals)
 
-    get_plots(ind, b_vals, outfolder, tile, label_years)
+    get_plots(ind, b_vals, outdir, tile, label_years)
 
     return None
+
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-i", dest="indir", type=str, required=True,
+                        help="Full path to the input file directory")
+
+    parser.add_argument("-o", dest="outdir", type=str, required=True,
+                        help="Full path to the output location")
+
+    parser.add_argument("-tile", dest="tile", type=str, required=True,
+                        help="The name of the tile, used for the figure title")
+
+    parser.add_argument("-from", dest="from_year", type=str, required=False, default='1984',
+                        help="The beginning year")
+
+    parser.add_argument("-to", dest="to_year", type=str, required=False, default='2017',
+                        help="The ending year")
+
+    args = parser.parse_args()
+
+    main_work(**vars(args))
+
+    return None
+
 
 if __name__ == "__main__":
     main()
