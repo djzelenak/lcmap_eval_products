@@ -13,33 +13,29 @@ by default.
 """
 
 import os
-import sys
 import glob
-
+import argparse
+import numpy as np
 import matplotlib
-
 matplotlib.use("agg")
 import matplotlib.pyplot as plt
-
-import numpy as np
-
 from osgeo import gdal
 
 
 def get_rasters(indir, y1, y2, name):
     if name == "change":
 
-        infile = glob.glob(indir + os.sep + "ccdc{}to{}ct.tif".format(y1, y2))[0]
+        return glob.glob(indir + os.sep + "ccdc{}to{}ct.tif".format(y1, y2))[0]
 
     elif name == "cover":
 
-        infile = glob.glob(indir + os.sep + "CoverPrim{}to{}ct.tif".format(y1, y2))[0]
+        return glob.glob(indir + os.sep + "CoverPrim{}to{}ct.tif".format(y1, y2))[0]
 
     else:
 
         print("\n-type argument must either be 'change' or 'cover'\n")
 
-    return infile
+    return None
 
 
 def get_data(r):
@@ -54,9 +50,6 @@ def get_data(r):
 
     # retrieve count of unique values in srcdata array
     b = np.bincount(srcdata)
-
-    # close these datasets
-    src, srcdata = None, None
 
     return b, a_unique
 
@@ -123,6 +116,8 @@ def get_plots(ind, b, outdir, type_, tile, sum_b, y1, y2):
                     "{:02.2f}%".format(height),
                     ha="center", va="bottom", fontsize=8, rotation=45)
 
+        return None
+
     autolabel(rects, ax)
 
     outgraph = outdir + os.sep + "area_change.png"
@@ -132,77 +127,12 @@ def get_plots(ind, b, outdir, type_, tile, sum_b, y1, y2):
     return None
 
 
-def usage():
-    print("\n\t[-i Full path to the input File Directory]\n"
-          "\t[-o Full path to the output location]\n"
-          "\t[-type Product type ('change' or 'cover')]"
-          "\t[-tile Name of ARD tile for the graph title]\n"
-          "\t[-help Display this message]\n\n")
+def main_work(indir, outdir, type_, tile, from_year="1984", to_year="2017"):
 
-    print("\n\tExample: plot_areachange.py -i C:/.../CCDCMap -from " + \
-          "-o C:/.../graphs -type change -tile h05v02")
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
 
-    return None
-
-
-def main():
-    fromy, toy, type_ = None, None, None
-
-    argv = sys.argv
-
-    if len(argv) <= 1:
-        print("\n***Missing required arguments***")
-        print("Try -help\n")
-        sys.exit(0)
-
-    i = 1
-
-    while i < len(argv):
-        arg = argv[i]
-
-        if arg == "-i":
-            i = i + 1
-            infolder = argv[i]
-
-        elif arg == "-o":
-            i = i + 1
-            outfolder = argv[i]
-
-        elif arg == "-type":
-            i = i + 1
-            type_ = argv[i]
-
-        elif arg == "-frm":
-            i = i + 1
-            fromy = argv[i]
-
-        elif arg == "-to":
-            i = i + 1
-            toy = argv[i]
-
-        elif arg == "-tile":
-            i = i + 1
-            tile = argv[i]
-
-        elif arg == "-help":
-            usage()
-            sys.exit(1)
-
-        i += 1
-
-    if fromy == None or toy == None:
-        fromy = '1984'
-
-        toy = '2015'
-
-    if type_ is None:
-        type_ = "change"
-
-    if not os.path.exists(outfolder):
-
-        os.makedirs(outfolder)
-
-    raster = get_rasters(infolder, fromy, toy, type_)
+    raster = get_rasters(indir, from_year, to_year, type_)
 
     b, ind = get_data(raster)
 
@@ -218,14 +148,38 @@ def main():
 
     b_vals = np.array(bv)
 
-    get_plots(ind, b_vals, outfolder, type_, tile, sum_b, fromy, toy)
+    get_plots(ind, b_vals, outdir, type_, tile, sum_b, from_year, to_year)
+
+    return None
+
+
+def main():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument("-i", dest="indir", type=str, required=True,
+                        help="Full path to the input file directory")
+
+    parser.add_argument("-o", dest="outdir", type=str, required=True,
+                        help="Full path to the output directory")
+
+    parser.add_argument("-type", dest="type_", type=str, choices=["change, cover"], required=True,
+                        help="Choose either cover or change product-type")
+
+    parser.add_argument("-tile", dest="tile", type=str, required=True,
+                        help="The tile name used for the figure title")
+
+    parser.add_argument("-from", dest="from_year", type=str, required=False, default="1984",
+                        help="The beginning year")
+
+    parser.add_argument("-to", dest="to_year", type=str, required=False, default="2017",
+                        help="The ending year")
+
+    args = parser.parse_args()
+
+    main_work(**vars(args))
 
     return None
 
 
 if __name__ == "__main__":
     main()
-
-
-
-
