@@ -30,7 +30,9 @@ def get_rasters(indir, y1='1984', y2='2017'):
 
         temp_r = os.path.basename(infiles[f])
 
-        temp_year = (re.split("[_ .]", temp_r)[1])
+        temp_year = re.search("\d{4}", os.path.basename(infiles[f])).group(0)
+
+        assert(temp_year)
 
         if int(y2) < int(temp_year):
 
