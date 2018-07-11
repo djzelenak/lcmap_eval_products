@@ -205,8 +205,6 @@ def main_work(indir, name, outdir, ovr):
     if not os.path.exists(outputdir):
         os.makedirs(outputdir)
 
-    print("\nFiles are saving in", outputdir, "\n")
-
     names = ["CoverPrim", "CoverSec", "CoverConfPrim", "CoverConfSec",
              "ChangeMap", "LastChange", "SegLength", "QAMap", "ChangeMagMap"]
 
